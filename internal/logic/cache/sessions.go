@@ -79,7 +79,8 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*core.Sess
 
 	query := bson.M{"accountId": accountID}
 	if !opts.Before.IsZero() {
-		query["createdAt"] = bson.M{"$lt": opts.Before}
+		query["createdAt"] = bson.M{"$gt": opts.Before}
+		findOptions.SetSort(bson.M{"createdAt": 1})
 	}
 	if opts.Type != "" {
 		query["type"] = opts.Type
