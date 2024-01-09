@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"errors"
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
@@ -16,6 +17,10 @@ type SessionType string
 
 const (
 	SessionTypeDaily = SessionType("daily")
+)
+
+var (
+	ErrNoSessionCache = errors.New("no session found")
 )
 
 type SessionDatabaseRecord struct {
@@ -82,6 +87,9 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*core.Sess
 	var session SessionDatabaseRecord
 	err := database.DefaultClient.Collection(database.CollectionSessions).FindOne(ctx, query, findOptions).Decode(&session)
 	if err != nil {
+		if errors.Is(mongo.ErrNoDocuments, err) {
+			return nil, ErrNoSessionCache
+		}
 		return nil, err
 	}
 
