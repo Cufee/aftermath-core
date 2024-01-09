@@ -10,4 +10,6 @@ type DatabaseClan struct {
 
 	Members   []int     `json:"members" bson:"members"`
 	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
+
+	LastUpdated time.Time `json:"lastUpdated" bson:"lastUpdated"`
 }
