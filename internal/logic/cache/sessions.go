@@ -60,8 +60,9 @@ func RefreshSessions(sessionType SessionType, realm string, accountIDs ...int) e
 }
 
 type SessionGetOptions struct {
-	Before time.Time
-	Type   SessionType
+	LastBattleAfter *int
+	Before          time.Time
+	Type            SessionType
 }
 
 func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*core.SessionSnapshot, error) {
@@ -82,6 +83,9 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*core.Sess
 	}
 	if opts.Type != "" {
 		query["type"] = opts.Type
+	}
+	if opts.LastBattleAfter != nil {
+		query["lastBattleTime"] = bson.M{"$gt": *opts.LastBattleAfter}
 	}
 
 	var session SessionDatabaseRecord

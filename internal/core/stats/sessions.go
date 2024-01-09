@@ -1,5 +1,17 @@
 package stats
 
+import "github.com/cufee/aftermath-core/internal/core/utils"
+
+func EmptySession(accountID, lastBattle int) *SessionSnapshot {
+	return &SessionSnapshot{
+		AccountID:      accountID,
+		LastBattleTime: lastBattle,
+		Global:         &ReducedStatsFrame{},
+		Rating:         &ReducedStatsFrame{},
+		Vehicles:       make(map[int]*ReducedVehicleStats),
+	}
+}
+
 type SessionSnapshot struct {
 	AccountID      int `json:"accountId" bson:"accountId"`
 	LastBattleTime int `json:"lastBattleTime" bson:"lastBattleTime"`
@@ -10,44 +22,30 @@ type SessionSnapshot struct {
 	Vehicles map[int]*ReducedVehicleStats `json:"vehicles" bson:"vehicles"`
 }
 
-func (s *SessionSnapshot) Add(other *SessionSnapshot) {
-	s.Global.Add(other.Global)
-	s.Rating.Add(other.Rating)
-
-	for vehicleID, otherVehicleStats := range other.Vehicles {
-		vehicleStats, ok := s.Vehicles[vehicleID]
-		if !ok {
-			s.Vehicles[vehicleID] = otherVehicleStats
-		} else {
-			vehicleStats.Add(otherVehicleStats)
-			if vehicleStats.Battles == 0 {
-				delete(s.Vehicles, vehicleID)
-			}
-		}
+func (s *SessionSnapshot) Diff(other *SessionSnapshot) (*SessionSnapshot, error) {
+	var diff SessionSnapshot
+	if err := utils.DeepCopy[SessionSnapshot](s, &diff); err != nil {
+		return nil, err
 	}
 
-	if other.LastBattleTime > s.LastBattleTime {
-		s.LastBattleTime = other.LastBattleTime
-	}
-}
-
-func (s *SessionSnapshot) Subtract(other *SessionSnapshot) {
-	s.Global.Subtract(other.Global)
-	s.Rating.Subtract(other.Rating)
+	diff.Global.Subtract(other.Global)
+	diff.Rating.Subtract(other.Rating)
 
 	for vehicleID, otherVehicleStats := range other.Vehicles {
-		vehicleStats, ok := s.Vehicles[vehicleID]
+		vehicleStats, ok := diff.Vehicles[vehicleID]
 		if !ok {
-			s.Vehicles[vehicleID] = otherVehicleStats
+			diff.Vehicles[vehicleID] = otherVehicleStats
 		} else {
 			vehicleStats.Subtract(otherVehicleStats)
 			if vehicleStats.Battles == 0 {
-				delete(s.Vehicles, vehicleID)
+				delete(diff.Vehicles, vehicleID)
 			}
 		}
 	}
 
-	if other.LastBattleTime > s.LastBattleTime {
-		s.LastBattleTime = other.LastBattleTime
+	if other.LastBattleTime > diff.LastBattleTime {
+		diff.LastBattleTime = other.LastBattleTime
 	}
+
+	return &diff, nil
 }

@@ -11,11 +11,15 @@ func main() {
 	// if err != nil {
 	// 	panic(err)
 	// }
-	session, err := stats.GetCurrentPlayerSession("na", 1013072123)
+
+	session, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013379500 1013072123
 	if err != nil {
 		panic(err)
 	}
 
-	data, _ := json.MarshalIndent(session, "", "	")
+	data, _ := json.MarshalIndent(session.Live.Global, "", "	")
+	println(string(data))
+
+	data, _ = json.MarshalIndent(session.Selected, "", "	")
 	println(string(data))
 }
