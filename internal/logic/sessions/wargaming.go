@@ -10,5 +10,5 @@ import (
 var liveClient *client.Client
 
 func init() {
-	liveClient = client.NewClient(utils.MustGetEnv("LIVE_WG_PROXY_HOST"), time.Second*30)
+	liveClient = client.NewClient(utils.MustGetEnv("LIVE_WG_PROXY_URL"), time.Second*5)
 }

@@ -4,13 +4,13 @@ type SessionSnapshot struct {
 	AccountID      int `json:"accountId" bson:"accountId"`
 	LastBattleTime int `json:"lastBattleTime" bson:"lastBattleTime"`
 
-	Global ReducedStatsFrame `json:"global" bson:"global"`
-	Rating ReducedStatsFrame `json:"rating" bson:"rating"`
+	Global *ReducedStatsFrame `json:"global" bson:"global"`
+	Rating *ReducedStatsFrame `json:"rating" bson:"rating"`
 
-	Vehicles map[int]ReducedVehicleStats `json:"vehicles" bson:"vehicles"`
+	Vehicles map[int]*ReducedVehicleStats `json:"vehicles" bson:"vehicles"`
 }
 
-func (s *SessionSnapshot) Add(other SessionSnapshot) {
+func (s *SessionSnapshot) Add(other *SessionSnapshot) {
 	s.Global.Add(other.Global)
 	s.Rating.Add(other.Rating)
 
@@ -20,6 +20,9 @@ func (s *SessionSnapshot) Add(other SessionSnapshot) {
 			s.Vehicles[vehicleID] = otherVehicleStats
 		} else {
 			vehicleStats.Add(otherVehicleStats)
+			if vehicleStats.Battles == 0 {
+				delete(s.Vehicles, vehicleID)
+			}
 		}
 	}
 
@@ -28,7 +31,7 @@ func (s *SessionSnapshot) Add(other SessionSnapshot) {
 	}
 }
 
-func (s *SessionSnapshot) Subtract(other SessionSnapshot) {
+func (s *SessionSnapshot) Subtract(other *SessionSnapshot) {
 	s.Global.Subtract(other.Global)
 	s.Rating.Subtract(other.Rating)
 
@@ -38,6 +41,9 @@ func (s *SessionSnapshot) Subtract(other SessionSnapshot) {
 			s.Vehicles[vehicleID] = otherVehicleStats
 		} else {
 			vehicleStats.Subtract(otherVehicleStats)
+			if vehicleStats.Battles == 0 {
+				delete(s.Vehicles, vehicleID)
+			}
 		}
 	}
 

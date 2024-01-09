@@ -10,5 +10,5 @@ import (
 var cacheClient *client.Client
 
 func init() {
-	cacheClient = client.NewClient(utils.MustGetEnv("CACHE_WG_PROXY_HOST"), time.Second*30)
+	cacheClient = client.NewClient(utils.MustGetEnv("CACHE_WG_PROXY_URL"), time.Second*30)
 }

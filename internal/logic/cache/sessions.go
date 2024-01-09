@@ -1,13 +1,15 @@
 package cache
 
 import (
-	"errors"
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type SessionType string
@@ -17,9 +19,9 @@ const (
 )
 
 type SessionDatabaseRecord struct {
-	ID        int         `bson:"_id,omitempty"`
-	Type      SessionType `bson:"type"`
-	CreatedAt time.Time   `bson:"createdAt"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Type      SessionType        `bson:"type"`
+	CreatedAt time.Time          `bson:"createdAt"`
 
 	Session *core.SessionSnapshot `bson:",inline"`
 }
@@ -57,15 +59,31 @@ type SessionGetOptions struct {
 	Type   SessionType
 }
 
-func GetPlayerSessionSnapshot(accountID int, options ...SessionGetOptions) (*core.SessionSnapshot, error) {
+func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*core.SessionSnapshot, error) {
 	opts := SessionGetOptions{Type: SessionTypeDaily}
-	if len(options) > 0 {
-		opts = options[0]
+	if len(o) > 0 {
+		opts = o[0]
 	}
 
-	_ = opts
+	ctx, cancel := database.DefaultClient.Ctx()
+	defer cancel()
 
-	// TODO: save session to database
+	findOptions := options.FindOne()
+	findOptions.SetSort(bson.M{"createdAt": -1})
 
-	return nil, errors.New("not implemented")
+	query := bson.M{"accountId": accountID}
+	if !opts.Before.IsZero() {
+		query["createdAt"] = bson.M{"$lt": opts.Before}
+	}
+	if opts.Type != "" {
+		query["type"] = opts.Type
+	}
+
+	var session SessionDatabaseRecord
+	err := database.DefaultClient.Collection(database.CollectionSessions).FindOne(ctx, query, findOptions).Decode(&session)
+	if err != nil {
+		return nil, err
+	}
+
+	return session.Session, nil
 }

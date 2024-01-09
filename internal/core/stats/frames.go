@@ -105,7 +105,7 @@ func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
 	return r.wn8
 }
 
-func (r *ReducedStatsFrame) Add(other ReducedStatsFrame) {
+func (r *ReducedStatsFrame) Add(other *ReducedStatsFrame) {
 	r.Battles += other.Battles
 	r.BattlesWon += other.BattlesWon
 	r.DamageDealt += other.DamageDealt
@@ -118,7 +118,7 @@ func (r *ReducedStatsFrame) Add(other ReducedStatsFrame) {
 	r.DroppedCapturePoints += other.DroppedCapturePoints
 }
 
-func (r *ReducedStatsFrame) Subtract(other ReducedStatsFrame) {
+func (r *ReducedStatsFrame) Subtract(other *ReducedStatsFrame) {
 	r.Battles -= other.Battles
 	r.BattlesWon -= other.BattlesWon
 	r.DamageDealt -= other.DamageDealt
@@ -132,14 +132,14 @@ func (r *ReducedStatsFrame) Subtract(other ReducedStatsFrame) {
 }
 
 type ReducedVehicleStats struct {
-	VehicleID         int `json:"vehicleId" bson:"vehicleId"`
-	ReducedStatsFrame `bson:",inline"`
+	VehicleID          int `json:"vehicleId" bson:"vehicleId"`
+	*ReducedStatsFrame `bson:",inline"`
 
 	MarkOfMastery  int `json:"markOfMastery" bson:"markOfMastery"`
 	LastBattleTime int `json:"lastBattleTime" bson:"lastBattleTime"`
 }
 
-func (r *ReducedVehicleStats) Add(other ReducedVehicleStats) {
+func (r *ReducedVehicleStats) Add(other *ReducedVehicleStats) {
 	r.ReducedStatsFrame.Add(other.ReducedStatsFrame)
 	if other.MarkOfMastery > r.MarkOfMastery {
 		r.MarkOfMastery = other.MarkOfMastery
@@ -149,7 +149,7 @@ func (r *ReducedVehicleStats) Add(other ReducedVehicleStats) {
 	}
 }
 
-func (r *ReducedVehicleStats) Subtract(other ReducedVehicleStats) {
+func (r *ReducedVehicleStats) Subtract(other *ReducedVehicleStats) {
 	r.ReducedStatsFrame.Subtract(other.ReducedStatsFrame)
 	if other.MarkOfMastery > r.MarkOfMastery {
 		r.MarkOfMastery = other.MarkOfMastery

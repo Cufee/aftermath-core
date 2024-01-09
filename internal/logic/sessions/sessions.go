@@ -26,18 +26,18 @@ var (
 	ErrTooManyAccountIDs = fmt.Errorf("too many account IDs")
 )
 
-func GetLiveSessions(realm string, accountIDs ...int) ([]*SessionWithRawData, error) {
+func GetLiveSessions(realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {
 	return GetSessionsWithClient(liveClient, realm, accountIDs...)
 }
 
-func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...int) ([]*SessionWithRawData, error) {
+func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {
 	if len(accountIDs) > 100 {
 		return nil, ErrTooManyAccountIDs
 	}
 
 	var waitGroup sync.WaitGroup
 
-	accountChan := make(chan utils.DataWithError[map[string]wg.ExtendedAccount])
+	accountChan := make(chan utils.DataWithError[map[string]wg.ExtendedAccount], 1)
 	vehiclesChan := make(chan utils.DataWithError[vehiclesWithAccount], len(accountIDs))
 
 	waitGroup.Add(1)
@@ -74,28 +74,28 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 	close(accountChan)
 	close(vehiclesChan)
 
-	account := <-accountChan
-	if account.Err != nil {
-		return nil, account.Err
+	accounts := <-accountChan
+	if accounts.Err != nil {
+		return nil, accounts.Err
 	}
 
-	sessions := make([]*SessionWithRawData, 0, len(accountIDs))
+	sessions := make(map[int]*SessionWithRawData, len(accountIDs))
 	for vehicle := range vehiclesChan {
 		if vehicle.Err != nil {
 			return nil, vehicle.Err
 		}
 
-		account, ok := account.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
+		account, ok := accounts.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
 		if !ok {
 			return nil, fmt.Errorf("account %d not found", vehicle.Data.accountID)
 		}
 
 		session := AccountStatsToSession(account, vehicle.Data.vehicles)
-		sessions = append(sessions, &SessionWithRawData{
+		sessions[vehicle.Data.accountID] = &SessionWithRawData{
 			Session:  session,
 			Account:  &account,
 			Vehicles: vehicle.Data.vehicles,
-		})
+		}
 	}
 
 	return sessions, nil

@@ -31,11 +31,11 @@ func AccountStatsToSession(account wg.ExtendedAccount, accountVehicles []wg.Vehi
 		LastBattleTime: account.LastBattleTime,
 		Global:         frameToReducedStatsFrame(account.Statistics.All),
 		Rating:         frameToReducedStatsFrame(account.Statistics.Rating),
-		Vehicles:       make(map[int]stats.ReducedVehicleStats),
+		Vehicles:       make(map[int]*stats.ReducedVehicleStats),
 	}
 
 	for _, vehicle := range accountVehicles {
-		session.Vehicles[vehicle.TankID] = stats.ReducedVehicleStats{
+		session.Vehicles[vehicle.TankID] = &stats.ReducedVehicleStats{
 			VehicleID:         vehicle.TankID,
 			ReducedStatsFrame: frameToReducedStatsFrame(vehicle.Stats),
 			MarkOfMastery:     vehicle.MarkOfMastery,
@@ -45,8 +45,8 @@ func AccountStatsToSession(account wg.ExtendedAccount, accountVehicles []wg.Vehi
 	return session
 }
 
-func frameToReducedStatsFrame(frame wg.StatsFrame) stats.ReducedStatsFrame {
-	return stats.ReducedStatsFrame{
+func frameToReducedStatsFrame(frame wg.StatsFrame) *stats.ReducedStatsFrame {
+	return &stats.ReducedStatsFrame{
 		Battles:              frame.Battles,
 		BattlesWon:           frame.Wins,
 		DamageDealt:          frame.DamageDealt,
