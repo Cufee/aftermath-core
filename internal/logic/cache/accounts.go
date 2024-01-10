@@ -17,12 +17,13 @@ type DatabaseAccount struct {
 	ID       int    `json:"id" bson:"_id"`
 	Realm    string `json:"realm" bson:"realm"`
 	Nickname string `json:"nickname" bson:"nickname"`
+	Private  bool   `json:"private" bson:"private"` // Some accounts have stats API disabled by Wargaming
 
 	Clan *DatabaseAccountClan `json:"clan" bson:"clan"`
 
 	LastBattleTime time.Time `json:"lastBattleTime" bson:"lastBattleTime"` // This will probably end up not being updated too often
 
-	LastUpdated time.Time `json:"lastUpdated" bson:"lastUpdated"` // This will be updated every time the account is updated
+	LastUpdated time.Time `json:"lastUpdated" bson:"lastUpdated"`
 }
 
 type DatabaseAccountClan struct {

@@ -15,8 +15,9 @@ var (
 )
 
 type Snapshot struct {
-	Selected *core.SessionSnapshot
-	Live     *core.SessionSnapshot
+	Selected *core.SessionSnapshot // The session that was selected from the database
+	Live     *core.SessionSnapshot // The live session
+	Diff     *core.SessionSnapshot // The difference between the selected and live sessions
 }
 
 func GetCurrentPlayerSession(realm string, accountId int, options ...cache.SessionGetOptions) (*Snapshot, error) {
@@ -46,23 +47,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	go func() {
 		defer wg.Done()
 		lastSession, err := cache.GetPlayerSessionSnapshot(accountId, options...)
-		if errors.Is(err, cache.ErrNoSessionCache) {
-			// If there is no session cache, we need to refresh the cache
-			err := cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId)
-			if err != nil {
-				lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Err: err}
-				return
-			}
-
-			lastSession := core.EmptySession(accountId, 0)
-			lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession}
-			return
-		} else if err != nil {
-			lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Err: err}
-			return
-		}
-
-		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession}
+		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession, Err: err}
 	}()
 
 	wg.Wait()
@@ -75,16 +60,26 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	}
 	lastSession := <-lastSessionChan
 	if lastSession.Err != nil {
+		if errors.Is(lastSession.Err, cache.ErrNoSessionCache) {
+			go cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId) // Refresh the session cache in the background
+			// There is no session cache, so the live session is the same as the last session and there is no diff
+			return &Snapshot{
+				Selected: liveSession.Data,
+				Live:     liveSession.Data,
+				Diff:     core.EmptySession(liveSession.Data.AccountID, liveSession.Data.LastBattleTime),
+			}, nil
+		}
 		return nil, lastSession.Err
 	}
 
-	selectedSession, err := liveSession.Data.Diff(lastSession.Data)
+	diffSession, err := liveSession.Data.Diff(lastSession.Data)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Snapshot{
-		Selected: selectedSession,
+		Selected: lastSession.Data,
 		Live:     liveSession.Data,
+		Diff:     diffSession,
 	}, nil
 }

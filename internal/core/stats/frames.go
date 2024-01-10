@@ -72,7 +72,6 @@ func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
 		return InvalidValue
 	}
 	if r.wn8 == 0 {
-		battles := r.Battles
 		// Expected values for WN8
 		expDef := float64(average.DroppedCapturePoints) / float64(average.Battles)
 		expFrag := float64(average.Frags) / float64(average.Battles)
@@ -81,9 +80,9 @@ func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
 		expWr := average.Winrate() / 100
 
 		// Actual performance
-		pDef := float64(r.DroppedCapturePoints) / float64(battles)
-		pFrag := float64(r.Frags) / float64(battles)
-		pSpot := float64(r.EnemiesSpotted) / float64(battles)
+		pDef := float64(r.DroppedCapturePoints) / float64(r.Battles)
+		pFrag := float64(r.Frags) / float64(r.Battles)
+		pSpot := float64(r.EnemiesSpotted) / float64(r.Battles)
 		pDmg := r.AvgDamage()
 		pWr := r.Winrate() / 100
 

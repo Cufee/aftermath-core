@@ -5,9 +5,13 @@ import "go.mongodb.org/mongo-driver/mongo"
 type collectionName string
 
 const (
-	CollectionSessions = collectionName("sessions")
-	CollectionAccounts = collectionName("accounts")
+	CollectionUsers = collectionName("users")
+
 	CollectionClans    = collectionName("clans")
+	CollectionAccounts = collectionName("accounts")
+	CollectionSessions = collectionName("sessions")
+
+	CollectionConfiguration = collectionName("configuration")
 )
 
 /*

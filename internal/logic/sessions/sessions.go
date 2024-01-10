@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -23,7 +24,7 @@ type vehiclesWithAccount struct {
 }
 
 var (
-	ErrTooManyAccountIDs = fmt.Errorf("too many account IDs")
+	ErrTooManyAccountIDs = errors.New("too many account IDs")
 )
 
 func GetLiveSessions(realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {
