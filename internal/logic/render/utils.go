@@ -84,6 +84,9 @@ func newDataRow(value any, config RenderConfig) blockRow {
 }
 
 func newLabelRow(label blockLabelTag, locale localization.SupportedLanguage, config RenderConfig) blockRow {
+	if string(locale) == "" {
+		locale = localization.LanguageEN
+	}
 	return blockRow{
 		value:  string(label),
 		locale: &locale,

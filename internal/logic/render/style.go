@@ -20,5 +20,5 @@ type Style struct {
 	Direction  directionValue
 
 	Gap     float64
-	Padding float64
+	Padding float64 // not implemented
 }

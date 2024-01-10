@@ -1,6 +1,7 @@
 package render
 
 import (
+	"errors"
 	"image"
 	"image/color"
 	"math"
@@ -31,12 +32,16 @@ type block struct {
 	style Style
 }
 
-func (block *block) Render(style Style) image.Image {
+func (block *block) Render(style Style) (image.Image, error) {
 	var images []image.Image
 	for _, row := range block.rows {
-		images = append(images, row.Render())
+		img, err := row.Render()
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, img)
 	}
-	return renderImages(images, style)
+	return renderImages(images, style), nil
 }
 
 type blockSet struct {
@@ -44,12 +49,16 @@ type blockSet struct {
 	style  Style
 }
 
-func (set *blockSet) Render() image.Image {
+func (set *blockSet) Render() (image.Image, error) {
 	var images []image.Image
 	for _, block := range set.blocks {
-		images = append(images, block.Render(block.style))
+		img, err := block.Render(block.style)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, img)
 	}
-	return renderImages(images, set.style)
+	return renderImages(images, set.style), nil
 }
 
 type blockRow struct {
@@ -59,7 +68,11 @@ type blockRow struct {
 	config RenderConfig
 }
 
-func (row *blockRow) Render() image.Image {
+func (row *blockRow) Render() (image.Image, error) {
+	if row.config.Font == nil {
+		return nil, errors.New("font not set")
+	}
+
 	stringValue := row.value
 	if row.locale != nil {
 		// TODO: Implement localization
@@ -86,7 +99,7 @@ func (row *blockRow) Render() image.Image {
 
 	ctx.DrawString(stringValue, -1, valueH-descenderOffset)
 
-	return ctx.Image()
+	return ctx.Image(), nil
 }
 
 type RenderConfig struct {
@@ -101,8 +114,9 @@ type BlockRenderConfig struct {
 	Career  RenderConfig `json:"career"`
 	Label   RenderConfig `json:"label"`
 
-	RowStyle Style `json:"rowStyle"`
-	SetStyle Style `json:"setStyle"`
+	RowStyle Style                          `json:"rowStyle"`
+	SetStyle Style                          `json:"setStyle"`
+	Locale   localization.SupportedLanguage `json:"locale"`
 }
 
 func (cfg *BlockRenderConfig) NewLabel(label blockLabelTag, locale localization.SupportedLanguage) blockRow {
@@ -126,7 +140,7 @@ func (cfg *BlockRenderConfig) CompleteBlock(label blockLabelTag, session, career
 		rows = append(rows, cfg.NewCareerRow(career))
 	}
 	if label != blockLabelTagNone {
-		rows = append(rows, cfg.NewLabel(label, localization.LanguageEN))
+		rows = append(rows, cfg.NewLabel(label, cfg.Locale))
 	}
 
 	return block{

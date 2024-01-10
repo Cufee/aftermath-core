@@ -5,6 +5,7 @@ import (
 	"image/png"
 	"os"
 
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
@@ -44,41 +45,45 @@ func main() {
 		panic(err)
 	}
 
-	font, ok := assets.Fonts["default"]
+	fontFaces, ok := assets.GetFontFaces("default", 24, 18, 14)
 	if !ok {
 		panic("font not found")
 	}
 
 	config := render.BlockRenderConfig{
 		Session: render.RenderConfig{
-			Font:      font,
+			Font:      fontFaces[24],
 			FontColor: BigTextColor,
 			// Debug:     true,
 		},
 		Career: render.RenderConfig{
-			Font:      font,
+			Font:      fontFaces[18],
 			FontColor: SmallTextColor,
 			// Debug:     true,
 		},
 		Label: render.RenderConfig{
-			Font:      font,
+			Font:      fontFaces[14],
 			FontColor: AltTextColor,
 			// Debug:     true,
 		},
 		RowStyle: render.Style{
 			Direction:  render.DirectionVertical,
 			AlignItems: render.AlignItemsCenter,
-			Gap:        10,
+			Gap:        5,
 		},
 		SetStyle: render.Style{
 			Direction:  render.DirectionHorizontal,
 			AlignItems: render.AlignItemsCenter,
 			Gap:        20,
 		},
+		Locale: localization.LanguageEN,
 	}
 
-	blocks := render.FrameToSlimStatsBlocks(session.Diff.Global, session.Selected.Global, nil, nil, &config)
-	img := blocks.Render()
+	blocks := render.FrameToLargeStatsBlocks(session.Diff.Global, session.Selected.Global, nil, &config)
+	img, err := blocks.Render()
+	if err != nil {
+		panic(err)
+	}
 
 	f, err := os.Create("test.png")
 	if err != nil {
