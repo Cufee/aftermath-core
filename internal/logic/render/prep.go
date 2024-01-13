@@ -62,6 +62,37 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 	return blocks, nil
 }
 
+func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame) ([]Block, error) {
+	if session == nil {
+		return nil, errors.New("session is nil")
+	}
+
+	var blocks []Block
+	{
+		// Battles
+		blocks = append(blocks, NewStatsBlock("", session.Battles))
+	}
+	{
+		// Avg Damage
+		blocks = append(blocks, NewStatsBlock("", session.AvgDamage()))
+	}
+	{
+		// Winrate
+		blocks = append(blocks, NewStatsBlock("", session.Winrate()))
+	}
+	{
+		if session.WN8(averages) != core.InvalidValue {
+			// WN8
+			blocks = append(blocks, NewStatsBlock("", session.WN8(averages)))
+		} else {
+			// Fallback to Accuracy to keep the UI consistent
+			blocks = append(blocks, NewStatsBlock("", session.Accuracy()))
+		}
+	}
+
+	return blocks, nil
+}
+
 func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
 	var cards []Block
 
@@ -91,7 +122,8 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 	{
 		for _, vehicle := range snapshot.Diff.Vehicles {
 			// Vehicle Cards
-			blocks, err := FrameToStatsBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, locale)
+			// blocks, err := FrameToStatsBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, locale)
+			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages)
 			if err != nil {
 				return nil, err
 			}

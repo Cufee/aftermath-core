@@ -73,7 +73,9 @@ func NewStatsBlock(label string, values ...any) Block {
 		}
 		content = append(content, NewTextContent(statsValueToString(value), style))
 	}
-	content = append(content, NewTextContent(label, Style{Font: FontSmall, FontColor: FontSmallColor}))
+	if label != "" {
+		content = append(content, NewTextContent(label, Style{Font: FontSmall, FontColor: FontSmallColor}))
+	}
 	return NewBlocksContent(Style{
 		Direction:  DirectionVertical,
 		AlignItems: AlignItemsCenter,
