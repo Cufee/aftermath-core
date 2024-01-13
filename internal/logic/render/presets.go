@@ -19,18 +19,20 @@ var (
 	// TextMargin       = FontSize / 2
 	// FrameWidth       = 900
 	// FrameMargin      = 50
-	BaseCardWidth = 450.0
-	// BaseCardHeigh    = 150
-	BaseCardColor = color.RGBA{30, 30, 30, 204}
+	BaseCardWidth       = 500.0
+	BaseStatsBlockWidth = 107.5
+	BaseCardColor       = color.RGBA{30, 30, 30, 120}
+	HighlightCardColor  = color.RGBA{50, 50, 50, 120}
 	// DecorLinesColor  = color.RGBA{80, 80, 80, 255}
 
 	FontLarge  font.Face
 	FontMedium font.Face
 	FontSmall  font.Face
 
-	FontLargeColor  = color.RGBA{255, 255, 255, 255} // Session stats values, titles and names
-	FontMediumColor = color.RGBA{204, 204, 204, 255} // Career stats values
-	FontSmallColor  = color.RGBA{100, 100, 100, 255} // Stats labels
+	FontTranslucentColor = color.RGBA{255, 255, 255, 50}
+	FontLargeColor       = color.RGBA{255, 255, 255, 255} // Session stats values, titles and names
+	FontMediumColor      = color.RGBA{204, 204, 204, 255} // Career stats values
+	FontSmallColor       = color.RGBA{150, 150, 150, 255} // Stats labels
 
 	// FontPremiumColor = color.RGBA{255, 223, 0, 255}   // Premium Vehicle
 	// FontVerifiedColor = color.RGBA{72, 167, 250, 255} // Verified Account
@@ -48,19 +50,40 @@ func init() {
 
 func NewPlayerTitleCard(name, clanTag string) Block {
 	var content []Block
+	// Visible tag
+	content = append(content, NewBlocksContent(Style{
+		Direction:       DirectionHorizontal,
+		AlignItems:      AlignItemsCenter,
+		PaddingX:        10,
+		PaddingY:        5,
+		BackgroundColor: HighlightCardColor,
+		BorderRadius:    10,
+		// Debug:           true,
+	}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: FontMediumColor})))
+
+	// Nickname
 	content = append(content, NewTextContent(name, Style{Font: FontLarge, FontColor: FontLargeColor}))
-	content = append(content, NewTextContent(fmt.Sprintf("[%s]", clanTag), Style{Font: FontMedium, FontColor: FontMediumColor}))
+
+	// Invisible tag
+	content = append(content, NewBlocksContent(Style{
+		Direction:    DirectionHorizontal,
+		AlignItems:   AlignItemsCenter,
+		PaddingX:     10,
+		PaddingY:     5,
+		BorderRadius: 10,
+		// Debug:        true,
+	}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: color.RGBA{0, 0, 0, 0}})))
+
 	return NewBlocksContent(Style{
 		Direction:       DirectionHorizontal,
-		JustifyContent:  JustifyContentCenter,
+		JustifyContent:  JustifyContentSpaceBetween,
 		AlignItems:      AlignItemsCenter,
-		Gap:             10,
 		PaddingX:        20,
 		PaddingY:        20,
 		BackgroundColor: BaseCardColor,
-		BorderRadius:    10,
+		BorderRadius:    20,
 		Width:           BaseCardWidth,
-		// Debug:      true,
+		// Debug:           true,
 	}, content...)
 }
 
@@ -79,7 +102,7 @@ func NewStatsBlock(label string, values ...any) Block {
 	return NewBlocksContent(Style{
 		Direction:  DirectionVertical,
 		AlignItems: AlignItemsCenter,
-		Width:      100,
+		Width:      BaseStatsBlockWidth,
 		// Debug:      true,
 	}, content...)
 }
@@ -107,21 +130,21 @@ func NewCardBlock(label Block, stats []Block) Block {
 	content = append(content, NewBlocksContent(Style{
 		Direction:      DirectionHorizontal,
 		JustifyContent: JustifyContentSpaceBetween,
-		Gap:            5,
-		// Debug:          true,
+		Gap:            10,
+		// Debug:     true,
 	}, stats...))
 
 	return NewBlocksContent(
 		Style{
 			Direction:       DirectionVertical,
 			AlignItems:      AlignItemsCenter,
-			Gap:             5,
+			Gap:             0,
 			PaddingX:        20,
-			PaddingY:        10,
+			PaddingY:        20,
 			BackgroundColor: BaseCardColor,
-			BorderRadius:    10,
-			Width:           BaseCardWidth + 10, // Account for gap on title card. The math for width is broken atm
-			// Debug: true,
+			BorderRadius:    20,
+			Width:           BaseCardWidth,
+			// Debug:           true,
 		},
 		content...)
 }

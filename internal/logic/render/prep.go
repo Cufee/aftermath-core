@@ -6,7 +6,10 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
+	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/disintegration/imaging"
+	"github.com/fogleman/gg"
 )
 
 func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
@@ -23,7 +26,12 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 		if career != nil {
 			values = append(values, career.Battles)
 		}
-		blocks = append(blocks, NewStatsBlock("battles", values...))
+		battlesBlock := NewStatsBlock("", values...)
+		// Add some special styling to the block
+		battlesBlock.Style.PaddingY = 10
+		battlesBlock.Style.BorderRadius = 10
+		battlesBlock.Style.BackgroundColor = HighlightCardColor
+		blocks = append(blocks, battlesBlock)
 	}
 	{
 		// Avg Damage
@@ -70,23 +78,28 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame) ([]Block,
 	var blocks []Block
 	{
 		// Battles
-		blocks = append(blocks, NewStatsBlock("", session.Battles))
+		battlesBlock := NewStatsBlock("", session.Battles)
+		// Add some special styling to the block
+		battlesBlock.Style.PaddingY = 10
+		battlesBlock.Style.BorderRadius = 10
+		battlesBlock.Style.BackgroundColor = HighlightCardColor
+		blocks = append(blocks, battlesBlock)
 	}
 	{
 		// Avg Damage
-		blocks = append(blocks, NewStatsBlock("", session.AvgDamage()))
+		blocks = append(blocks, NewStatsBlock("avg_damage", int(session.AvgDamage())))
 	}
 	{
 		// Winrate
-		blocks = append(blocks, NewStatsBlock("", session.Winrate()))
+		blocks = append(blocks, NewStatsBlock("winrate", session.Winrate()))
 	}
 	{
 		if session.WN8(averages) != core.InvalidValue {
 			// WN8
-			blocks = append(blocks, NewStatsBlock("", session.WN8(averages)))
+			blocks = append(blocks, NewStatsBlock("WN8", session.WN8(averages)))
 		} else {
 			// Fallback to Accuracy to keep the UI consistent
-			blocks = append(blocks, NewStatsBlock("", session.Accuracy()))
+			blocks = append(blocks, NewStatsBlock("accuracy", session.Accuracy()))
 		}
 	}
 
@@ -97,8 +110,13 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 	var cards []Block
 
 	{
+		// Promo Card :elmofire"
+		cards = append(cards, NewTextContent("Aftermath is Back!", Style{Font: FontMedium, FontColor: FontTranslucentColor})) // TODO: Pass some customization crap, stickers, etc.
+	}
+
+	{
 		// Title Card
-		cards = append(cards, NewPlayerTitleCard("NameGoesHere", "TAG")) // TODO: Pass some customization crap, stickers, etc.
+		cards = append(cards, NewPlayerTitleCard(snapshot.Account.Nickname, "CLAN")) // TODO: Pass some customization crap, stickers, etc.
 	}
 
 	{
@@ -148,9 +166,27 @@ func RenderStatsImage(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame
 			AlignItems: AlignItemsCenter,
 			PaddingX:   20,
 			PaddingY:   20,
-			Gap:        20,
-			Debug:      false,
+			Gap:        10,
+			// Debug:      true,
 		}, cards...)
 
-	return allCards.Render()
+	// TODO: Custom images from users and default as a fallback image
+	bgImage, _ := assets.GetBackground("default")
+	// if !ok {
+	// 	// This is always ok because for now
+	// }
+
+	cardsImage, err := allCards.Render()
+	if err != nil {
+		return nil, err
+	}
+
+	frameCtx := gg.NewContextForImage(cardsImage)
+	// Resize the background image to fit the cards
+	bgImage = imaging.Fill(bgImage, frameCtx.Width(), frameCtx.Height(), imaging.Center, imaging.NearestNeighbor)
+	bgImage = imaging.Blur(bgImage, 10.0)
+	frameCtx.DrawImage(bgImage, 0, 0)
+	frameCtx.DrawImage(cardsImage, 0, 0)
+
+	return frameCtx.Image(), nil
 }

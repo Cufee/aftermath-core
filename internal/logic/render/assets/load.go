@@ -1,7 +1,9 @@
 package assets
 
 import (
+	"bytes"
 	"embed"
+	"image"
 	"path/filepath"
 	"strings"
 
@@ -11,7 +13,12 @@ import (
 
 //go:embed fonts
 var fontsEmbed embed.FS
+
+//go:embed images
+var imagesEmbed embed.FS
+
 var fontsMap map[string]*truetype.Font = make(map[string]*truetype.Font)
+var backgroundsMap map[string]image.Image = make(map[string]image.Image)
 
 func init() {
 	fonts, err := loadFonts()
@@ -19,7 +26,15 @@ func init() {
 		panic(err)
 	}
 	fontsMap = fonts
+
+	images, err := loadImages()
+	if err != nil {
+		panic(err)
+	}
+
+	backgroundsMap = images
 }
+
 func loadFonts() (map[string]*truetype.Font, error) {
 	fontsDir, err := fontsEmbed.ReadDir("fonts")
 	if err != nil {
@@ -46,6 +61,34 @@ func loadFonts() (map[string]*truetype.Font, error) {
 	return fontsMap, nil
 }
 
+func loadImages() (map[string]image.Image, error) {
+	backgroundsDir, err := imagesEmbed.ReadDir("images/backgrounds")
+	if err != nil {
+		return nil, err
+	}
+
+	imagesMap := make(map[string]image.Image)
+	for _, file := range backgroundsDir {
+		if file.IsDir() {
+			continue
+		}
+
+		img, err := imagesEmbed.ReadFile(filepath.Join("images/backgrounds", file.Name()))
+		if err != nil {
+			return nil, err
+		}
+
+		image, _, err := image.Decode(bytes.NewBuffer(img))
+		if err != nil {
+			return nil, err
+		}
+
+		imagesMap[strings.Split(file.Name(), ".")[0]] = image
+	}
+
+	return imagesMap, nil
+}
+
 func GetFontFaces(name string, sizes ...float64) (map[float64]font.Face, bool) {
 	loadedFont, ok := fontsMap[name]
 	if !ok {
@@ -58,4 +101,9 @@ func GetFontFaces(name string, sizes ...float64) (map[float64]font.Face, bool) {
 		})
 	}
 	return faces, true
+}
+
+func GetBackground(name string) (image.Image, bool) {
+	img, ok := backgroundsMap[name]
+	return img, ok
 }
