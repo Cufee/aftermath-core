@@ -16,7 +16,8 @@ func main() {
 	// 	panic(err)
 	// }
 
-	session, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013379500 1013072123 1039212441
+	// 1039212441 - Press account
+	session, err := stats.GetCurrentPlayerSession("na", 1032698345) // 1013072123 1032698345
 	if err != nil {
 		panic(err)
 	}
@@ -58,4 +59,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	c := make(chan struct{})
+	<-c
 }

@@ -15,8 +15,13 @@ var (
 	ErrBadLiveSession = errors.New("bad live session")
 )
 
+type SnapshotAccount struct {
+	wg.ExtendedAccount
+	wg.ClanMember
+}
+
 type Snapshot struct {
-	Account  *wg.ExtendedAccount
+	Account  SnapshotAccount
 	Selected *core.SessionSnapshot // The session that was selected from the database
 	Live     *core.SessionSnapshot // The live session
 	Diff     *core.SessionSnapshot // The difference between the selected and live sessions
@@ -63,13 +68,23 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	lastSession := <-lastSessionChan
 	if lastSession.Err != nil {
 		if errors.Is(lastSession.Err, cache.ErrNoSessionCache) {
-			go cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId) // Refresh the session cache in the background
+			go func(realm string, accountId int) {
+				// Refresh the session cache in the background
+				err := cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId)
+				if err != nil {
+					println("failed to refresh session cache: " + err.Error())
+				}
+			}(realm, accountId)
+
 			// There is no session cache, so the live session is the same as the last session and there is no diff
 			return &Snapshot{
 				Selected: liveSession.Data.Session,
-				Account:  liveSession.Data.Account,
-				Live:     liveSession.Data.Session,
-				Diff:     core.EmptySession(liveSession.Data.Account.ID, liveSession.Data.Account.LastBattleTime),
+				Account: SnapshotAccount{
+					ExtendedAccount: *liveSession.Data.Account,
+					ClanMember:      *liveSession.Data.Clan,
+				},
+				Live: liveSession.Data.Session,
+				Diff: core.EmptySession(liveSession.Data.Account.ID, liveSession.Data.Account.LastBattleTime),
 			}, nil
 		}
 		return nil, lastSession.Err
@@ -82,8 +97,11 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 
 	return &Snapshot{
 		Selected: lastSession.Data,
-		Account:  liveSession.Data.Account,
-		Live:     liveSession.Data.Session,
-		Diff:     diffSession,
+		Account: SnapshotAccount{
+			ExtendedAccount: *liveSession.Data.Account,
+			ClanMember:      *liveSession.Data.Clan,
+		},
+		Live: liveSession.Data.Session,
+		Diff: diffSession,
 	}, nil
 }

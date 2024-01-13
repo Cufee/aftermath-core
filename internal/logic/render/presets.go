@@ -19,8 +19,8 @@ var (
 	// TextMargin       = FontSize / 2
 	// FrameWidth       = 900
 	// FrameMargin      = 50
-	BaseCardWidth       = 500.0
-	BaseStatsBlockWidth = 107.5
+	BaseCardWidth       = 550.0
+	BaseStatsBlockWidth = 118.0
 	BaseCardColor       = color.RGBA{30, 30, 30, 120}
 	HighlightCardColor  = color.RGBA{50, 50, 50, 120}
 	// DecorLinesColor  = color.RGBA{80, 80, 80, 255}
@@ -50,34 +50,41 @@ func init() {
 
 func NewPlayerTitleCard(name, clanTag string) Block {
 	var content []Block
-	// Visible tag
-	content = append(content, NewBlocksContent(Style{
-		Direction:       DirectionHorizontal,
-		AlignItems:      AlignItemsCenter,
-		PaddingX:        10,
-		PaddingY:        5,
-		BackgroundColor: HighlightCardColor,
-		BorderRadius:    10,
-		// Debug:           true,
-	}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: FontMediumColor})))
+
+	justify := JustifyContentCenter
+	if clanTag != "" {
+		justify = JustifyContentSpaceBetween
+		// Visible tag
+		content = append(content, NewBlocksContent(Style{
+			Direction:       DirectionHorizontal,
+			AlignItems:      AlignItemsCenter,
+			PaddingX:        10,
+			PaddingY:        5,
+			BackgroundColor: HighlightCardColor,
+			BorderRadius:    10,
+			// Debug:           true,
+		}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: FontMediumColor})))
+	}
 
 	// Nickname
 	content = append(content, NewTextContent(name, Style{Font: FontLarge, FontColor: FontLargeColor}))
 
-	// Invisible tag
-	content = append(content, NewBlocksContent(Style{
-		Direction:    DirectionHorizontal,
-		AlignItems:   AlignItemsCenter,
-		PaddingX:     10,
-		PaddingY:     5,
-		BorderRadius: 10,
-		// Debug:        true,
-	}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: color.RGBA{0, 0, 0, 0}})))
+	if clanTag != "" {
+		// Invisible tag
+		content = append(content, NewBlocksContent(Style{
+			Direction:    DirectionHorizontal,
+			AlignItems:   AlignItemsCenter,
+			PaddingX:     10,
+			PaddingY:     5,
+			BorderRadius: 10,
+			// Debug:        true,
+		}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: color.RGBA{0, 0, 0, 0}})))
+	}
 
 	return NewBlocksContent(Style{
-		Direction:       DirectionHorizontal,
-		JustifyContent:  JustifyContentSpaceBetween,
+		JustifyContent:  justify,
 		AlignItems:      AlignItemsCenter,
+		Direction:       DirectionHorizontal,
 		PaddingX:        20,
 		PaddingY:        20,
 		BackgroundColor: BaseCardColor,
@@ -150,15 +157,18 @@ func NewCardBlock(label Block, stats []Block) Block {
 }
 
 func statsValueToString(value any) string {
-	if value == core.InvalidValue {
-		return "-"
-	}
 	switch cast := value.(type) {
 	case string:
 		return cast
 	case float64:
+		if int(cast) == core.InvalidValue {
+			return "-"
+		}
 		return fmt.Sprintf("%.2f%%", value)
 	case int:
+		if value == core.InvalidValue {
+			return "-"
+		}
 		return fmt.Sprintf("%d", value)
 	default:
 		return fmt.Sprint(value)

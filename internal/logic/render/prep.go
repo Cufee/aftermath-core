@@ -17,7 +17,7 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 		return nil, errors.New("session is nil")
 	}
 
-	// localePrinter := localization.GetPrinter(locale)
+	localePrinter := localization.GetPrinter(locale)
 
 	var blocks []Block
 	{
@@ -39,7 +39,7 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 		if career != nil {
 			values = append(values, int(career.AvgDamage()))
 		}
-		blocks = append(blocks, NewStatsBlock("avg_damage", values...))
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_avg_damage"), values...))
 	}
 	{
 		// Winrate
@@ -47,7 +47,7 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 		if career != nil {
 			values = append(values, career.Winrate())
 		}
-		blocks = append(blocks, NewStatsBlock("winrate", values...))
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_winrate"), values...))
 	}
 	{
 		if session.WN8(averages) != core.InvalidValue {
@@ -56,24 +56,26 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 			if career != nil {
 				values = append(values, int(career.WN8(averages)))
 			}
-			blocks = append(blocks, NewStatsBlock("wn8", values...))
+			blocks = append(blocks, NewStatsBlock(localePrinter("label_wn8"), values...))
 		} else {
 			// Fallback to Accuracy to keep the UI consistent
 			values := []interface{}{session.Accuracy()}
 			if career != nil {
 				values = append(values, career.Accuracy())
 			}
-			blocks = append(blocks, NewStatsBlock("accuracy", values...))
+			blocks = append(blocks, NewStatsBlock(localePrinter("label_accuracy"), values...))
 		}
 	}
 
 	return blocks, nil
 }
 
-func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame) ([]Block, error) {
+func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
 	}
+
+	localePrinter := localization.GetPrinter(locale)
 
 	var blocks []Block
 	{
@@ -87,19 +89,19 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame) ([]Block,
 	}
 	{
 		// Avg Damage
-		blocks = append(blocks, NewStatsBlock("avg_damage", int(session.AvgDamage())))
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_avg_damage"), int(session.AvgDamage())))
 	}
 	{
 		// Winrate
-		blocks = append(blocks, NewStatsBlock("winrate", session.Winrate()))
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_winrate"), session.Winrate()))
 	}
 	{
 		if session.WN8(averages) != core.InvalidValue {
 			// WN8
-			blocks = append(blocks, NewStatsBlock("WN8", session.WN8(averages)))
+			blocks = append(blocks, NewStatsBlock(localePrinter("label_wn8"), session.WN8(averages)))
 		} else {
 			// Fallback to Accuracy to keep the UI consistent
-			blocks = append(blocks, NewStatsBlock("accuracy", session.Accuracy()))
+			blocks = append(blocks, NewStatsBlock(localePrinter("label_accuracy"), session.Accuracy()))
 		}
 	}
 
@@ -109,14 +111,20 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame) ([]Block,
 func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
 	var cards []Block
 
-	{
-		// Promo Card :elmofire"
-		cards = append(cards, NewTextContent("Aftermath is Back!", Style{Font: FontMedium, FontColor: FontTranslucentColor})) // TODO: Pass some customization crap, stickers, etc.
-	}
+	localePrinter := localization.GetPrinter(locale)
 
 	{
-		// Title Card
-		cards = append(cards, NewPlayerTitleCard(snapshot.Account.Nickname, "CLAN")) // TODO: Pass some customization crap, stickers, etc.
+		// Promo Card :elmofire"
+		cards = append(cards, NewBlocksContent(Style{Direction: DirectionVertical, AlignItems: AlignItemsCenter},
+			NewTextContent("Aftermath is back!", Style{Font: FontMedium, FontColor: FontTranslucentColor}),
+			NewTextContent("amth.one/join", Style{Font: FontMedium, FontColor: FontTranslucentColor}),
+		))
+	}
+
+	// Title Card
+	{
+		// TODO: Pass some customization crap, stickers, etc.
+		cards = append(cards, NewPlayerTitleCard(snapshot.Account.Nickname, snapshot.Account.Clan.Tag))
 	}
 
 	{
@@ -125,23 +133,23 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, NewCardBlock(NewTextLabel("overview_unrated"), blocks))
+		cards = append(cards, NewCardBlock(NewTextLabel(localePrinter("label_overview_unrated")), blocks))
 	}
 
-	{
+	if snapshot.Diff.Rating.Battles > 0 {
 		// Rating Battles
 		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, locale)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, NewCardBlock(NewTextLabel("overview_rating"), blocks))
+		cards = append(cards, NewCardBlock(NewTextLabel(localePrinter("label_overview_rating")), blocks))
 	}
 
 	{
 		for _, vehicle := range snapshot.Diff.Vehicles {
 			// Vehicle Cards
 			// blocks, err := FrameToStatsBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, locale)
-			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages)
+			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages, locale)
 			if err != nil {
 				return nil, err
 			}

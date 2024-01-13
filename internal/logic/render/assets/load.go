@@ -84,6 +84,7 @@ func loadImages() (map[string]image.Image, error) {
 		}
 
 		imagesMap[strings.Split(file.Name(), ".")[0]] = image
+		println("loaded background: " + file.Name())
 	}
 
 	return imagesMap, nil
