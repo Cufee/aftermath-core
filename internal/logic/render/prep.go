@@ -12,12 +12,10 @@ import (
 	"github.com/fogleman/gg"
 )
 
-func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
+func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
 	}
-
-	localePrinter := localization.GetPrinter(locale)
 
 	var blocks []Block
 	{
@@ -70,12 +68,10 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 	return blocks, nil
 }
 
-func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
+func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
 	}
-
-	localePrinter := localization.GetPrinter(locale)
 
 	var blocks []Block
 	{
@@ -114,7 +110,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 	localePrinter := localization.GetPrinter(locale)
 
 	{
-		// Promo Card :elmofire"
+		// Promo Card
 		cards = append(cards, NewBlocksContent(Style{Direction: DirectionVertical, AlignItems: AlignItemsCenter},
 			NewTextContent("Aftermath is back!", Style{Font: FontMedium, FontColor: FontTranslucentColor}),
 			NewTextContent("amth.one/join", Style{Font: FontMedium, FontColor: FontTranslucentColor}),
@@ -129,7 +125,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 
 	{
 		// Regular Battles
-		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, locale)
+		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, localePrinter)
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +134,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 
 	if snapshot.Diff.Rating.Battles > 0 {
 		// Rating Battles
-		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, locale)
+		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, localePrinter)
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +145,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 		for _, vehicle := range snapshot.Diff.Vehicles {
 			// Vehicle Cards
 			// blocks, err := FrameToStatsBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, locale)
-			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages, locale)
+			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages, localePrinter)
 			if err != nil {
 				return nil, err
 			}

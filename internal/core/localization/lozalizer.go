@@ -9,6 +9,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+type LocalePrinter func(string) string
+
 type SupportedLanguage struct {
 	WargamingCode string
 	Tag           language.Tag
@@ -70,7 +72,7 @@ func init() {
 	)
 }
 
-func GetPrinter(locale SupportedLanguage) func(string) string {
+func GetPrinter(locale SupportedLanguage) LocalePrinter {
 	return func(s string) string {
 		localized, err := localizer.Localize(&i18n.LocalizeConfig{
 			DefaultMessage: &i18n.Message{
