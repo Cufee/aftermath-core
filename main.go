@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 )
@@ -20,14 +21,17 @@ func main() {
 		panic(err)
 	}
 
-	cards, err := render.SnapshotToCards(session, nil)
+	cards, err := render.SnapshotToCards(session, nil, localization.LanguageEN)
 	if err != nil {
 		panic(err)
 	}
 
 	now := time.Now()
-	img, err := render.RenderCards(cards, render.RenderOptions{
+	img, err := render.RenderCards(cards, &render.RenderOptions{
 		Style: render.Style{
+			Font:      render.FontLarge,
+			FontColor: render.FontMediumColor,
+
 			Direction:  render.DirectionVertical,
 			AlignItems: render.AlignItemsCenter,
 			PaddingX:   20,

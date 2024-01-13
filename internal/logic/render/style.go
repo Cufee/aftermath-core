@@ -2,6 +2,8 @@ package render
 
 import (
 	"image/color"
+
+	"golang.org/x/image/font"
 )
 
 type alignItemsValue int
@@ -28,6 +30,9 @@ const (
 )
 
 type Style struct {
+	Font      font.Face
+	FontColor color.Color
+
 	JustifyContent justifyContentValue
 	AlignItems     alignItemsValue // Depends on Direction
 	Direction      directionValue

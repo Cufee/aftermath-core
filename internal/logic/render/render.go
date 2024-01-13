@@ -2,11 +2,9 @@ package render
 
 import (
 	"errors"
-	"fmt"
 	"image"
 	"math"
 
-	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/fogleman/gg"
 )
 
@@ -15,7 +13,7 @@ type RenderOptions struct {
 	Debug bool
 }
 
-func renderImages(images []image.Image, options RenderOptions) (image.Image, error) {
+func renderImages(images []image.Image, options *RenderOptions) (image.Image, error) {
 	if len(images) == 0 {
 		return nil, errors.New("no images to render")
 	}
@@ -206,22 +204,6 @@ func getDetailedSize(images []image.Image, style Style) imageSize {
 		extraSpacingY:    extraSpacingY,
 		maxElementWidth:  maxWidth,
 		maxElementHeight: maxHeight,
-	}
-}
-
-func validOrPlaceholder(value any) string {
-	if value == core.InvalidValue {
-		return "-"
-	}
-	switch cast := value.(type) {
-	case string:
-		return cast
-	case float64:
-		return fmt.Sprintf("%.2f%%", value)
-	case int:
-		return fmt.Sprintf("%d", value)
-	default:
-		return fmt.Sprint(value)
 	}
 }
 

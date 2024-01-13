@@ -1,21 +1,20 @@
 package render
 
 import (
+	"fmt"
 	"image"
-	"image/color"
 
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/pkg/errors"
 )
 
 type card struct {
 	title  string
 	blocks []block
 
-	options     RenderOptions
-	titleConfig RenderConfig
-
-	statsOptions RenderOptions
+	options *RenderOptions
 
 	renderedImages             []image.Image
 	renderedContentMaxWidth    int
@@ -24,30 +23,20 @@ type card struct {
 	renderedContentTotalHeight int
 }
 
-var largeStatsCardOptions card = card{
-	statsOptions: RenderOptions{
-		Style: Style{
-			JustifyContent: JustifyContentSpaceEvenly,
-			Direction:      DirectionHorizontal,
-			AlignItems:     AlignItemsCenter,
-			Gap:            5,
-			PaddingX:       20,
-			PaddingY:       20,
+var defaultCardOptions RenderOptions = RenderOptions{
+	Style: Style{
+		Font:           FontLarge,
+		FontColor:      FontMediumColor,
+		JustifyContent: JustifyContentSpaceEvenly,
+		Direction:      DirectionHorizontal,
+		AlignItems:     AlignItemsCenter,
+		Gap:            5,
+		PaddingX:       20,
+		PaddingY:       20,
 
-			// Width: 600,
-		},
-		Debug: false,
+		// Width: 600,
 	},
-	options: RenderOptions{
-		Style: Style{
-			Direction:  DirectionVertical,
-			AlignItems: AlignItemsCenter,
-
-			BackgroundColor: color.RGBA{R: 50, G: 50, B: 50, A: 200},
-			BorderRadius:    10,
-		},
-	},
-	titleConfig: defaultBlockRenderConfig.Career,
+	Debug: false,
 }
 
 func (card *card) RenderBlocks() ([]image.Image, error) {
@@ -91,50 +80,54 @@ func (card *card) Render() (image.Image, error) {
 		return nil, err
 	}
 
-	statsImage, err := renderImages(images, card.statsOptions)
+	statsImage, err := renderImages(images, card.options)
 	if err != nil {
 		return nil, err
 	}
-
-	titleRow := blockRow{
-		value:  card.title,
-		config: card.titleConfig,
+	if card.title == "" {
+		return statsImage, nil
 	}
 
-	titleImage, err := titleRow.Render()
-	if err != nil {
-		return nil, err
-	}
+	// titleRow := blockRow{
+	// 	value:  card.title,
+	// 	config: card.titleConfig,
+	// }
 
-	return renderImages([]image.Image{titleImage, statsImage}, card.options)
+	// titleImage, err := titleRow.Render()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return renderImages([]image.Image{statsImage}, card.options)
 }
 
-func SnapshotToCards(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame) ([]card, error) {
+func SnapshotToCards(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]card, error) {
 	var cards []card
 
 	// Player Title
 
 	// Regular Battles
-	overviewUnratedCard := largeStatsCardOptions
-	overviewUnratedCard.title = "Regular Battles" // TODO: localize
-	overviewUnratedCard.blocks = FrameToLargeStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, &defaultBlockRenderConfig)
-	cards = append(cards, overviewUnratedCard)
+	cards = append(cards, card{
+		title:   "Regular Battles", // TODO: localize
+		blocks:  FrameToBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, locale, &defaultCardOptions),
+		options: &defaultCardOptions,
+	})
 
 	// Rating Battles
 
 	// Vehicles
 	for _, vehicle := range snapshot.Diff.Vehicles {
-		vehicleCard := largeStatsCardOptions
-		vehicleCard.title = "Vehicle" // TODO: localize
-		vehicleCard.blocks = FrameToLargeStatsBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, &defaultBlockRenderConfig)
-
-		cards = append(cards, vehicleCard)
+		cards = append(cards, card{
+			title:   fmt.Sprint(vehicle.VehicleID),
+			blocks:  FrameToBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, locale, &defaultCardOptions),
+			options: &defaultCardOptions,
+		})
 	}
 
 	return cards, nil
 }
 
-func RenderCards(cards []card, options RenderOptions) (image.Image, error) {
+func RenderCards(cards []card, options *RenderOptions) (image.Image, error) {
 	maxContentWidth, maxContentHeight := 0, 0
 	// totalContentWidth, totalContentHeight := 0, 0
 
@@ -144,7 +137,7 @@ func RenderCards(cards []card, options RenderOptions) (image.Image, error) {
 	for _, card := range cards {
 		_, err := card.RenderBlocks()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to render card blocks %s", card.title)
 		}
 
 		if card.renderedContentMaxHeight > maxContentHeight {
@@ -165,7 +158,7 @@ func RenderCards(cards []card, options RenderOptions) (image.Image, error) {
 
 		img, err := card.Render()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to render card %s", card.title)
 		}
 		images = append(images, img)
 	}
