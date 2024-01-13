@@ -2,94 +2,108 @@ package render
 
 import (
 	"errors"
-	"fmt"
 	"image"
-	"image/color"
 	"math"
 
-	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/fogleman/gg"
 )
 
-var (
-	debugColorPink = color.RGBA{255, 192, 203, 255}
+type blockContentType int
+
+const (
+	BlockContentTypeText blockContentType = iota
+	// BlockContentTypeImage
+	// BlockContentTypeIcon
+	BlockContentTypeBlocks
 )
 
-type block struct {
-	content []blockContent
-	options *RenderOptions
+type BlockContent interface {
+	Render(Style) (image.Image, error)
+	Type() blockContentType
 }
 
-func (block *block) Render() (image.Image, error) {
+type Block struct {
+	ContentType blockContentType
+	content     BlockContent
+	Style       Style
+}
+
+func (block *Block) Render() (image.Image, error) {
+	return block.content.Render(block.Style)
+}
+
+func NewBlock(content BlockContent, style Style) Block {
+	return Block{
+		ContentType: content.Type(),
+		content:     content,
+		Style:       style,
+	}
+}
+
+type contentText struct {
+	value string
+}
+
+func NewTextContent(value string, style Style) Block {
+	return NewBlock(contentText{
+		value: value,
+	}, style)
+}
+
+func (content contentText) Render(style Style) (image.Image, error) {
+	if style.Font == nil {
+		return nil, errors.New("font not set")
+	}
+
+	measureCtx := gg.NewContext(1, 1)
+	measureCtx.SetFontFace(style.Font)
+	valueW, valueH := measureCtx.MeasureString(content.value)
+
+	// Account for font descender height
+	descenderOffset := (float64(style.Font.Metrics().Descent>>6) - 1)
+	ctx := gg.NewContext(int(math.Ceil(valueW)+1), int(math.Ceil(valueH+(descenderOffset*2))))
+
+	// Render text
+	ctx.SetFontFace(style.Font)
+	ctx.SetColor(style.FontColor)
+
+	ctx.DrawString(content.value, 0, valueH)
+
+	if style.Debug {
+		ctx.SetColor(getDebugColor())
+		ctx.DrawRectangle(0, 0, float64(ctx.Width()), float64(ctx.Height()))
+		ctx.Stroke()
+	}
+
+	return ctx.Image(), nil
+}
+
+func (content contentText) Type() blockContentType {
+	return BlockContentTypeText
+}
+
+type contentBlocks struct {
+	blocks []Block
+}
+
+func NewBlocksContent(style Style, blocks ...Block) Block {
+	return NewBlock(contentBlocks{
+		blocks: blocks,
+	}, style)
+}
+
+func (content contentBlocks) Render(style Style) (image.Image, error) {
 	var images []image.Image
-	for _, row := range block.content {
-		img, err := row.Render()
+	for _, block := range content.blocks {
+		img, err := block.Render()
 		if err != nil {
 			return nil, err
 		}
 		images = append(images, img)
 	}
-	return renderImages(images, block.options)
+	return renderImages(images, style)
 }
 
-type blockContent struct {
-	value   string
-	options *RenderOptions
-}
-
-func (row *blockContent) Render() (image.Image, error) {
-	if row.options.Style.Font == nil {
-		return nil, errors.New("font not set")
-	}
-
-	measureCtx := gg.NewContext(1, 1)
-	measureCtx.SetFontFace(row.options.Style.Font)
-	valueW, valueH := measureCtx.MeasureString(row.value)
-
-	// Account for font descender height
-	descenderOffset := (float64(row.options.Style.Font.Metrics().Descent>>6) - 1)
-	ctx := gg.NewContext(int(math.Ceil(valueW)+1), int(math.Ceil(valueH+(descenderOffset*2))))
-
-	// Render text
-	ctx.SetFontFace(row.options.Style.Font)
-	ctx.SetColor(row.options.Style.FontColor)
-
-	ctx.DrawString(row.value, 0, valueH)
-
-	return ctx.Image(), nil
-}
-
-func NewBlock(label string, options *RenderOptions, rows ...any) block {
-	var contentRows []blockContent
-	for _, row := range rows {
-		value := validOrPlaceholder(row)
-		if value == "" {
-			continue
-		}
-		contentRows = append(contentRows, blockContent{
-			value:   value,
-			options: options,
-		})
-	}
-
-	return block{
-		content: contentRows,
-		options: options,
-	}
-}
-
-func validOrPlaceholder(value any) string {
-	if value == core.InvalidValue {
-		return "-"
-	}
-	switch cast := value.(type) {
-	case string:
-		return cast
-	case float64:
-		return fmt.Sprintf("%.2f%%", value)
-	case int:
-		return fmt.Sprintf("%d", value)
-	default:
-		return fmt.Sprint(value)
-	}
+func (content contentBlocks) Type() blockContentType {
+	return BlockContentTypeBlocks
 }

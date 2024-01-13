@@ -18,8 +18,6 @@ const (
 	JustifyContentCenter
 	JustifyContentEnd
 	JustifyContentSpaceBetween // Spacing between each element is the same
-	JustifyContentSpaceAround  // Spacing around each element is the same
-	JustifyContentSpaceEvenly  // Similar to Grid, each element will have the same size
 )
 
 type directionValue int
@@ -37,7 +35,8 @@ type Style struct {
 	AlignItems     alignItemsValue // Depends on Direction
 	Direction      directionValue
 
-	Gap      float64
+	Gap float64
+
 	PaddingX float64
 	PaddingY float64
 
@@ -46,4 +45,6 @@ type Style struct {
 
 	BorderRadius    float64
 	BackgroundColor color.Color
+
+	Debug bool
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"image/png"
 	"os"
-	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -21,29 +20,29 @@ func main() {
 		panic(err)
 	}
 
-	cards, err := render.SnapshotToCards(session, nil, localization.LanguageEN)
+	img, err := render.RenderStatsImage(session, nil, localization.LanguageEN)
 	if err != nil {
 		panic(err)
 	}
 
-	now := time.Now()
-	img, err := render.RenderCards(cards, &render.RenderOptions{
-		Style: render.Style{
-			Font:      render.FontLarge,
-			FontColor: render.FontMediumColor,
+	// now := time.Now()
+	// img, err := render.RenderCards(cards, &render.RenderOptions{
+	// 	Style: render.Style{
+	// 		Font:      render.FontLarge,
+	// 		FontColor: render.FontMediumColor,
 
-			Direction:  render.DirectionVertical,
-			AlignItems: render.AlignItemsCenter,
-			PaddingX:   20,
-			PaddingY:   20,
-			Gap:        20,
-		},
-		Debug: false,
-	})
-	if err != nil {
-		panic(err)
-	}
-	println(time.Since(now).String())
+	// 		Direction:  render.DirectionVertical,
+	// 		AlignItems: render.AlignItemsCenter,
+	// 		PaddingX:   20,
+	// 		PaddingY:   20,
+	// 		Gap:        20,
+	// 	},
+	// 	Debug: false,
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// println(time.Since(now).String())
 
 	f, err := os.Create("test.png")
 	if err != nil {

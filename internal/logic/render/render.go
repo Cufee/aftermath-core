@@ -8,19 +8,14 @@ import (
 	"github.com/fogleman/gg"
 )
 
-type RenderOptions struct {
-	Style Style
-	Debug bool
-}
-
-func renderImages(images []image.Image, options *RenderOptions) (image.Image, error) {
+func renderImages(images []image.Image, style Style) (image.Image, error) {
 	if len(images) == 0 {
 		return nil, errors.New("no images to render")
 	}
 
-	imageSize := getDetailedSize(images, options.Style)
+	imageSize := getDetailedSize(images, style)
 
-	var lastX, lastY float64 = options.Style.PaddingX, options.Style.PaddingY
+	var lastX, lastY float64 = style.PaddingX, style.PaddingY
 	var justifyOffsetX, justifyOffsetY float64
 	var elementWidth, elementHeight float64
 
@@ -29,7 +24,7 @@ func renderImages(images []image.Image, options *RenderOptions) (image.Image, er
 	*/
 
 	// Set correct gaps and offsets based on justify content
-	switch options.Style.JustifyContent {
+	switch style.JustifyContent {
 	case JustifyContentCenter:
 		lastX += float64(imageSize.extraSpacingX / 2)
 		lastY += float64(imageSize.extraSpacingY / 2)
@@ -39,31 +34,19 @@ func renderImages(images []image.Image, options *RenderOptions) (image.Image, er
 	case JustifyContentSpaceBetween:
 		justifyOffsetX = float64(imageSize.extraSpacingX / float64(len(images)-1))
 		justifyOffsetY = float64(imageSize.extraSpacingY / float64(len(images)-1))
-	case JustifyContentSpaceEvenly:
-		elementWidth = imageSize.maxElementWidth
-		elementHeight = imageSize.maxElementHeight
-		// All spacing is equal, so we can just use the same formula as space around
-		fallthrough
-	case JustifyContentSpaceAround:
-		spacingX := float64(imageSize.extraSpacingX / float64(len(images)+1))
-		spacingY := float64(imageSize.extraSpacingY / float64(len(images)+1))
-		lastX += spacingX
-		lastY += spacingY
-		justifyOffsetX = spacingX
-		justifyOffsetY = spacingY
 	default: // JustifyContentStart
 		// 0,0
 	}
 
 	ctx := gg.NewContext(int(math.Ceil(imageSize.width)), int(math.Ceil(imageSize.height)))
 
-	if options.Style.BorderRadius > 0 {
-		ctx.DrawRoundedRectangle(0, 0, float64(ctx.Width()), float64(ctx.Height()), options.Style.BorderRadius)
+	if style.BorderRadius > 0 {
+		ctx.DrawRoundedRectangle(0, 0, float64(ctx.Width()), float64(ctx.Height()), style.BorderRadius)
 		ctx.Clip()
 	}
-	if options.Style.BackgroundColor != nil {
+	if style.BackgroundColor != nil {
 		ctx.DrawRectangle(0, 0, imageSize.width, imageSize.height)
-		ctx.SetColor(options.Style.BackgroundColor)
+		ctx.SetColor(style.BackgroundColor)
 		ctx.Fill()
 	}
 
@@ -76,14 +59,14 @@ func renderImages(images []image.Image, options *RenderOptions) (image.Image, er
 		targetWidth := max(imgWidth, elementWidth)
 		targetHeight := max(imgHeight, elementHeight)
 
-		switch options.Style.Direction {
+		switch style.Direction {
 		case DirectionVertical:
 			if i > 0 {
-				posY += max(options.Style.Gap, justifyOffsetY)
+				posY += max(style.Gap, justifyOffsetY)
 			}
 			lastY = posY + targetHeight
 
-			switch options.Style.AlignItems {
+			switch style.AlignItems {
 			case AlignItemsCenter:
 				posX = (imageSize.width - imgWidth) / 2
 			case AlignItemsEnd:
@@ -93,11 +76,11 @@ func renderImages(images []image.Image, options *RenderOptions) (image.Image, er
 			}
 		default: // DirectionHorizontal
 			if i > 0 {
-				posX += max(options.Style.Gap, justifyOffsetX)
+				posX += max(style.Gap, justifyOffsetX)
 			}
 			lastX = posX + targetWidth
 
-			switch options.Style.AlignItems {
+			switch style.AlignItems {
 			case AlignItemsCenter:
 				posY = (imageSize.height - imgHeight) / 2
 			case AlignItemsEnd:
@@ -108,8 +91,8 @@ func renderImages(images []image.Image, options *RenderOptions) (image.Image, er
 
 		}
 
-		if options.Debug {
-			ctx.SetColor(debugColorPink)
+		if style.Debug {
+			ctx.SetColor(getDebugColor())
 			ctx.DrawRectangle(posX, posY, targetWidth, targetHeight)
 			ctx.Stroke()
 		}
@@ -177,20 +160,12 @@ func getDetailedSize(images []image.Image, style Style) imageSize {
 
 	switch style.Direction {
 	case DirectionVertical:
-		if style.JustifyContent == JustifyContentSpaceEvenly && style.Height == 0 {
-			imageHeight = totalGap + (style.PaddingY * 2) + (maxHeight * float64(len(images)))
-		} else {
-			imageHeight += totalGap
-		}
+		imageHeight += totalGap
 		if style.Width == 0 {
 			imageWidth = maxWidth + (style.PaddingX * 2)
 		}
 	default: // DirectionHorizontal
-		if style.JustifyContent == JustifyContentSpaceEvenly && style.Width == 0 {
-			imageWidth = totalGap + (style.PaddingX * 2) + (maxWidth * float64(len(images)))
-		} else {
-			imageWidth += totalGap
-		}
+		imageWidth += totalGap
 		if style.Height == 0 {
 			imageHeight = maxHeight + (style.PaddingY)*2
 		}
