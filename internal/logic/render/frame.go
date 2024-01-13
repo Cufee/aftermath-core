@@ -6,7 +6,11 @@ import (
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 )
 
-func FrameToLargeStatsBlocks(session, career, averages *core.ReducedStatsFrame, config *BlockRenderConfig) blockSet {
+func FrameToLargeStatsBlocks(session, career, averages *core.ReducedStatsFrame, config *BlockRenderConfig) []block {
+	if career == nil {
+		career = &core.ReducedStatsFrame{}
+	}
+
 	var blocks []block
 	// Battles
 	blocks = append(blocks, config.CompleteBlock(blockLabelTagBattles, session.Battles, career.Battles))
@@ -22,10 +26,10 @@ func FrameToLargeStatsBlocks(session, career, averages *core.ReducedStatsFrame, 
 		blocks = append(blocks, config.CompleteBlock(blockLabelTagAccuracy, session.Accuracy(), career.Accuracy()))
 	}
 
-	return blockSet{blocks: blocks, style: config.SetStyle}
+	return blocks
 }
 
-func FrameToSlimStatsBlocks(session, career, averages *core.ReducedStatsFrame, config *BlockRenderConfig) blockSet {
+func FrameToSlimStatsBlocks(session, career, averages *core.ReducedStatsFrame, config *BlockRenderConfig) []block {
 	var blocks []block
 	// Winrate (Battles)
 	// TODO: Make this into two blocks to allow for different styling
@@ -40,5 +44,5 @@ func FrameToSlimStatsBlocks(session, career, averages *core.ReducedStatsFrame, c
 		blocks = append(blocks, config.CompleteBlock(blockLabelTagNone, session.Accuracy(), nil))
 	}
 
-	return blockSet{blocks: blocks, style: config.SetStyle}
+	return blocks
 }

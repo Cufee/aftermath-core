@@ -8,13 +8,12 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/fogleman/gg"
-	"golang.org/x/image/font"
 )
 
 type blockLabelTag string
 
 const (
-	blockLabelTagBattles  blockLabelTag = "battles"
+	blockLabelTagBattles  blockLabelTag = "battle"
 	blockLabelTagAvgDmg   blockLabelTag = "avgDmg"
 	blockLabelTagWinrate  blockLabelTag = "winrate"
 	blockLabelTagAccuracy blockLabelTag = "accuracy"
@@ -28,11 +27,11 @@ var (
 )
 
 type block struct {
-	rows  []blockRow
-	style Style
+	rows    []blockRow
+	options RenderOptions
 }
 
-func (block *block) Render(style Style) (image.Image, error) {
+func (block *block) Render() (image.Image, error) {
 	var images []image.Image
 	for _, row := range block.rows {
 		img, err := row.Render()
@@ -41,24 +40,7 @@ func (block *block) Render(style Style) (image.Image, error) {
 		}
 		images = append(images, img)
 	}
-	return renderImages(images, style), nil
-}
-
-type blockSet struct {
-	blocks []block
-	style  Style
-}
-
-func (set *blockSet) Render() (image.Image, error) {
-	var images []image.Image
-	for _, block := range set.blocks {
-		img, err := block.Render(block.style)
-		if err != nil {
-			return nil, err
-		}
-		images = append(images, img)
-	}
-	return renderImages(images, set.style), nil
+	return renderImages(images, block.options)
 }
 
 type blockRow struct {
@@ -85,38 +67,15 @@ func (row *blockRow) Render() (image.Image, error) {
 
 	// Account for font descender height
 	descenderOffset := (float64(row.config.Font.Metrics().Descent>>6) - 1)
-	ctx := gg.NewContext(int(math.Ceil(valueW)), int(math.Ceil(valueH+(descenderOffset))))
-
-	if row.config.Debug {
-		ctx.SetColor(debugColorPink)
-		ctx.Clear()
-		ctx.SetColor(color.Black)
-	}
+	ctx := gg.NewContext(int(math.Ceil(valueW)+1), int(math.Ceil(valueH+(descenderOffset*2))))
 
 	// Render text
 	ctx.SetFontFace(row.config.Font)
 	ctx.SetColor(row.config.FontColor)
 
-	ctx.DrawString(stringValue, -1, valueH-descenderOffset)
+	ctx.DrawString(stringValue, 0, valueH)
 
 	return ctx.Image(), nil
-}
-
-type RenderConfig struct {
-	Font      font.Face
-	FontColor color.RGBA
-
-	Debug bool
-}
-
-type BlockRenderConfig struct {
-	Session RenderConfig `json:"session"`
-	Career  RenderConfig `json:"career"`
-	Label   RenderConfig `json:"label"`
-
-	RowStyle Style                          `json:"rowStyle"`
-	SetStyle Style                          `json:"setStyle"`
-	Locale   localization.SupportedLanguage `json:"locale"`
 }
 
 func (cfg *BlockRenderConfig) NewLabel(label blockLabelTag, locale localization.SupportedLanguage) blockRow {
@@ -144,7 +103,25 @@ func (cfg *BlockRenderConfig) CompleteBlock(label blockLabelTag, session, career
 	}
 
 	return block{
-		rows:  rows,
-		style: cfg.RowStyle,
+		rows:    rows,
+		options: cfg.RowOptions,
+	}
+}
+
+func newDataRow(value any, config RenderConfig) blockRow {
+	return blockRow{
+		value:  validOrPlaceholder(value),
+		config: config,
+	}
+}
+
+func newLabelRow(label blockLabelTag, locale localization.SupportedLanguage, config RenderConfig) blockRow {
+	if string(locale) == "" {
+		locale = localization.LanguageEN
+	}
+	return blockRow{
+		value:  string(label),
+		locale: &locale,
+		config: config,
 	}
 }
