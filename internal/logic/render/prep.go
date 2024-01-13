@@ -140,11 +140,10 @@ func RenderStatsImage(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame
 		return nil, err
 	}
 
+	// TODO: Some text outside of a card, like session date, can be added here
+
 	allCards := NewBlocksContent(
 		Style{
-			Font:      FontLarge,
-			FontColor: FontMediumColor,
-
 			Direction:  DirectionVertical,
 			AlignItems: AlignItemsCenter,
 			PaddingX:   20,
