@@ -17,7 +17,7 @@ func renderImages(images []image.Image, style Style) (image.Image, error) {
 
 	var lastX, lastY float64 = style.PaddingX, style.PaddingY
 	var justifyOffsetX, justifyOffsetY float64
-	var elementWidth, elementHeight float64
+	var elementWidth, elementHeight float64 // Not used at the moment, will enforce each element to be the same size if set
 
 	/*
 		TODO: Some math here under some configurations is certainly broken and needs to be fixed or removed

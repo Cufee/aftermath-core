@@ -66,12 +66,26 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 	var cards []Block
 
 	{
-		// Overview card
+		// Title Card
+		cards = append(cards, NewPlayerTitleCard("NameGoesHere", "TAG")) // TODO: Pass some customization crap, stickers, etc.
+	}
+
+	{
+		// Regular Battles
 		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, locale)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, NewCardBlock("overview", blocks))
+		cards = append(cards, NewCardBlock(NewTextLabel("overview_unrated"), blocks))
+	}
+
+	{
+		// Rating Battles
+		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, locale)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, NewCardBlock(NewTextLabel("overview_rating"), blocks))
 	}
 
 	{
@@ -81,7 +95,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 			if err != nil {
 				return nil, err
 			}
-			cards = append(cards, NewCardBlock("Some Tank", blocks))
+			cards = append(cards, NewCardBlock(NewVehicleLabel("Some Tank", "X"), blocks))
 		}
 	}
 

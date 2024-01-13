@@ -3,6 +3,7 @@ package main
 import (
 	"image/png"
 	"os"
+	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -20,10 +21,13 @@ func main() {
 		panic(err)
 	}
 
+	now := time.Now()
 	img, err := render.RenderStatsImage(session, nil, localization.LanguageEN)
 	if err != nil {
 		panic(err)
 	}
+
+	println(time.Since(now).String())
 
 	// now := time.Now()
 	// img, err := render.RenderCards(cards, &render.RenderOptions{

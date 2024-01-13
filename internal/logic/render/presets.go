@@ -19,7 +19,7 @@ var (
 	// TextMargin       = FontSize / 2
 	// FrameWidth       = 900
 	// FrameMargin      = 50
-	// BaseCardWidth    = FrameWidth - (2 * FrameMargin)
+	BaseCardWidth = 450.0
 	// BaseCardHeigh    = 150
 	BaseCardColor = color.RGBA{30, 30, 30, 204}
 	// DecorLinesColor  = color.RGBA{80, 80, 80, 255}
@@ -46,6 +46,24 @@ func init() {
 	FontSmall = fontFaces[14]
 }
 
+func NewPlayerTitleCard(name, clanTag string) Block {
+	var content []Block
+	content = append(content, NewTextContent(name, Style{Font: FontLarge, FontColor: FontLargeColor}))
+	content = append(content, NewTextContent(fmt.Sprintf("[%s]", clanTag), Style{Font: FontMedium, FontColor: FontMediumColor}))
+	return NewBlocksContent(Style{
+		Direction:       DirectionHorizontal,
+		JustifyContent:  JustifyContentCenter,
+		AlignItems:      AlignItemsCenter,
+		Gap:             10,
+		PaddingX:        20,
+		PaddingY:        20,
+		BackgroundColor: BaseCardColor,
+		BorderRadius:    10,
+		Width:           BaseCardWidth,
+		// Debug:      true,
+	}, content...)
+}
+
 func NewStatsBlock(label string, values ...any) Block {
 	var content []Block
 	for i, value := range values {
@@ -64,9 +82,26 @@ func NewStatsBlock(label string, values ...any) Block {
 	}, content...)
 }
 
-func NewCardBlock(label string, stats []Block) Block {
+func NewTextLabel(label string) Block {
+	return NewTextContent(label, Style{Font: FontMedium, FontColor: FontSmallColor})
+}
+
+func NewVehicleLabel(name, tier string) Block {
+	return NewBlocksContent(
+		Style{
+			Direction:  DirectionHorizontal,
+			AlignItems: AlignItemsCenter,
+			Gap:        5,
+			// Debug:      true,
+		},
+		NewTextContent(tier, Style{Font: FontSmall, FontColor: FontMediumColor}),
+		NewTextContent(name, Style{Font: FontMedium, FontColor: FontMediumColor}),
+	)
+}
+
+func NewCardBlock(label Block, stats []Block) Block {
 	var content []Block
-	content = append(content, NewTextContent(label, Style{Font: FontMedium, FontColor: FontMediumColor}))
+	content = append(content, label)
 	content = append(content, NewBlocksContent(Style{
 		Direction:      DirectionHorizontal,
 		JustifyContent: JustifyContentSpaceBetween,
@@ -76,15 +111,14 @@ func NewCardBlock(label string, stats []Block) Block {
 
 	return NewBlocksContent(
 		Style{
-			Direction:  DirectionVertical,
-			AlignItems: AlignItemsCenter,
-
+			Direction:       DirectionVertical,
+			AlignItems:      AlignItemsCenter,
 			Gap:             5,
 			PaddingX:        20,
-			PaddingY:        20,
+			PaddingY:        10,
 			BackgroundColor: BaseCardColor,
 			BorderRadius:    10,
-			// Width:           600,
+			Width:           BaseCardWidth + 10, // Account for gap on title card. The math for width is broken atm
 			// Debug: true,
 		},
 		content...)
