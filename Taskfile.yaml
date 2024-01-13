@@ -1,0 +1,26 @@
+version: 3
+
+dotenv: ['.env']
+
+tasks:
+  dev:
+    desc: Run the application in development mode with hot reload
+    cmds:
+      - air
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./... -v          
+  upgrade:
+    desc: Upgrade dependencies
+    cmds:
+      - go get -u ./...
+
+  build:docker:
+    desc: Build the application for Docker
+    cmds:
+      - go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o {{ .CLI_ARGS | default "app" }} .
+  build:image:
+    desc: Build the Docker image
+    cmds:
+      - docker build --progress=plain --platform linux/amd64 -t {{ .CLI_ARGS | default "github.com/cufee/aftermath-core" }} .
