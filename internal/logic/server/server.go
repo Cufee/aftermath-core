@@ -9,7 +9,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func NewServer() func() {
+func Start() {
 	e := echo.New()
 
 	v1 := e.Group("/v1")
@@ -17,7 +17,5 @@ func NewServer() func() {
 	renderV1 := v1.Group("/render")
 	renderV1.GET("/session/:account", render.SessionHandler)
 
-	return func() {
-		e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
-	}
+	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }

@@ -10,6 +10,5 @@ func main() {
 	// 	panic(err)
 	// }
 
-	start := server.NewServer()
-	start()
+	server.Start()
 }
