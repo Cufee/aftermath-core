@@ -18,6 +18,10 @@ func Start() {
 	app := fiber.New()
 	app.Use(logger.New())
 
+	app.Get("/ping", func(c *fiber.Ctx) error {
+		return c.SendStatus(200)
+	})
+
 	v1 := app.Group("/v1")
 
 	renderV1 := v1.Group("/render")

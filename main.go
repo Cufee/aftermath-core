@@ -5,10 +5,5 @@ import (
 )
 
 func main() {
-	// err := cache.RefreshSessions(cache.SessionTypeDaily, "na", 1013072123)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	server.Start()
 }

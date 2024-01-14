@@ -1,4 +1,0 @@
-[deploy]
-healthcheckPath = "/ping"
-healthcheckTimeout = 60
-numReplicas = 1

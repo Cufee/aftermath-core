@@ -4,3 +4,6 @@ nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
+healthcheckPath = "/ping"
+healthcheckTimeout = 60
+numReplicas = 1
