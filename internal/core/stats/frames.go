@@ -65,40 +65,42 @@ func (r *ReducedStatsFrame) Accuracy() float64 {
 		(980*rDAMAGEc + 210*rDAMAGEc*rFRAGc + 155*rFRAGc*rSPOTc + 75*rDEFc*rFRAGc + 145*MIN(1.8,rWINc))/EXPc
 */
 func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
+	if r.wn8 > 0 {
+		return r.wn8
+	}
 	if average == nil || r.Battles == 0 || average.Battles == 0 {
 		return InvalidValue
 	}
 
-	if r.wn8 == 0 {
-		// Expected values for WN8
-		expDef := float64(average.DroppedCapturePoints) / float64(average.Battles)
-		expFrag := float64(average.Frags) / float64(average.Battles)
-		expSpot := float64(average.EnemiesSpotted) / float64(average.Battles)
-		expDmg := average.AvgDamage()
-		expWr := average.Winrate() / 100
+	// Expected values for WN8
+	expDef := float64(average.DroppedCapturePoints) / float64(average.Battles)
+	expFrag := float64(average.Frags) / float64(average.Battles)
+	expSpot := float64(average.EnemiesSpotted) / float64(average.Battles)
+	expDmg := average.AvgDamage()
+	expWr := average.Winrate() / 100
 
-		// Actual performance
-		pDef := float64(r.DroppedCapturePoints) / float64(r.Battles)
-		pFrag := float64(r.Frags) / float64(r.Battles)
-		pSpot := float64(r.EnemiesSpotted) / float64(r.Battles)
-		pDmg := r.AvgDamage()
-		pWr := r.Winrate() / 100
+	// Actual performance
+	pDef := float64(r.DroppedCapturePoints) / float64(r.Battles)
+	pFrag := float64(r.Frags) / float64(r.Battles)
+	pSpot := float64(r.EnemiesSpotted) / float64(r.Battles)
+	pDmg := r.AvgDamage()
+	pWr := r.Winrate() / 100
 
-		// Calculate WN8 metrics
-		rDef := pDef / expDef
-		rFrag := pFrag / expFrag
-		rSpot := pSpot / expSpot
-		rDmg := pDmg / expDmg
-		rWr := pWr / expWr
+	// Calculate WN8 metrics
+	rDef := pDef / expDef
+	rFrag := pFrag / expFrag
+	rSpot := pSpot / expSpot
+	rDmg := pDmg / expDmg
+	rWr := pWr / expWr
 
-		adjustedWr := math.Max(0, ((rWr - 0.71) / (1 - 0.71)))
-		adjustedDmg := math.Max(0, ((rDmg - 0.22) / (1 - 0.22)))
-		adjustedDef := math.Max(0, (math.Min(adjustedDmg+0.1, (rDef-0.10)/(1-0.10))))
-		adjustedSpot := math.Max(0, (math.Min(adjustedDmg+0.1, (rSpot-0.38)/(1-0.38))))
-		adjustedFrag := math.Max(0, (math.Min(adjustedDmg+0.2, (rFrag-0.12)/(1-0.12))))
+	adjustedWr := math.Max(0, ((rWr - 0.71) / (1 - 0.71)))
+	adjustedDmg := math.Max(0, ((rDmg - 0.22) / (1 - 0.22)))
+	adjustedDef := math.Max(0, (math.Min(adjustedDmg+0.1, (rDef-0.10)/(1-0.10))))
+	adjustedSpot := math.Max(0, (math.Min(adjustedDmg+0.1, (rSpot-0.38)/(1-0.38))))
+	adjustedFrag := math.Max(0, (math.Min(adjustedDmg+0.2, (rFrag-0.12)/(1-0.12))))
 
-		r.wn8 = int(math.Round(((980 * adjustedDmg) + (210 * adjustedDmg * adjustedFrag) + (155 * adjustedFrag * adjustedSpot) + (75 * adjustedDef * adjustedFrag) + (145 * math.Min(1.8, adjustedWr)))))
-	}
+	r.wn8 = int(math.Round(((980 * adjustedDmg) + (210 * adjustedDmg * adjustedFrag) + (155 * adjustedFrag * adjustedSpot) + (75 * adjustedDef * adjustedFrag) + (145 * math.Min(1.8, adjustedWr)))))
+
 	return r.wn8
 }
 

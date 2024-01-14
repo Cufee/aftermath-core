@@ -105,7 +105,7 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePri
 	return blocks, nil
 }
 
-func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, locale localization.SupportedLanguage) ([]Block, error) {
+func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
 	var cards []Block
 
 	localePrinter := localization.GetPrinter(locale)
@@ -158,7 +158,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 			}
 
 			// Vehicle Cards
-			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, nil, localePrinter)
+			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages[vehicle.VehicleID], localePrinter)
 			if err != nil {
 				return nil, err
 			}
@@ -172,8 +172,8 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 	return cards, nil
 }
 
-func RenderStatsImage(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, locale localization.SupportedLanguage) (image.Image, error) {
-	cards, err := SnapshotToCardsBlocks(snapshot, vehicles, locale)
+func RenderStatsImage(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, locale localization.SupportedLanguage) (image.Image, error) {
+	cards, err := SnapshotToCardsBlocks(snapshot, vehicles, averages, locale)
 	if err != nil {
 		return nil, err
 	}

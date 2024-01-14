@@ -136,22 +136,23 @@ const (
 	SortByLastBattle    = vehicleSortOptions("lastBattleTime")
 )
 
-func SortVehicles(vehicles map[int]*core.ReducedVehicleStats, options ...SortOptions) []*core.ReducedVehicleStats {
+func GetVehicleAverages(vehicles map[int]*core.ReducedVehicleStats) (map[int]*core.ReducedStatsFrame, error) {
+	var vehicleIDs []int
+	for _, vehicle := range vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
+	return cache.GetVehicleAverages(vehicleIDs...)
+}
+
+func SortVehicles(vehicles map[int]*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, options ...SortOptions) []*core.ReducedVehicleStats {
 	opts := SortOptions{By: SortByLastBattle, Limit: 10}
 	if len(options) > 0 {
 		opts = options[0]
 	}
 
-	var vehicleIDs []int
 	var sorted []*core.ReducedVehicleStats
 	for _, vehicle := range vehicles {
-		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
 		sorted = append(sorted, vehicle)
-	}
-
-	averages, err := cache.GetVehicleAverages(vehicleIDs...)
-	if err != nil {
-		log.Errorf("failed to get vehicle averages: %s", err.Error())
 	}
 
 	switch opts.By {

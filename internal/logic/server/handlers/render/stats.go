@@ -72,14 +72,19 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		return "", err
 	}
 
+	averages, err := stats.GetVehicleAverages(session.Diff.Vehicles)
+	if err != nil {
+		return "", err
+	}
+
 	// TODO: sorting options and limits
 	opts := stats.SortOptions{
 		By:    stats.SortByLastBattle,
 		Limit: 7,
 	}
-	vehicles := stats.SortVehicles(session.Diff.Vehicles, opts)
+	vehicles := stats.SortVehicles(session.Diff.Vehicles, averages, opts)
 
-	img, err := render.RenderStatsImage(session, vehicles, localization.LanguageEN)
+	img, err := render.RenderStatsImage(session, vehicles, averages, localization.LanguageEN)
 	if err != nil {
 		return "", err
 	}
