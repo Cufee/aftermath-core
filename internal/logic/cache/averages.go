@@ -47,6 +47,10 @@ func UpdateAveragesCache() error {
 // TODO: add in-memory cache
 
 func GetVehicleAverages(vehicleIDs ...int) (map[int]*stats.ReducedStatsFrame, error) {
+	if len(vehicleIDs) == 0 {
+		return nil, nil
+	}
+
 	ctx, cancel := database.DefaultClient.Ctx()
 	defer cancel()
 

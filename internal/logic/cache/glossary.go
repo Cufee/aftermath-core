@@ -169,6 +169,10 @@ func UpdateGlossaryCache() error {
 // TODO: add in-memory cache
 
 func GetGlossaryVehicles(vehicleIDs ...int) (map[int]VehicleInfo, error) {
+	if len(vehicleIDs) == 0 {
+		return nil, nil
+	}
+
 	ctx, cancel := database.DefaultClient.Ctx()
 	defer cancel()
 
