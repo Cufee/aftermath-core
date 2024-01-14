@@ -13,7 +13,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/users"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 )
 
 func SessionFromIDHandler(c *fiber.Ctx) error {
@@ -68,14 +67,19 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getEncodedSessionImage(realm string, accountId int) (string, error) {
-	log.Debugf("Getting session for realm %s and account %d", realm, accountId)
 	session, err := stats.GetCurrentPlayerSession(realm, accountId)
 	if err != nil {
 		return "", err
 	}
 
-	log.Debugf("Rendering session image for realm %s and account %d", realm, accountId)
-	img, err := render.RenderStatsImage(session, nil, localization.LanguageEN)
+	// TODO: sorting options and limits
+	opts := stats.SortOptions{
+		By:    stats.SortByLastBattle,
+		Limit: 7,
+	}
+	vehicles := stats.SortVehicles(session.Diff.Vehicles, opts)
+
+	img, err := render.RenderStatsImage(session, vehicles, localization.LanguageEN)
 	if err != nil {
 		return "", err
 	}

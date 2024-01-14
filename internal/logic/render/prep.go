@@ -2,12 +2,11 @@ package render
 
 import (
 	"errors"
-	"fmt"
 	"image"
-	"sort"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
+	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/disintegration/imaging"
@@ -106,10 +105,19 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePri
 	return blocks, nil
 }
 
-func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages map[int]core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
+func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, locale localization.SupportedLanguage) ([]Block, error) {
 	var cards []Block
 
 	localePrinter := localization.GetPrinter(locale)
+
+	vehicleIDs := make([]int, len(vehicles))
+	for i, vehicle := range vehicles {
+		vehicleIDs[i] = vehicle.VehicleID
+	}
+	vehiclesGlossary, err := cache.GetGlossaryVehicles(vehicleIDs...)
+	if err != nil {
+		return nil, err
+	}
 
 	{
 		// Promo Card
@@ -144,35 +152,28 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages map[int]core.Reduc
 	}
 
 	{
-		// Sort vehicles by last battle time
-		var vehiclesSlice []*core.ReducedVehicleStats
-		for _, vehicle := range snapshot.Diff.Vehicles {
-			vehiclesSlice = append(vehiclesSlice, vehicle)
-		}
-
-		sort.Slice(vehiclesSlice, func(i, j int) bool {
-			return vehiclesSlice[i].LastBattleTime > vehiclesSlice[j].LastBattleTime
-		})
-
-		for i, vehicle := range vehiclesSlice {
+		for i, vehicle := range vehicles {
 			if i >= 7 {
 				break
 			}
+
 			// Vehicle Cards
-			tankAverages := averages[vehicle.VehicleID]
-			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, &tankAverages, localePrinter)
+			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, nil, localePrinter)
 			if err != nil {
 				return nil, err
 			}
-			cards = append(cards, NewCardBlock(NewVehicleLabel(fmt.Sprint(vehicle.VehicleID), "X"), blocks))
+
+			vehicleInfo := vehiclesGlossary[vehicle.VehicleID]
+			vehicleInfo.ID = vehicle.VehicleID
+			cards = append(cards, NewCardBlock(NewVehicleLabel(vehicleInfo.Name(locale), intToRoman(vehicleInfo.Tier)), blocks))
 		}
 	}
 
 	return cards, nil
 }
 
-func RenderStatsImage(snapshot *stats.Snapshot, averages map[int]core.ReducedStatsFrame, locale localization.SupportedLanguage) (image.Image, error) {
-	cards, err := SnapshotToCardsBlocks(snapshot, averages, locale)
+func RenderStatsImage(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, locale localization.SupportedLanguage) (image.Image, error) {
+	cards, err := SnapshotToCardsBlocks(snapshot, vehicles, locale)
 	if err != nil {
 		return nil, err
 	}

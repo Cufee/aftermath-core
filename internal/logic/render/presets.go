@@ -119,6 +119,12 @@ func NewTextLabel(label string) Block {
 }
 
 func NewVehicleLabel(name, tier string) Block {
+	var blocks []Block
+	if tier != "" {
+		blocks = append(blocks, NewTextContent(tier, Style{Font: FontSmall, FontColor: FontMediumColor}))
+	}
+	blocks = append(blocks, NewTextContent(name, Style{Font: FontMedium, FontColor: FontMediumColor}))
+
 	return NewBlocksContent(
 		Style{
 			Direction:  DirectionHorizontal,
@@ -126,8 +132,7 @@ func NewVehicleLabel(name, tier string) Block {
 			Gap:        5,
 			// Debug:      true,
 		},
-		NewTextContent(tier, Style{Font: FontSmall, FontColor: FontMediumColor}),
-		NewTextContent(name, Style{Font: FontMedium, FontColor: FontMediumColor}),
+		blocks...,
 	)
 }
 

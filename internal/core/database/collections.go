@@ -12,6 +12,12 @@ const (
 	CollectionAccounts = collectionName("accounts")
 	CollectionSessions = collectionName("sessions")
 
+	CollectionVehicleAverages     = collectionName("vehicle-averages")
+	CollectionVehicleGlossary     = collectionName("glossary-vehicles")
+	CollectionAchievementGlossary = collectionName("glossary-achievements")
+
+	CollectionTasks         = collectionName("tasks")
+	CollectionMessages      = collectionName("messages")
 	CollectionConfiguration = collectionName("configuration")
 )
 

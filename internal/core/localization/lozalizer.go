@@ -3,8 +3,8 @@ package localization
 import (
 	"embed"
 	"encoding/json"
-	"fmt"
 
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
@@ -21,7 +21,7 @@ Languages supported by Wargaming
 */
 var (
 	LanguageEN SupportedLanguage = SupportedLanguage{WargamingCode: "en", Tag: language.English} // English
-	// LanguageRU   SupportedLanguage = SupportedLanguage{WargamingCode: "ru", Tag: language.Russian}               // Russian
+	LanguageRU SupportedLanguage = SupportedLanguage{WargamingCode: "ru", Tag: language.Russian} // Russian
 	// LanguagePL   SupportedLanguage = SupportedLanguage{WargamingCode: "pl", Tag: language.Polish}                // Polish
 	// LanguageDE   SupportedLanguage = SupportedLanguage{WargamingCode: "de", Tag: language.German}                // German
 	// LanguageFR   SupportedLanguage = SupportedLanguage{WargamingCode: "fr", Tag: language.French}                // French
@@ -80,7 +80,7 @@ func GetPrinter(locale SupportedLanguage) LocalePrinter {
 			},
 		})
 		if err != nil {
-			fmt.Printf("failed to localize string: %s\n", s)
+			log.Warn("failed to localize string: %s\n", s)
 			return "? " + s
 		}
 		return localized

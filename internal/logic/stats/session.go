@@ -2,6 +2,7 @@ package stats
 
 import (
 	"errors"
+	"sort"
 	"sync"
 
 	core "github.com/cufee/aftermath-core/internal/core/stats"
@@ -37,16 +38,13 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Debugf("Getting live session for realm %s and account %d", realm, accountId)
 		liveSessions, err := sessions.GetLiveSessions(realm, accountId)
 		if err != nil {
-			log.Errorf("failed to get live sessions: %s", err.Error())
 			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: err}
 			return
 		}
 		liveSession, ok := liveSessions[accountId]
 		if !ok {
-			log.Errorf("failed to get live session: %s", ErrBadLiveSession.Error())
 			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: ErrBadLiveSession}
 			return
 		}
@@ -118,4 +116,82 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 		Live: liveSession.Data.Session,
 		Diff: diffSession,
 	}, nil
+}
+
+type SortOptions struct {
+	By    vehicleSortOptions
+	Limit int
+}
+type vehicleSortOptions string
+
+const (
+	SortByBattlesDesc   = vehicleSortOptions("-battles")
+	SortByBattlesAsc    = vehicleSortOptions("battles")
+	SortByWinrateDesc   = vehicleSortOptions("-winrate")
+	SortByWinrateAsc    = vehicleSortOptions("winrate")
+	SortByWN8Desc       = vehicleSortOptions("-wn8")
+	SortByWN8Asc        = vehicleSortOptions("wn8")
+	SortByAvgDamageDesc = vehicleSortOptions("-avgDamage")
+	SortByAvgDamageAsc  = vehicleSortOptions("avgDamage")
+	SortByLastBattle    = vehicleSortOptions("lastBattleTime")
+)
+
+func SortVehicles(vehicles map[int]*core.ReducedVehicleStats, options ...SortOptions) []*core.ReducedVehicleStats {
+	opts := SortOptions{By: SortByLastBattle, Limit: 10}
+	if len(options) > 0 {
+		opts = options[0]
+	}
+
+	var vehicleIDs []int
+	var sorted []*core.ReducedVehicleStats
+	for _, vehicle := range vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+		sorted = append(sorted, vehicle)
+	}
+
+	averages, err := cache.GetVehicleAverages(vehicleIDs...)
+	if err != nil {
+		log.Errorf("failed to get vehicle averages: %s", err.Error())
+	}
+
+	switch opts.By {
+	case SortByBattlesDesc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].Battles > sorted[j].Battles
+		})
+	case SortByBattlesAsc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].Battles < sorted[j].Battles
+		})
+	case SortByWinrateDesc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].Winrate() > sorted[j].Winrate()
+		})
+	case SortByWinrateAsc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].Winrate() < sorted[j].Winrate()
+		})
+	case SortByWN8Desc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].WN8(averages[sorted[i].VehicleID]) > sorted[j].WN8(averages[sorted[j].VehicleID])
+		})
+	case SortByWN8Asc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].WN8(averages[sorted[i].VehicleID]) < sorted[j].WN8(averages[sorted[j].VehicleID])
+		})
+	case SortByAvgDamageDesc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].AvgDamage() > sorted[j].AvgDamage()
+		})
+	case SortByAvgDamageAsc:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].AvgDamage() < sorted[j].AvgDamage()
+		})
+	case SortByLastBattle:
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].LastBattleTime > sorted[j].LastBattleTime
+		})
+	}
+
+	return sorted
 }

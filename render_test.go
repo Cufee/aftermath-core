@@ -19,8 +19,15 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 	t.Logf("got session in %s", time.Since(start).String())
 
+	// TODO: sorting options and limits
+	opts := stats.SortOptions{
+		By:    stats.SortByLastBattle,
+		Limit: 7,
+	}
+	vehicles := stats.SortVehicles(session.Diff.Vehicles, opts)
+
 	start = time.Now()
-	img, err := render.RenderStatsImage(session, nil, localization.LanguageEN)
+	img, err := render.RenderStatsImage(session, vehicles, localization.LanguageEN)
 	if err != nil {
 		t.Fatal(err)
 	}
