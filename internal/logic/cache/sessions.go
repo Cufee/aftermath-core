@@ -6,6 +6,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -32,7 +33,7 @@ type SessionDatabaseRecord struct {
 }
 
 func RefreshSessions(sessionType SessionType, realm string, accountIDs ...int) error {
-	sessions, err := sessions.GetSessionsWithClient(cacheClient, realm, accountIDs...)
+	sessions, err := sessions.GetSessionsWithClient(wargaming.Clients.Cache, realm, accountIDs...)
 	if err != nil {
 		return err
 	}

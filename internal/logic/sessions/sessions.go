@@ -7,6 +7,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 
 	client "github.com/cufee/am-wg-proxy-next/client"
 	wg "github.com/cufee/am-wg-proxy-next/types"
@@ -29,7 +30,7 @@ var (
 )
 
 func GetLiveSessions(realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {
-	return GetSessionsWithClient(liveClient, realm, accountIDs...)
+	return GetSessionsWithClient(wargaming.Clients.Live, realm, accountIDs...)
 }
 
 func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {

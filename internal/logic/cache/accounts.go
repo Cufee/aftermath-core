@@ -8,6 +8,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -113,7 +114,7 @@ func UpdateAccountCache(realm string, accountIDs []int) error {
 				accountIDsString[i] = fmt.Sprintf("%d", accountID)
 			}
 
-			accounts, err := cacheClient.BulkGetAccountsByID(accountIDsString, realm)
+			accounts, err := wargaming.Clients.Cache.BulkGetAccountsByID(accountIDsString, realm)
 			accountsChan <- utils.DataWithError[map[string]wg.ExtendedAccount]{Data: accounts, Err: err}
 		}(batch)
 	}
