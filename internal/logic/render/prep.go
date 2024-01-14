@@ -13,6 +13,62 @@ import (
 	"github.com/fogleman/gg"
 )
 
+func FrameToOverviewBlocks(session, career *core.ReducedStatsFrame, sessionWN8, careerWN8 int, localePrinter localization.LocalePrinter) ([]Block, error) {
+	if session == nil {
+		return nil, errors.New("session is nil")
+	}
+
+	var blocks []Block
+	{
+		// Battles
+		values := []interface{}{session.Battles}
+		if career != nil {
+			values = append(values, career.Battles)
+		}
+		battlesBlock := NewStatsBlock("", values...)
+		// Add some special styling to the block
+		battlesBlock.Style.PaddingY = 10
+		battlesBlock.Style.BorderRadius = 10
+		battlesBlock.Style.BackgroundColor = HighlightCardColor
+		blocks = append(blocks, battlesBlock)
+	}
+	{
+		// Avg Damage
+		values := []any{int(session.AvgDamage())}
+		if career != nil {
+			values = append(values, int(career.AvgDamage()))
+		}
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_avg_damage"), values...))
+	}
+	{
+		// Winrate
+		values := []any{session.Winrate()}
+		if career != nil {
+			values = append(values, career.Winrate())
+		}
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_winrate"), values...))
+	}
+	{
+		if sessionWN8 != core.InvalidValue {
+			// WN8
+			values := []any{sessionWN8}
+			if careerWN8 != core.InvalidValue {
+				values = append(values, careerWN8)
+			}
+			blocks = append(blocks, NewStatsBlock(localePrinter("label_wn8"), values...))
+		} else {
+			// Fallback to Accuracy to keep the UI consistent
+			values := []any{session.Accuracy()}
+			if career != nil {
+				values = append(values, career.Accuracy())
+			}
+			blocks = append(blocks, NewStatsBlock(localePrinter("label_accuracy"), values...))
+		}
+	}
+
+	return blocks, nil
+}
+
 func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
@@ -133,29 +189,11 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 		cards = append(cards, NewPlayerTitleCard(snapshot.Account.Nickname, snapshot.Account.Clan.Tag))
 	}
 
+	var totalVehicleWN8 int
+	var vehicleCards []Block
 	{
-		// Regular Battles
-		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, nil, localePrinter)
-		if err != nil {
-			return nil, err
-		}
-		cards = append(cards, NewCardBlock(NewTextLabel(localePrinter("label_overview_unrated")), blocks))
-	}
-
-	if snapshot.Diff.Rating.Battles > 0 {
-		// Rating Battles
-		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, nil, localePrinter)
-		if err != nil {
-			return nil, err
-		}
-		cards = append(cards, NewCardBlock(NewTextLabel(localePrinter("label_overview_rating")), blocks))
-	}
-
-	{
-		for i, vehicle := range vehicles {
-			if i >= 7 {
-				break
-			}
+		for _, vehicle := range vehicles {
+			totalVehicleWN8 += vehicle.WN8(averages[vehicle.VehicleID]) * vehicle.Battles
 
 			// Vehicle Cards
 			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages[vehicle.VehicleID], localePrinter)
@@ -165,11 +203,29 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 
 			vehicleInfo := vehiclesGlossary[vehicle.VehicleID]
 			vehicleInfo.ID = vehicle.VehicleID
-			cards = append(cards, NewCardBlock(NewVehicleLabel(vehicleInfo.Name(locale), intToRoman(vehicleInfo.Tier)), blocks))
+			vehicleCards = append(vehicleCards, NewCardBlock(NewVehicleLabel(vehicleInfo.Name(locale), intToRoman(vehicleInfo.Tier)), blocks))
 		}
 	}
 
-	return cards, nil
+	{
+		// Regular Battles
+		blocks, err := FrameToOverviewBlocks(snapshot.Diff.Global, snapshot.Selected.Global, totalVehicleWN8/snapshot.Diff.Global.Battles, core.InvalidValue, localePrinter)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, NewCardBlock(NewTextLabel(localePrinter("label_overview_unrated")), blocks))
+	}
+
+	if snapshot.Diff.Rating.Battles > 0 {
+		// Rating Battles
+		blocks, err := FrameToOverviewBlocks(snapshot.Diff.Global, snapshot.Selected.Global, core.InvalidValue, core.InvalidValue, localePrinter)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, NewCardBlock(NewTextLabel(localePrinter("label_overview_rating")), blocks))
+	}
+
+	return append(cards, vehicleCards...), nil
 }
 
 func RenderStatsImage(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, locale localization.SupportedLanguage) (image.Image, error) {

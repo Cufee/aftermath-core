@@ -13,7 +13,7 @@ import (
 
 func TestFullRenderPipeline(t *testing.T) {
 	start := time.Now()
-	session, err := stats.GetCurrentPlayerSession("na", 1032698345) // 1013072123 1032698345
+	session, err := stats.GetCurrentPlayerSession("eu", 572420365) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
