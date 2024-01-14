@@ -3,7 +3,7 @@ module github.com/cufee/aftermath-core
 go 1.21.5
 
 require (
-	github.com/cufee/am-wg-proxy-next v1.4.2
+	github.com/cufee/am-wg-proxy-next v1.4.3
 	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.0
