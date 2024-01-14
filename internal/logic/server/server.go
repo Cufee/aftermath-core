@@ -15,7 +15,15 @@ import (
 )
 
 func Start() {
-	app := fiber.New()
+	network := fiber.NetworkTCP
+	if os.Getenv("NETWORK") == "tcp6" {
+		network = fiber.NetworkTCP6
+	}
+
+	app := fiber.New(fiber.Config{
+		Network: network,
+	})
+
 	app.Use(logger.New())
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
