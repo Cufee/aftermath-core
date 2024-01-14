@@ -36,6 +36,8 @@ func StartCronJobs() {
 }
 
 func updateGlossaryWorker() {
+	log.Info("updating glossary cache")
+	defer log.Info("updated glossary cache")
 	err := cache.UpdateGlossaryCache()
 	if err != nil {
 		log.Errorf("failed to update glossary cache: %s", err.Error())
@@ -43,6 +45,8 @@ func updateGlossaryWorker() {
 }
 
 func updateAveragesWorker() {
+	log.Info("updating averages cache")
+	defer log.Info("updated averages cache")
 	err := cache.UpdateAveragesCache()
 	if err != nil {
 		log.Errorf("failed to update averages cache: %s", err.Error())
