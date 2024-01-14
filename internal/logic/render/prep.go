@@ -193,7 +193,9 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 	var vehicleCards []Block
 	{
 		for _, vehicle := range vehicles {
-			totalVehicleWN8 += vehicle.WN8(averages[vehicle.VehicleID]) * vehicle.Battles
+			if vehicle.WN8(averages[vehicle.VehicleID]) != core.InvalidValue {
+				totalVehicleWN8 += vehicle.WN8(averages[vehicle.VehicleID]) * vehicle.Battles
+			}
 
 			// Vehicle Cards
 			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages[vehicle.VehicleID], localePrinter)
@@ -209,7 +211,11 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 
 	{
 		// Regular Battles
-		blocks, err := FrameToOverviewBlocks(snapshot.Diff.Global, snapshot.Selected.Global, totalVehicleWN8/snapshot.Diff.Global.Battles, core.InvalidValue, localePrinter)
+		sessionWN8 := core.InvalidValue
+		if snapshot.Diff.Global.Battles > 0 {
+			sessionWN8 = totalVehicleWN8 / snapshot.Diff.Global.Battles
+		}
+		blocks, err := FrameToOverviewBlocks(snapshot.Diff.Global, snapshot.Selected.Global, sessionWN8, core.InvalidValue, localePrinter)
 		if err != nil {
 			return nil, err
 		}
