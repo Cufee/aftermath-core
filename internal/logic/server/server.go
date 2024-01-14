@@ -15,13 +15,8 @@ import (
 )
 
 func Start() {
-	network := fiber.NetworkTCP
-	if os.Getenv("NETWORK") == "tcp6" {
-		network = fiber.NetworkTCP6
-	}
-
 	app := fiber.New(fiber.Config{
-		Network: network,
+		Network: os.Getenv("NETWORK"),
 	})
 
 	app.Use(logger.New())
