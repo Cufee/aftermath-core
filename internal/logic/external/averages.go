@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 )
 
 // Response from https://www.blitzstars.com/ average stats endpoint
 type VehicleAverages struct {
-	TankID int `json:"tank_id"`
-	All    struct {
-		Battles              float64 `json:"battles,omitempty"`
-		DroppedCapturePoints float64 `json:"dropped_capture_points,omitempty"`
+	TankID  int `json:"tank_id"`
+	Players int `json:"number_of_players"`
+	All     struct {
+		AvgBattles              float64 `json:"battles,omitempty"`
+		AvgDroppedCapturePoints float64 `json:"dropped_capture_points,omitempty"`
 	} `json:",omitempty"`
 	Special struct {
 		Winrate         float64 `json:"winrate,omitempty"`
@@ -33,11 +35,36 @@ type VehicleAverages struct {
 
 var starsStatsAveragesURL = utils.MustGetEnv("BLITZ_STARS_AVERAGES_URL")
 
-func GetTankAverages() (data []VehicleAverages, err error) {
+func GetTankAverages() (map[int]stats.ReducedStatsFrame, error) {
 	res, err := insecureClient.Get(starsStatsAveragesURL)
 	if err != nil || res == nil || res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code: %+v. error: %s", res, err)
 	}
 	defer res.Body.Close()
-	return nil, json.NewDecoder(res.Body).Decode(&data)
+
+	var averages []VehicleAverages
+	err = json.NewDecoder(res.Body).Decode(&averages)
+	if err != nil {
+		return nil, err
+	}
+
+	averagesMap := make(map[int]stats.ReducedStatsFrame)
+	for _, average := range averages {
+		battles := average.All.AvgBattles * float64(average.Players)
+
+		averagesMap[average.TankID] = stats.ReducedStatsFrame{
+			Battles:     int(battles),
+			BattlesWon:  int(average.Special.Winrate * battles / 100),
+			DamageDealt: int(average.Special.DamagePerBattle * battles),
+
+			ShotsHit:   int(average.Special.HitsPerBattle * battles),
+			ShotsFired: int((average.Special.HitsPerBattle * battles) / (average.Special.HitRate / 100)),
+
+			Frags:                int(average.Special.KillsPerBattle * battles),
+			EnemiesSpotted:       int(average.Special.SpotsPerBattle * battles),
+			DroppedCapturePoints: int(average.All.AvgDroppedCapturePoints * battles),
+		}
+	}
+
+	return averagesMap, nil
 }

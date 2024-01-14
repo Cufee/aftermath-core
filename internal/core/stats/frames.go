@@ -65,12 +65,10 @@ func (r *ReducedStatsFrame) Accuracy() float64 {
 		(980*rDAMAGEc + 210*rDAMAGEc*rFRAGc + 155*rFRAGc*rSPOTc + 75*rDEFc*rFRAGc + 145*MIN(1.8,rWINc))/EXPc
 */
 func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
-	if average == nil {
+	if average == nil || r.Battles == 0 || average.Battles == 0 {
 		return InvalidValue
 	}
-	if r.Battles == 0 {
-		return InvalidValue
-	}
+
 	if r.wn8 == 0 {
 		// Expected values for WN8
 		expDef := float64(average.DroppedCapturePoints) / float64(average.Battles)

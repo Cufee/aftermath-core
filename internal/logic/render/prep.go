@@ -104,7 +104,7 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePri
 	return blocks, nil
 }
 
-func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
+func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages map[int]core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
 	var cards []Block
 
 	localePrinter := localization.GetPrinter(locale)
@@ -125,7 +125,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 
 	{
 		// Regular Battles
-		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, localePrinter)
+		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, nil, localePrinter)
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +134,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 
 	if snapshot.Diff.Rating.Battles > 0 {
 		// Rating Battles
-		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, averages, localePrinter)
+		blocks, err := FrameToStatsBlocks(snapshot.Diff.Global, snapshot.Selected.Global, nil, localePrinter)
 		if err != nil {
 			return nil, err
 		}
@@ -144,8 +144,8 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 	{
 		for _, vehicle := range snapshot.Diff.Vehicles {
 			// Vehicle Cards
-			// blocks, err := FrameToStatsBlocks(vehicle.ReducedStatsFrame, snapshot.Selected.Vehicles[vehicle.VehicleID].ReducedStatsFrame, averages, locale)
-			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, averages, localePrinter)
+			tankAverages := averages[vehicle.VehicleID]
+			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, &tankAverages, localePrinter)
 			if err != nil {
 				return nil, err
 			}
@@ -156,7 +156,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages *core.ReducedStats
 	return cards, nil
 }
 
-func RenderStatsImage(snapshot *stats.Snapshot, averages *core.ReducedStatsFrame, locale localization.SupportedLanguage) (image.Image, error) {
+func RenderStatsImage(snapshot *stats.Snapshot, averages map[int]core.ReducedStatsFrame, locale localization.SupportedLanguage) (image.Image, error) {
 	cards, err := SnapshotToCardsBlocks(snapshot, averages, locale)
 	if err != nil {
 		return nil, err

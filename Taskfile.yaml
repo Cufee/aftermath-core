@@ -2,11 +2,21 @@ version: 3
 
 dotenv: ['.env']
 
+# Used for --watch
+interval: '500ms'
+
 tasks:
   dev:
     desc: Run the application in development mode with hot reload
     cmds:
       - air
+  dev-render:
+    desc: Run the complete rendering pipeline test file, this is useful when making UI changes
+    watch: true
+    sources:
+      - '**/*.go'
+    cmds:
+      - go test -timeout 30s -run TestFullRenderPipeline github.com/cufee/aftermath-core -v
   test:
     desc: Run tests
     cmds:
