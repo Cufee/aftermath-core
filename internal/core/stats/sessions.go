@@ -22,29 +22,26 @@ type SessionSnapshot struct {
 	Vehicles map[int]*ReducedVehicleStats `json:"vehicles" bson:"vehicles"`
 }
 
-func (s *SessionSnapshot) Diff(other *SessionSnapshot) (*SessionSnapshot, error) {
+func (a *SessionSnapshot) Diff(b *SessionSnapshot) (*SessionSnapshot, error) {
 	var diff SessionSnapshot
-	if err := utils.DeepCopy[SessionSnapshot](s, &diff); err != nil {
+	if err := utils.DeepCopy[SessionSnapshot](a, &diff); err != nil {
 		return nil, err
 	}
 
-	diff.Global.Subtract(other.Global)
-	diff.Rating.Subtract(other.Rating)
+	diff.Global.Subtract(b.Global)
+	diff.Rating.Subtract(b.Rating)
 
-	for vehicleID, otherVehicleStats := range other.Vehicles {
+	for vehicleID, bVehicle := range b.Vehicles {
 		vehicleStats, ok := diff.Vehicles[vehicleID]
 		if !ok {
-			diff.Vehicles[vehicleID] = otherVehicleStats
+			diff.Vehicles[vehicleID] = bVehicle
 		} else {
-			vehicleStats.Subtract(otherVehicleStats)
-			if vehicleStats.Battles == 0 {
-				delete(diff.Vehicles, vehicleID)
-			}
+			vehicleStats.Subtract(bVehicle)
 		}
 	}
 
-	if other.LastBattleTime > diff.LastBattleTime {
-		diff.LastBattleTime = other.LastBattleTime
+	if b.LastBattleTime > diff.LastBattleTime {
+		diff.LastBattleTime = b.LastBattleTime
 	}
 
 	return &diff, nil

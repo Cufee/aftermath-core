@@ -8,7 +8,9 @@ require (
 	github.com/fogleman/gg v1.3.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/joho/godotenv v1.5.1
+	github.com/labstack/echo/v4 v4.11.4
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
+	github.com/robfig/cron v1.2.0
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/image v0.15.0
 	golang.org/x/text v0.14.0
@@ -16,13 +18,12 @@ require (
 
 require (
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
-	github.com/labstack/echo/v4 v4.11.4 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
-	github.com/robfig/cron v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect

@@ -2,7 +2,9 @@ package render
 
 import (
 	"errors"
+	"fmt"
 	"image"
+	"sort"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
@@ -142,14 +144,27 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, averages map[int]core.Reduc
 	}
 
 	{
+		// Sort vehicles by last battle time
+		var vehiclesSlice []*core.ReducedVehicleStats
 		for _, vehicle := range snapshot.Diff.Vehicles {
+			vehiclesSlice = append(vehiclesSlice, vehicle)
+		}
+
+		sort.Slice(vehiclesSlice, func(i, j int) bool {
+			return vehiclesSlice[i].LastBattleTime > vehiclesSlice[j].LastBattleTime
+		})
+
+		for i, vehicle := range vehiclesSlice {
+			if i >= 7 {
+				break
+			}
 			// Vehicle Cards
 			tankAverages := averages[vehicle.VehicleID]
 			blocks, err := FrameToSlimStatsBlocks(vehicle.ReducedStatsFrame, &tankAverages, localePrinter)
 			if err != nil {
 				return nil, err
 			}
-			cards = append(cards, NewCardBlock(NewVehicleLabel("Some Tank", "X"), blocks))
+			cards = append(cards, NewCardBlock(NewVehicleLabel(fmt.Sprint(vehicle.VehicleID), "X"), blocks))
 		}
 	}
 

@@ -95,6 +95,13 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 		return nil, err
 	}
 
+	// Clean up vehicles with 0 battles
+	for _, vehicle := range diffSession.Vehicles {
+		if vehicle.Battles == 0 {
+			delete(diffSession.Vehicles, vehicle.VehicleID)
+		}
+	}
+
 	return &Snapshot{
 		Selected: lastSession.Data,
 		Account: SnapshotAccount{

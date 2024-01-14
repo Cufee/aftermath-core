@@ -20,7 +20,7 @@ var (
 	// FrameWidth       = 900
 	// FrameMargin      = 50
 	BaseCardWidth       = 550.0
-	BaseStatsBlockWidth = 118.0
+	BaseStatsBlockWidth = 120.0
 	BaseCardColor       = color.RGBA{30, 30, 30, 120}
 	HighlightCardColor  = color.RGBA{50, 50, 50, 120}
 	// DecorLinesColor  = color.RGBA{80, 80, 80, 255}
@@ -145,7 +145,7 @@ func NewCardBlock(label Block, stats []Block) Block {
 		Style{
 			Direction:       DirectionVertical,
 			AlignItems:      AlignItemsCenter,
-			Gap:             0,
+			Gap:             5,
 			PaddingX:        20,
 			PaddingY:        20,
 			BackgroundColor: BaseCardColor,
