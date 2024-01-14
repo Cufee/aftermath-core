@@ -9,6 +9,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
 	wg "github.com/cufee/am-wg-proxy-next/types"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 var (
@@ -36,13 +37,16 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		log.Debugf("Getting live session for realm %s and account %d", realm, accountId)
 		liveSessions, err := sessions.GetLiveSessions(realm, accountId)
 		if err != nil {
+			log.Errorf("failed to get live sessions: %s", err.Error())
 			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: err}
 			return
 		}
 		liveSession, ok := liveSessions[accountId]
 		if !ok {
+			log.Errorf("failed to get live session: %s", ErrBadLiveSession.Error())
 			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: ErrBadLiveSession}
 			return
 		}
@@ -54,6 +58,9 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	go func() {
 		defer wg.Done()
 		lastSession, err := cache.GetPlayerSessionSnapshot(accountId, options...)
+		if err != nil {
+			log.Errorf("failed to get last session: %s", err.Error())
+		}
 		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession, Err: err}
 	}()
 
@@ -72,7 +79,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 				// Refresh the session cache in the background
 				err := cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId)
 				if err != nil {
-					println("failed to refresh session cache: " + err.Error())
+					log.Errorf("failed to refresh session cache: %s", err.Error())
 				}
 			}(realm, accountId)
 

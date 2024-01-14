@@ -8,6 +8,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
+	"github.com/gofiber/fiber/v2/log"
 
 	client "github.com/cufee/am-wg-proxy-next/client"
 	wg "github.com/cufee/am-wg-proxy-next/types"
@@ -54,7 +55,11 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 			accountIDsString[i] = fmt.Sprintf("%d", accountID)
 		}
 
+		log.Debugf("Getting accounts for realm %s and account IDs %v", realm, accountIDsString)
 		accounts, err := client.BulkGetAccountsByID(accountIDsString, realm)
+		if err != nil {
+			log.Errorf("failed to get accounts: %s", err.Error())
+		}
 		accountChan <- utils.DataWithError[map[string]wg.ExtendedAccount]{Data: accounts, Err: err}
 	}()
 
@@ -68,7 +73,11 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 			accountIDsString[i] = fmt.Sprintf("%d", accountID)
 		}
 
+		log.Debugf("Getting account clans for realm %s and account IDs %v", realm, accountIDsString)
 		clans, err := client.BulkGetAccountsClans(accountIDsString, realm)
+		if err != nil {
+			log.Errorf("failed to get account clans: %s", err.Error())
+		}
 		accountClansChan <- utils.DataWithError[map[string]wg.ClanMember]{Data: clans, Err: err}
 	}()
 
@@ -78,8 +87,11 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 
 		go func(id int) {
 			defer waitGroup.Done()
+
+			log.Debugf("Getting vehicles for realm %s and account ID %d", realm, id)
 			accountVehicles, err := client.GetAccountVehicles(id)
 			if err != nil {
+				log.Errorf("failed to get account vehicles: %s", err.Error())
 				vehiclesChan <- utils.DataWithError[vehiclesWithAccount]{Err: err}
 				return
 			}
