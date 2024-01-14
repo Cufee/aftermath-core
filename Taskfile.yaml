@@ -29,7 +29,7 @@ tasks:
   build:docker:
     desc: Build the application for Docker
     cmds:
-      - go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o {{ .CLI_ARGS | default "app" }} .
+      - go build -o {{ .CLI_ARGS | default "app" }} .
   build:image:
     desc: Build the Docker image
     cmds:
