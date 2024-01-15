@@ -3,10 +3,12 @@ module github.com/cufee/aftermath-core
 go 1.21.5
 
 require (
+	github.com/EdlinOrg/prominentcolor v1.0.0
 	github.com/cufee/am-wg-proxy-next v1.4.3
 	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
 	github.com/go-co-op/gocron v1.37.0
+	github.com/gofiber/contrib/fiberzerolog v0.2.3
 	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/joho/godotenv v1.5.1
@@ -18,9 +20,7 @@ require (
 )
 
 require (
-	github.com/EdlinOrg/prominentcolor v1.0.0 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/gofiber/contrib/fiberzerolog v0.2.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.5.0 // indirect
@@ -30,9 +30,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
-	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762 // indirect
-	github.com/muesli/gamut v0.3.1 // indirect
-	github.com/muesli/kmeans v0.3.1 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/oliamb/cutter v0.2.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
@@ -43,7 +40,6 @@ require (
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
-	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
