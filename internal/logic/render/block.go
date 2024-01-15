@@ -5,6 +5,7 @@ import (
 	"image"
 	"math"
 
+	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 )
 
@@ -12,7 +13,7 @@ type blockContentType int
 
 const (
 	BlockContentTypeText blockContentType = iota
-	// BlockContentTypeImage
+	BlockContentTypeImage
 	// BlockContentTypeIcon
 	BlockContentTypeBlocks
 )
@@ -40,34 +41,34 @@ func NewBlock(content BlockContent, style Style) Block {
 	}
 }
 
-type ContentText struct {
+type contentText struct {
 	value string
 }
 
-func NewTextContent(value string, style Style) Block {
-	return NewBlock(ContentText{
+func NewTextContent(style Style, value string) Block {
+	return NewBlock(contentText{
 		value: value,
 	}, style)
 }
 
-func (content ContentText) Render(style Style) (image.Image, error) {
+func (content contentText) Render(style Style) (image.Image, error) {
 	if style.Font == nil {
 		return nil, errors.New("font not set")
 	}
 
 	measureCtx := gg.NewContext(1, 1)
-	measureCtx.SetFontFace(style.Font)
+	measureCtx.SetFontFace(*style.Font)
 	valueW, valueH := measureCtx.MeasureString(content.value)
 
 	// Account for font descender height
-	descenderOffset := (float64(style.Font.Metrics().Descent>>6) - 1)
-	ctx := gg.NewContext(int(math.Ceil(valueW)+1), int(math.Ceil(valueH+(descenderOffset*2))))
+	descenderOffset := (float64((*style.Font).Metrics().Descent>>6) - 1)
+	ctx := gg.NewContext(int(style.PaddingX*2+math.Ceil(valueW)+1), int(style.PaddingY*2+math.Ceil(valueH+(descenderOffset*2))))
 
 	// Render text
-	ctx.SetFontFace(style.Font)
+	ctx.SetFontFace(*style.Font)
 	ctx.SetColor(style.FontColor)
 
-	ctx.DrawString(content.value, 0, valueH)
+	ctx.DrawString(content.value, style.PaddingX, valueH+style.PaddingY)
 
 	if style.Debug {
 		ctx.SetColor(getDebugColor())
@@ -78,7 +79,7 @@ func (content ContentText) Render(style Style) (image.Image, error) {
 	return ctx.Image(), nil
 }
 
-func (content ContentText) Type() blockContentType {
+func (content contentText) Type() blockContentType {
 	return BlockContentTypeText
 }
 
@@ -105,5 +106,39 @@ func (content contentBlocks) Render(style Style) (image.Image, error) {
 }
 
 func (content contentBlocks) Type() blockContentType {
+	return BlockContentTypeBlocks
+}
+
+type contentImage struct {
+	image image.Image
+}
+
+func NewImageContent(style Style, image image.Image) Block {
+	return NewBlock(contentImage{
+		image: image,
+	}, style)
+}
+
+func (content contentImage) Render(style Style) (image.Image, error) {
+	if style.Width == 0 || style.Height == 0 {
+		return nil, errors.New("width or height not set")
+	}
+
+	// Type cast to image.Image for gg
+	var image image.Image = imaging.Fit(content.image, int(style.Width), int(style.Height), imaging.Linear)
+	if style.BackgroundColor != nil {
+		mask := gg.NewContextForImage(image)
+		ctx := gg.NewContext(image.Bounds().Dx(), image.Bounds().Dy())
+		ctx.SetMask(mask.AsMask())
+		ctx.SetColor(style.BackgroundColor)
+		ctx.DrawRectangle(0, 0, float64(ctx.Width()), float64(ctx.Height()))
+		ctx.Fill()
+		image = ctx.Image()
+	}
+
+	return image, nil
+}
+
+func (content contentImage) Type() blockContentType {
 	return BlockContentTypeBlocks
 }

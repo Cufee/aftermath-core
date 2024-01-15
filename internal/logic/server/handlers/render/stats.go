@@ -9,6 +9,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
+	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/users"
@@ -77,14 +78,25 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		return "", err
 	}
 
-	// TODO: sorting options and limits
 	opts := stats.SortOptions{
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
-	vehicles := stats.SortVehicles(session.Diff.Vehicles, averages, opts)
+	player := render.PlayerData{
+		Snapshot: session,
+		Averages: averages,
+		Vehicles: stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+	}
 
-	img, err := render.RenderStatsImage(session, vehicles, averages, localization.LanguageEN)
+	bgImage, _ := assets.GetImage("images/backgrounds/default")
+	options := render.RenderOptions{
+		Locale:             localization.LanguageEN,
+		CardStyle:          render.DefaultCardStyle(nil),
+		SubscriptionHeader: nil,
+		BackgroundImage:    bgImage,
+	}
+
+	img, err := render.RenderStatsImage(player, options)
 	if err != nil {
 		return "", err
 	}
