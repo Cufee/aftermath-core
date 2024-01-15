@@ -74,9 +74,10 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 
 		clans, err := client.BulkGetAccountsClans(accountIDsString, realm)
 		if err != nil {
+			// This is not a critical error, so we don't return it
 			log.Errorf("failed to get account clans: %s", err.Error())
 		}
-		accountClansChan <- utils.DataWithError[map[string]wg.ClanMember]{Data: clans, Err: err}
+		accountClansChan <- utils.DataWithError[map[string]wg.ClanMember]{Data: clans, Err: nil}
 	}()
 
 	// There is not endpoint to get vehicles for multiple accounts, so we have to do it one by one
