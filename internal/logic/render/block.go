@@ -40,17 +40,17 @@ func NewBlock(content BlockContent, style Style) Block {
 	}
 }
 
-type contentText struct {
+type ContentText struct {
 	value string
 }
 
 func NewTextContent(value string, style Style) Block {
-	return NewBlock(contentText{
+	return NewBlock(ContentText{
 		value: value,
 	}, style)
 }
 
-func (content contentText) Render(style Style) (image.Image, error) {
+func (content ContentText) Render(style Style) (image.Image, error) {
 	if style.Font == nil {
 		return nil, errors.New("font not set")
 	}
@@ -78,7 +78,7 @@ func (content contentText) Render(style Style) (image.Image, error) {
 	return ctx.Image(), nil
 }
 
-func (content contentText) Type() blockContentType {
+func (content ContentText) Type() blockContentType {
 	return BlockContentTypeText
 }
 

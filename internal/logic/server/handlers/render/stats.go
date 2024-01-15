@@ -9,7 +9,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
-	"github.com/cufee/aftermath-core/internal/logic/render"
+	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/users"
 	"github.com/gofiber/fiber/v2"
@@ -80,7 +80,7 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 	// TODO: sorting options and limits
 	opts := stats.SortOptions{
 		By:    stats.SortByLastBattle,
-		Limit: 7,
+		Limit: 5,
 	}
 	vehicles := stats.SortVehicles(session.Diff.Vehicles, averages, opts)
 

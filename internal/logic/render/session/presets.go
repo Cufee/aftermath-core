@@ -1,10 +1,11 @@
-package render
+package session
 
 import (
 	"fmt"
 	"image/color"
 
 	core "github.com/cufee/aftermath-core/internal/core/stats"
+	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"golang.org/x/image/font"
 )
@@ -48,43 +49,43 @@ func init() {
 	FontSmall = fontFaces[14]
 }
 
-func NewPlayerTitleCard(name, clanTag string) Block {
-	var content []Block
+func NewPlayerTitleCard(name, clanTag string) render.Block {
+	var content []render.Block
 
-	justify := JustifyContentCenter
+	justify := render.JustifyContentCenter
 	if clanTag != "" {
-		justify = JustifyContentSpaceBetween
+		justify = render.JustifyContentSpaceBetween
 		// Visible tag
-		content = append(content, NewBlocksContent(Style{
-			Direction:       DirectionHorizontal,
-			AlignItems:      AlignItemsCenter,
+		content = append(content, render.NewBlocksContent(render.Style{
+			Direction:       render.DirectionHorizontal,
+			AlignItems:      render.AlignItemsCenter,
 			PaddingX:        10,
 			PaddingY:        5,
 			BackgroundColor: HighlightCardColor,
 			BorderRadius:    10,
 			// Debug:           true,
-		}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: FontMediumColor})))
+		}, render.NewTextContent(clanTag, render.Style{Font: FontMedium, FontColor: FontMediumColor})))
 	}
 
 	// Nickname
-	content = append(content, NewTextContent(name, Style{Font: FontLarge, FontColor: FontLargeColor}))
+	content = append(content, render.NewTextContent(name, render.Style{Font: FontLarge, FontColor: FontLargeColor}))
 
 	if clanTag != "" {
 		// Invisible tag
-		content = append(content, NewBlocksContent(Style{
-			Direction:    DirectionHorizontal,
-			AlignItems:   AlignItemsCenter,
+		content = append(content, render.NewBlocksContent(render.Style{
+			Direction:    render.DirectionHorizontal,
+			AlignItems:   render.AlignItemsCenter,
 			PaddingX:     10,
 			PaddingY:     5,
 			BorderRadius: 10,
 			// Debug:        true,
-		}, NewTextContent(clanTag, Style{Font: FontMedium, FontColor: color.RGBA{0, 0, 0, 0}})))
+		}, render.NewTextContent(clanTag, render.Style{Font: FontMedium, FontColor: color.RGBA{0, 0, 0, 0}})))
 	}
 
-	return NewBlocksContent(Style{
+	return render.NewBlocksContent(render.Style{
 		JustifyContent:  justify,
-		AlignItems:      AlignItemsCenter,
-		Direction:       DirectionHorizontal,
+		AlignItems:      render.AlignItemsCenter,
+		Direction:       render.DirectionHorizontal,
 		PaddingX:        20,
 		PaddingY:        20,
 		BackgroundColor: BaseCardColor,
@@ -94,41 +95,41 @@ func NewPlayerTitleCard(name, clanTag string) Block {
 	}, content...)
 }
 
-func NewStatsBlock(label string, values ...any) Block {
-	var content []Block
+func NewStatsBlock(label string, values ...any) render.Block {
+	var content []render.Block
 	for i, value := range values {
-		style := Style{Font: FontLarge, FontColor: FontLargeColor}
+		style := render.Style{Font: FontLarge, FontColor: FontLargeColor}
 		if i > 0 {
-			style = Style{Font: FontMedium, FontColor: FontMediumColor}
+			style = render.Style{Font: FontMedium, FontColor: FontMediumColor}
 		}
-		content = append(content, NewTextContent(statsValueToString(value), style))
+		content = append(content, render.NewTextContent(statsValueToString(value), style))
 	}
 	if label != "" {
-		content = append(content, NewTextContent(label, Style{Font: FontSmall, FontColor: FontSmallColor}))
+		content = append(content, render.NewTextContent(label, render.Style{Font: FontSmall, FontColor: FontSmallColor}))
 	}
-	return NewBlocksContent(Style{
-		Direction:  DirectionVertical,
-		AlignItems: AlignItemsCenter,
+	return render.NewBlocksContent(render.Style{
+		Direction:  render.DirectionVertical,
+		AlignItems: render.AlignItemsCenter,
 		Width:      BaseStatsBlockWidth,
 		// Debug:      true,
 	}, content...)
 }
 
-func NewTextLabel(label string) Block {
-	return NewTextContent(label, Style{Font: FontMedium, FontColor: FontSmallColor})
+func NewTextLabel(label string) render.Block {
+	return render.NewTextContent(label, render.Style{Font: FontMedium, FontColor: FontSmallColor})
 }
 
-func NewVehicleLabel(name, tier string) Block {
-	var blocks []Block
+func NewVehicleLabel(name, tier string) render.Block {
+	var blocks []render.Block
 	if tier != "" {
-		blocks = append(blocks, NewTextContent(tier, Style{Font: FontSmall, FontColor: FontMediumColor}))
+		blocks = append(blocks, render.NewTextContent(tier, render.Style{Font: FontSmall, FontColor: FontMediumColor}))
 	}
-	blocks = append(blocks, NewTextContent(name, Style{Font: FontMedium, FontColor: FontMediumColor}))
+	blocks = append(blocks, render.NewTextContent(name, render.Style{Font: FontMedium, FontColor: FontMediumColor}))
 
-	return NewBlocksContent(
-		Style{
-			Direction:  DirectionHorizontal,
-			AlignItems: AlignItemsCenter,
+	return render.NewBlocksContent(
+		render.Style{
+			Direction:  render.DirectionHorizontal,
+			AlignItems: render.AlignItemsCenter,
 			Gap:        5,
 			// Debug:      true,
 		},
@@ -136,20 +137,20 @@ func NewVehicleLabel(name, tier string) Block {
 	)
 }
 
-func NewCardBlock(label Block, stats []Block) Block {
-	var content []Block
+func NewCardBlock(label render.Block, stats []render.Block) render.Block {
+	var content []render.Block
 	content = append(content, label)
-	content = append(content, NewBlocksContent(Style{
-		Direction:      DirectionHorizontal,
-		JustifyContent: JustifyContentSpaceBetween,
+	content = append(content, render.NewBlocksContent(render.Style{
+		Direction:      render.DirectionHorizontal,
+		JustifyContent: render.JustifyContentSpaceBetween,
 		Gap:            10,
 		// Debug:     true,
 	}, stats...))
 
-	return NewBlocksContent(
-		Style{
-			Direction:       DirectionVertical,
-			AlignItems:      AlignItemsCenter,
+	return render.NewBlocksContent(
+		render.Style{
+			Direction:       render.DirectionVertical,
+			AlignItems:      render.AlignItemsCenter,
 			Gap:             5,
 			PaddingX:        20,
 			PaddingY:        20,

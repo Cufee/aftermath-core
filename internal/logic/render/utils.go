@@ -6,7 +6,7 @@ func getDebugColor() color.Color {
 	return color.RGBA{255, 192, 203, 255}
 }
 
-func intToRoman(i int) string {
+func IntToRoman(i int) string {
 	roman := ""
 	for i > 0 {
 		switch {

@@ -1,22 +1,23 @@
 package tasks
 
 import (
-	"github.com/cufee/aftermath-core/internal/logic/cache"
-	"github.com/gofiber/fiber/v2/log"
-	"github.com/robfig/cron"
+	"time"
+
+	"github.com/go-co-op/gocron"
+	"github.com/rs/zerolog/log"
 )
 
 func StartCronJobs() {
-	log.Info("starting cron jobs")
+	log.Info().Msg("starting cron jobs")
 
-	c := cron.New()
+	c := gocron.NewScheduler(time.UTC)
 	// Tasks
 	// c.AddFunc("* * * * *", func() { wrk.AutoRunTaskBatch() })
 	// c.AddFunc("0 */2 * * *", func() { wrk.AutoRunTaskCleanup() })
 
 	// Glossary
-	c.AddFunc("20 9 * * *", updateGlossaryWorker)
-	c.AddFunc("10 9 * * *", updateAveragesWorker)
+	c.Cron("20 9 * * *").Do(updateGlossaryWorker)
+	c.Cron("10 9 * * *").Do(updateAveragesWorker)
 	// c.AddFunc("40 9 * * 0", updateAchievementsWrkr)
 
 	// Sessions
@@ -32,25 +33,7 @@ func StartCronJobs() {
 	// c.AddFunc("45 18 * * *", func() { refreshRatingWrkr("ASIA") }) // ASIA
 
 	// Start the Cron job scheduler
-	c.Start()
-}
-
-func updateGlossaryWorker() {
-	log.Info("updating glossary cache")
-	defer log.Info("updated glossary cache")
-	err := cache.UpdateGlossaryCache()
-	if err != nil {
-		log.Errorf("failed to update glossary cache: %s", err.Error())
-	}
-}
-
-func updateAveragesWorker() {
-	log.Info("updating averages cache")
-	defer log.Info("updated averages cache")
-	err := cache.UpdateAveragesCache()
-	if err != nil {
-		log.Errorf("failed to update averages cache: %s", err.Error())
-	}
+	c.StartAsync()
 }
 
 // func updateSessionsWorker(realm string) func() {

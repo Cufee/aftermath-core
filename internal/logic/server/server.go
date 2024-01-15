@@ -8,9 +8,8 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/users"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 
+	"github.com/gofiber/contrib/fiberzerolog"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -19,7 +18,7 @@ func Start() {
 		Network: os.Getenv("NETWORK"),
 	})
 
-	app.Use(logger.New())
+	app.Use(fiberzerolog.New())
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendStatus(200)
@@ -37,5 +36,5 @@ func Start() {
 	usersV1 := v1.Group("/users")
 	usersV1.Post("/:id/connections/wargaming/:account", users.UpdateWargamingConnectionHandler)
 
-	log.Fatal(app.Listen(":" + os.Getenv("PORT")))
+	panic(app.Listen(":" + os.Getenv("PORT")))
 }

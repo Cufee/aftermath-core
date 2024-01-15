@@ -1,4 +1,4 @@
-package render
+package session
 
 import (
 	"errors"
@@ -7,18 +7,19 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
+	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 )
 
-func FrameToOverviewBlocks(session, career *core.ReducedStatsFrame, sessionWN8, careerWN8 int, localePrinter localization.LocalePrinter) ([]Block, error) {
+func FrameToOverviewBlocks(session, career *core.ReducedStatsFrame, sessionWN8, careerWN8 int, localePrinter localization.LocalePrinter) ([]render.Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
 	}
 
-	var blocks []Block
+	var blocks []render.Block
 	{
 		// Battles
 		values := []interface{}{session.Battles}
@@ -69,12 +70,12 @@ func FrameToOverviewBlocks(session, career *core.ReducedStatsFrame, sessionWN8, 
 	return blocks, nil
 }
 
-func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]Block, error) {
+func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]render.Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
 	}
 
-	var blocks []Block
+	var blocks []render.Block
 	{
 		// Battles
 		values := []interface{}{session.Battles}
@@ -125,12 +126,12 @@ func FrameToStatsBlocks(session, career, averages *core.ReducedStatsFrame, local
 	return blocks, nil
 }
 
-func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]Block, error) {
+func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePrinter localization.LocalePrinter) ([]render.Block, error) {
 	if session == nil {
 		return nil, errors.New("session is nil")
 	}
 
-	var blocks []Block
+	var blocks []render.Block
 	{
 		// Battles
 		battlesBlock := NewStatsBlock("", session.Battles)
@@ -161,8 +162,8 @@ func FrameToSlimStatsBlocks(session, averages *core.ReducedStatsFrame, localePri
 	return blocks, nil
 }
 
-func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]Block, error) {
-	var cards []Block
+func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, locale localization.SupportedLanguage) ([]render.Block, error) {
+	var cards []render.Block
 
 	localePrinter := localization.GetPrinter(locale)
 
@@ -177,9 +178,9 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 
 	{
 		// Promo Card
-		cards = append(cards, NewBlocksContent(Style{Direction: DirectionVertical, AlignItems: AlignItemsCenter},
-			NewTextContent("Aftermath is back!", Style{Font: FontMedium, FontColor: FontTranslucentColor}),
-			NewTextContent("amth.one/join", Style{Font: FontMedium, FontColor: FontTranslucentColor}),
+		cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter},
+			render.NewTextContent("Aftermath is back!", render.Style{Font: FontMedium, FontColor: FontTranslucentColor}),
+			render.NewTextContent("amth.one/join", render.Style{Font: FontMedium, FontColor: FontTranslucentColor}),
 		))
 	}
 
@@ -190,7 +191,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 	}
 
 	var totalVehicleWN8 int
-	var vehicleCards []Block
+	var vehicleCards []render.Block
 	{
 		for _, vehicle := range vehicles {
 			if vehicle.WN8(averages[vehicle.VehicleID]) != core.InvalidValue {
@@ -205,7 +206,7 @@ func SnapshotToCardsBlocks(snapshot *stats.Snapshot, vehicles []*core.ReducedVeh
 
 			vehicleInfo := vehiclesGlossary[vehicle.VehicleID]
 			vehicleInfo.ID = vehicle.VehicleID
-			vehicleCards = append(vehicleCards, NewCardBlock(NewVehicleLabel(vehicleInfo.Name(locale), intToRoman(vehicleInfo.Tier)), blocks))
+			vehicleCards = append(vehicleCards, NewCardBlock(NewVehicleLabel(vehicleInfo.Name(locale), render.IntToRoman(vehicleInfo.Tier)), blocks))
 		}
 	}
 
@@ -242,10 +243,10 @@ func RenderStatsImage(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleS
 
 	// TODO: Some text outside of a card, like session date, can be added here
 
-	allCards := NewBlocksContent(
-		Style{
-			Direction:  DirectionVertical,
-			AlignItems: AlignItemsCenter,
+	allCards := render.NewBlocksContent(
+		render.Style{
+			Direction:  render.DirectionVertical,
+			AlignItems: render.AlignItemsCenter,
 			PaddingX:   20,
 			PaddingY:   20,
 			Gap:        10,

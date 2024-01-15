@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
-	"github.com/cufee/aftermath-core/internal/logic/render"
+	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 )
 
 func TestFullRenderPipeline(t *testing.T) {
 	start := time.Now()
-	session, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013072123 1032698345
+	session, err := stats.GetCurrentPlayerSession("na", 1032698345) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func TestFullRenderPipeline(t *testing.T) {
 	// TODO: sorting options and limits
 	opts := stats.SortOptions{
 		By:    stats.SortByLastBattle,
-		Limit: 7,
+		Limit: 5,
 	}
 	vehicles := stats.SortVehicles(session.Diff.Vehicles, averages, opts)
 

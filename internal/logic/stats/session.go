@@ -10,7 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
 	wg "github.com/cufee/am-wg-proxy-next/types"
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -56,9 +56,6 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	go func() {
 		defer wg.Done()
 		lastSession, err := cache.GetPlayerSessionSnapshot(accountId, options...)
-		if err != nil {
-			log.Errorf("failed to get last session: %s", err.Error())
-		}
 		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession, Err: err}
 	}()
 
@@ -68,6 +65,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 
 	liveSession := <-liveSessionChan
 	if liveSession.Err != nil {
+		log.Err(liveSession.Err).Msg("failed to get live session")
 		return nil, liveSession.Err
 	}
 	lastSession := <-lastSessionChan
@@ -77,7 +75,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 				// Refresh the session cache in the background
 				err := cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId)
 				if err != nil {
-					log.Errorf("failed to refresh session cache: %s", err.Error())
+					log.Err(err).Msg("failed to refresh session cache")
 				}
 			}(realm, accountId)
 
@@ -92,11 +90,13 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 				Diff: core.EmptySession(liveSession.Data.Account.ID, liveSession.Data.Account.LastBattleTime),
 			}, nil
 		}
+		log.Err(lastSession.Err).Msg("failed to get last session")
 		return nil, lastSession.Err
 	}
 
 	diffSession, err := liveSession.Data.Session.Diff(lastSession.Data)
 	if err != nil {
+		log.Err(err).Msg("failed to diff sessions")
 		return nil, err
 	}
 
@@ -194,5 +194,8 @@ func SortVehicles(vehicles map[int]*core.ReducedVehicleStats, averages map[int]*
 		})
 	}
 
+	if opts.Limit > 0 && opts.Limit < len(sorted) {
+		sorted = sorted[:opts.Limit]
+	}
 	return sorted
 }

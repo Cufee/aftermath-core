@@ -4,8 +4,8 @@ import (
 	"embed"
 	"encoding/json"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/text/language"
 )
 
@@ -80,7 +80,7 @@ func GetPrinter(locale SupportedLanguage) LocalePrinter {
 			},
 		})
 		if err != nil {
-			log.Warn("failed to localize string: %s\n", s)
+			log.Warn().Err(err).Msg("failed to localize string")
 			return "? " + s
 		}
 		return localized
