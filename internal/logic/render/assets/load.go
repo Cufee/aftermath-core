@@ -18,7 +18,7 @@ var fontsEmbed embed.FS
 var imagesEmbed embed.FS
 
 var fontsMap map[string]*truetype.Font = make(map[string]*truetype.Font)
-var backgroundsMap map[string]image.Image = make(map[string]image.Image)
+var imagesMap map[string]image.Image = make(map[string]image.Image)
 
 func init() {
 	fonts, err := loadFonts()
@@ -31,8 +31,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	backgroundsMap = images
+	imagesMap = images
 }
 
 func loadFonts() (map[string]*truetype.Font, error) {
@@ -62,32 +61,54 @@ func loadFonts() (map[string]*truetype.Font, error) {
 }
 
 func loadImages() (map[string]image.Image, error) {
-	backgroundsDir, err := imagesEmbed.ReadDir("images/backgrounds")
+	images, err := getAllFiles(imagesEmbed, ".")
 	if err != nil {
 		return nil, err
 	}
 
-	imagesMap := make(map[string]image.Image)
-	for _, file := range backgroundsDir {
-		if file.IsDir() {
+	for path, file := range images {
+		if (!strings.HasSuffix(path, ".png")) && !strings.HasSuffix(path, ".jpg") {
 			continue
 		}
 
-		img, err := imagesEmbed.ReadFile(filepath.Join("images/backgrounds", file.Name()))
+		image, _, err := image.Decode(bytes.NewBuffer(file))
 		if err != nil {
 			return nil, err
 		}
 
-		image, _, err := image.Decode(bytes.NewBuffer(img))
-		if err != nil {
-			return nil, err
-		}
-
-		imagesMap[strings.Split(file.Name(), ".")[0]] = image
-		println("loaded background: " + file.Name())
+		imagesMap[strings.Split(path, ".")[0]] = image
+		println("loaded image: " + path)
 	}
 
 	return imagesMap, nil
+}
+
+func getAllFiles(dir embed.FS, path string) (map[string][]byte, error) {
+	entries, err := dir.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	files := make(map[string][]byte)
+	for _, entry := range entries {
+		if entry.IsDir() {
+			subFiles, err := getAllFiles(dir, filepath.Join(path, entry.Name()))
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range subFiles {
+				files[k] = v
+			}
+			continue
+		}
+
+		file, err := dir.ReadFile(filepath.Join(path, entry.Name()))
+		if err != nil {
+			return nil, err
+		}
+		files[filepath.Join(path, entry.Name())] = file
+	}
+	return files, nil
 }
 
 func GetFontFaces(name string, sizes ...float64) (map[float64]font.Face, bool) {
@@ -104,7 +125,7 @@ func GetFontFaces(name string, sizes ...float64) (map[float64]font.Face, bool) {
 	return faces, true
 }
 
-func GetBackground(name string) (image.Image, bool) {
-	img, ok := backgroundsMap[name]
+func GetImage(name string) (image.Image, bool) {
+	img, ok := imagesMap[name]
 	return img, ok
 }

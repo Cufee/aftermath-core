@@ -253,7 +253,7 @@ func RenderStatsImage(snapshot *stats.Snapshot, vehicles []*core.ReducedVehicleS
 		}, cards...)
 
 	// TODO: Custom images from users and default as a fallback image
-	bgImage, _ := assets.GetBackground("default")
+	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	// if !ok {
 	// 	// This is always ok because for now
 	// }
