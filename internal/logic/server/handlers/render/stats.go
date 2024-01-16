@@ -90,6 +90,7 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	options := render.RenderOptions{
+		PromoText:       []string{"Aftermath is back!", "amth.one/join"},
 		Locale:          localization.LanguageEN,
 		CardStyle:       render.DefaultCardStyle(nil),
 		BackgroundImage: bgImage,
