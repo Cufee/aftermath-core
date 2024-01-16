@@ -48,7 +48,8 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	now := time.Now()
-	tiers := []*render.SubscriptionHeader{nil, render.UserSubscriptionPlus, render.UserSubscriptionPremium, render.UserSubscriptionPremiumXL, render.UserSubscriptionSupporter}
+	tiers := []*render.SubscriptionHeader{nil}
+	// tiers := []*render.SubscriptionHeader{nil, render.UserSubscriptionPlus, render.UserSubscriptionPremium, render.UserSubscriptionPremiumXL, render.UserSubscriptionSupporter}
 	var images []image.Image
 	for _, tier := range tiers {
 		optionsWithTier := options

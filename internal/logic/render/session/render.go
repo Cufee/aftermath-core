@@ -32,7 +32,7 @@ func RenderStatsImage(player PlayerData, options RenderOptions) (image.Image, er
 
 	// Fill background with black and round the corners
 	frameCtx := gg.NewContextForImage(cardsImage)
-	frameCtx.SetColor(color.Black)
+	frameCtx.SetColor(color.RGBA{44, 47, 51, 255})
 	frameCtx.Clear()
 	frameCtx.DrawRoundedRectangle(0, 0, float64(frameCtx.Width()), float64(frameCtx.Height()), 20)
 	frameCtx.Clip()
