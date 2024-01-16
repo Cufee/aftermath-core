@@ -68,13 +68,13 @@ type subscriptionPillStyle struct {
 	Icon      render.Style
 	Container render.Style
 }
-type SubscriptionHeader struct {
+type subscriptionHeader struct {
 	Name  string
 	Icon  string
 	Style subscriptionPillStyle
 }
 
-func (sub SubscriptionHeader) Block() (render.Block, error) {
+func (sub subscriptionHeader) Block() (render.Block, error) {
 	if tierImage, ok := assets.GetImage(sub.Icon); ok {
 		content := []render.Block{render.NewImageContent(sub.Style.Icon, tierImage)}
 		if sub.Name != "" {
@@ -86,7 +86,8 @@ func (sub SubscriptionHeader) Block() (render.Block, error) {
 }
 
 var (
-	UserSubscriptionSupporter = &SubscriptionHeader{
+	// Personal
+	userSubscriptionSupporter = &subscriptionHeader{
 		Name: "Supporter",
 		Icon: "images/icons/fire",
 		Style: subscriptionPillStyle{
@@ -95,7 +96,7 @@ var (
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor, PaddingX: 5},
 		},
 	}
-	UserSubscriptionPlus = &SubscriptionHeader{
+	userSubscriptionPlus = &subscriptionHeader{
 		Name: "Aftermath+",
 		Icon: "images/icons/star",
 		Style: subscriptionPillStyle{
@@ -104,7 +105,7 @@ var (
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor},
 		},
 	}
-	UserSubscriptionPremium = &SubscriptionHeader{
+	userSubscriptionPro = &subscriptionHeader{
 		Name: "Aftermath Pro",
 		Icon: "images/icons/star",
 		Style: subscriptionPillStyle{
@@ -113,19 +114,18 @@ var (
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor},
 		},
 	}
-	UserSubscriptionPremiumXL = &SubscriptionHeader{
-		Name: "Aftermath Pro",
-		Icon: "images/icons/star-multiple",
+	// Clans
+	clanSubscriptionSupporter = &subscriptionHeader{
+		Icon: "images/icons/fire",
 		Style: subscriptionPillStyle{
-			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5},
-			Icon:      render.Style{Width: 24, Height: 24, BackgroundColor: FontPremiumColor},
-			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor},
+			Icon:      render.Style{Width: 28, Height: 28, BackgroundColor: FontPlusColor},
+			Container: render.Style{Direction: render.DirectionHorizontal},
 		},
 	}
-	ClanSubscriptionPremiumXL = &SubscriptionHeader{
+	clanSubscriptionPro = &subscriptionHeader{
 		Icon: "images/icons/star-multiple",
 		Style: subscriptionPillStyle{
-			Icon:      render.Style{Width: 24, Height: 24, BackgroundColor: FontPremiumColor},
+			Icon:      render.Style{Width: 32, Height: 32, BackgroundColor: FontPremiumColor},
 			Container: render.Style{Direction: render.DirectionHorizontal},
 		},
 	}

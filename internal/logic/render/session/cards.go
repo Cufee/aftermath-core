@@ -9,22 +9,48 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/cufee/aftermath-core/internal/logic/users"
 	"github.com/rs/zerolog/log"
 )
 
 type PlayerData struct {
-	Snapshot *stats.Snapshot
-	Vehicles []*core.ReducedVehicleStats
-	Averages map[int]*core.ReducedStatsFrame
+	Snapshot      *stats.Snapshot
+	Vehicles      []*core.ReducedVehicleStats
+	Averages      map[int]*core.ReducedStatsFrame
+	Subscriptions []users.UserSubscription
 }
 
 type RenderOptions struct {
-	Locale                 localization.SupportedLanguage
-	PromoText              []string
-	CardStyle              render.Style
-	BackgroundImage        image.Image
-	UserSubscriptionHeader *SubscriptionHeader
-	ClanSubscriptionHeader *SubscriptionHeader
+	Locale          localization.SupportedLanguage
+	PromoText       []string
+	CardStyle       render.Style
+	BackgroundImage image.Image
+}
+
+func (data *PlayerData) UserSubscriptionHeader() *subscriptionHeader {
+	for _, subscription := range data.Subscriptions {
+		switch subscription.Type {
+		case users.SubscriptionTypePro:
+			return userSubscriptionPro
+		case users.SubscriptionTypePlus:
+			return userSubscriptionPlus
+		case users.SubscriptionTypeSupporter:
+			return userSubscriptionSupporter
+		}
+	}
+	return nil
+}
+
+func (data *PlayerData) ClanSubscriptionHeader() *subscriptionHeader {
+	for _, subscription := range data.Subscriptions {
+		switch subscription.Type {
+		case users.SubscriptionTypeProClan:
+			return clanSubscriptionPro
+		case users.SubscriptionTypeSupporterClan:
+			return clanSubscriptionSupporter
+		}
+	}
+	return nil
 }
 
 func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
@@ -43,17 +69,18 @@ func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Check if a user is premium
 	// User Status Badge
-	switch options.UserSubscriptionHeader {
-	case UserSubscriptionSupporter:
-		subscriptionBlock, err := options.UserSubscriptionHeader.Block()
+	switch sub := player.UserSubscriptionHeader(); sub {
+	case userSubscriptionSupporter:
+		// Supporters get a badge and a promo text
+		subscriptionBlock, err := sub.Block()
 		if err != nil {
 			return nil, err
 		}
 		cards = append(cards, subscriptionBlock)
 		fallthrough
 	case nil:
+		// Users without a subscription and supporters get a promo text
 		if options.PromoText != nil {
-			// Promo Card
 			var textBlocks []render.Block
 			for _, text := range options.PromoText {
 				textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, text))
@@ -63,7 +90,8 @@ func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			))
 		}
 	default:
-		subscriptionBlock, err := options.UserSubscriptionHeader.Block()
+		// All other subscriptions get a badge
+		subscriptionBlock, err := sub.Block()
 		if err != nil {
 			return nil, err
 		}
@@ -73,8 +101,8 @@ func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	// Title Card
 	{
 		clanSubBlock := render.NewTextContent(render.Style{Font: &FontMedium, FontColor: color.Transparent}, player.Snapshot.Account.Clan.Tag)
-		if options.ClanSubscriptionHeader != nil {
-			iconBlock, err := options.ClanSubscriptionHeader.Block()
+		if sub := player.ClanSubscriptionHeader(); sub != nil {
+			iconBlock, err := sub.Block()
 			if err != nil {
 				log.Warn().Err(err).Msg("failed to render clan tag") // This error is not fatal, but we should avoid trying to render the tag
 			} else {

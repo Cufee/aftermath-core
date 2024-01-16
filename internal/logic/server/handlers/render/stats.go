@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"image/png"
 	"strconv"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/users"
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 )
 
 func SessionFromIDHandler(c *fiber.Ctx) error {
@@ -78,14 +80,21 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		return "", err
 	}
 
+	subscriptions, err := users.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(session.Account.ID), fmt.Sprint(session.Account.ClanID))
+	if err != nil && !errors.Is(err, users.ErrSubscriptionNotFound) {
+		log.Warn().Err(err).Msg("failed to get subscriptions")
+		// We can continue without subscriptions
+	}
+
 	opts := stats.SortOptions{
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
 	player := render.PlayerData{
-		Snapshot: session,
-		Averages: averages,
-		Vehicles: stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+		Snapshot:      session,
+		Averages:      averages,
+		Subscriptions: subscriptions,
+		Vehicles:      stats.SortVehicles(session.Diff.Vehicles, averages, opts),
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
