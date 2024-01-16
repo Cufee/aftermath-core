@@ -5,8 +5,9 @@ import "go.mongodb.org/mongo-driver/mongo"
 type collectionName string
 
 const (
-	CollectionUsers           = collectionName("users")
-	CollectionUserConnections = collectionName("user-connections")
+	CollectionUsers             = collectionName("users")
+	CollectionUserConnections   = collectionName("user-connections")
+	CollectionUserSubscriptions = collectionName("user-subscriptions")
 
 	CollectionClans    = collectionName("clans")
 	CollectionAccounts = collectionName("accounts")

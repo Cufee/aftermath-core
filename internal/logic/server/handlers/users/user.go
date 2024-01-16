@@ -45,7 +45,7 @@ func UpdateWargamingConnectionHandler(c *fiber.Ctx) error {
 		Metadata:       map[string]interface{}{"verified": false, "realm": realm},
 	}
 
-	err = users.UpdateUserConnection(user.ID, account, connection, true)
+	err = users.UpdateUserConnection(user.ID, connection.ConnectionType, connection, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.UpdateUserConnection"))
 	}

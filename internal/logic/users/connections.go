@@ -63,15 +63,13 @@ func AddUserConnection(id string, connectionType connectionType, externalID stri
 	return nil
 }
 
-func UpdateUserConnection(userId, externalId string, payload UserConnection, upsert bool) error {
+func UpdateUserConnection(userId string, connectionType connectionType, payload UserConnection, upsert bool) error {
 	ctx, cancel := database.DefaultClient.Ctx()
 	defer cancel()
 
 	payload.UserID = userId
-	payload.ExternalID = externalId
-
 	opts := options.Update().SetUpsert(upsert)
-	_, err := database.DefaultClient.Collection(database.CollectionUserConnections).UpdateOne(ctx, bson.M{"userID": userId, "connectionID": externalId}, bson.M{"$set": payload}, opts)
+	_, err := database.DefaultClient.Collection(database.CollectionUserConnections).UpdateOne(ctx, bson.M{"userID": userId, "connectionType": connectionType}, bson.M{"$set": payload}, opts)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return ErrConnectionNotFound
