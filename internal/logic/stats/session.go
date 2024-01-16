@@ -73,7 +73,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 		if errors.Is(lastSession.Err, cache.ErrNoSessionCache) {
 			go func(realm string, accountId int) {
 				// Refresh the session cache in the background
-				err := cache.RefreshSessions(cache.SessionTypeDaily, realm, accountId)
+				err := cache.RefreshSessionsAndAccounts(cache.SessionTypeDaily, realm, accountId)
 				if err != nil {
 					log.Err(err).Msg("failed to refresh session cache")
 				}

@@ -46,6 +46,17 @@ func GetPlayerAccount(id int) (*DatabaseAccount, error) {
 	return &account, nil
 }
 
+func UpdatePlayerAccountsFromWG(realm string, accounts ...*wg.ExtendedAccount) error {
+	var converted []DatabaseAccount
+	for _, account := range accounts {
+		if account == nil {
+			continue
+		}
+		converted = append(converted, *accountToDatabaseAccount(realm, *account))
+	}
+	return UpdatePlayerAccounts(converted...)
+}
+
 func UpdatePlayerAccounts(accounts ...DatabaseAccount) error {
 	var writes []mongo.WriteModel
 	for _, account := range accounts {
@@ -90,13 +101,13 @@ func UpdateRealmAccountsCache(realm string) error {
 		accountIDs = append(accountIDs, account.ID)
 	}
 
-	return UpdateAccountCache(realm, accountIDs)
+	return UpdateAccountsCache(realm, accountIDs)
 }
 
 /*
 UpdateAccountCache updates active accounts in the cache.
 */
-func UpdateAccountCache(realm string, accountIDs []int) error {
+func UpdateAccountsCache(realm string, accountIDs []int) error {
 	var waitGroup sync.WaitGroup
 
 	batches := utils.BatchAccountIDs(accountIDs, 100)
