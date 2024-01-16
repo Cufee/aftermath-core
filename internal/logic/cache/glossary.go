@@ -194,12 +194,3 @@ func GetGlossaryVehicles(vehicleIDs ...int) (map[int]VehicleInfo, error) {
 
 	return vehicleMap, nil
 }
-
-func stringsOr(strings ...string) string {
-	for _, str := range strings {
-		if str != "" {
-			return str
-		}
-	}
-	return ""
-}
