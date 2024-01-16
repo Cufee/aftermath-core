@@ -40,7 +40,7 @@ func (r *ReducedStatsFrame) AvgDamage() float64 {
 }
 
 func (r *ReducedStatsFrame) DamageRatio() float32 {
-	if r.DamageReceived == 0 {
+	if r.Battles == 0 || r.DamageReceived == 0 {
 		return InvalidValue
 	}
 	if r.damageRatio == 0 {
@@ -60,7 +60,7 @@ func (r *ReducedStatsFrame) Winrate() float64 {
 }
 
 func (r *ReducedStatsFrame) Accuracy() float64 {
-	if r.ShotsFired == 0 {
+	if r.Battles == 0 || r.ShotsFired == 0 {
 		return InvalidValue
 	}
 	if r.accuracy == 0 {
