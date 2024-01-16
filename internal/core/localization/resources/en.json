@@ -1,6 +1,7 @@
 {
   "label_battles": "Battles",
   "label_avg_damage": "Damage",
+  "label_damage_ratio": "Damage Ratio",
   "label_winrate": "Winrate",
   "label_wn8": "WN8",
   "label_accuracy": "Accuracy",

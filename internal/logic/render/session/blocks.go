@@ -2,11 +2,11 @@ package session
 
 import (
 	"errors"
-	"image/color"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/render"
+	"github.com/rs/zerolog/log"
 )
 
 func FrameToOverviewBlocks(cardStyle render.Style, session, career *core.ReducedStatsFrame, sessionWN8, careerWN8 int, localePrinter localization.LocalePrinter) ([]render.Block, error) {
@@ -35,6 +35,14 @@ func FrameToOverviewBlocks(cardStyle render.Style, session, career *core.Reduced
 			values = append(values, int(career.AvgDamage()))
 		}
 		blocks = append(blocks, NewStatsBlock(localePrinter("label_avg_damage"), values...))
+	}
+	{
+		// Damage Ratio
+		values := []any{session.DamageRatio()}
+		if career != nil {
+			values = append(values, career.DamageRatio())
+		}
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_damage_ratio"), values...))
 	}
 	{
 		// Winrate
@@ -93,6 +101,14 @@ func FrameToStatsBlocks(cardStyle render.Style, session, career, averages *core.
 		blocks = append(blocks, NewStatsBlock(localePrinter("label_avg_damage"), values...))
 	}
 	{
+		// Damage Ratio
+		values := []any{session.DamageRatio()}
+		if career != nil {
+			values = append(values, career.DamageRatio())
+		}
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_damage_ratio"), values...))
+	}
+	{
 		// Winrate
 		values := []interface{}{session.Winrate()}
 		if career != nil {
@@ -141,6 +157,10 @@ func FrameToSlimStatsBlocks(cardStyle render.Style, session, averages *core.Redu
 		blocks = append(blocks, NewStatsBlock(localePrinter("label_avg_damage"), int(session.AvgDamage())))
 	}
 	{
+		// Damage Ratio
+		blocks = append(blocks, NewStatsBlock(localePrinter("label_damage_ratio"), session.DamageRatio()))
+	}
+	{
 		// Winrate
 		blocks = append(blocks, NewStatsBlock(localePrinter("label_winrate"), session.Winrate()))
 	}
@@ -157,40 +177,51 @@ func FrameToSlimStatsBlocks(cardStyle render.Style, session, averages *core.Redu
 	return blocks, nil
 }
 
-func NewPlayerTitleCard(style render.Style, name, clanTag string) render.Block {
-	var content []render.Block
-
-	style.JustifyContent = render.JustifyContentCenter
-	if clanTag != "" {
-		style.JustifyContent = render.JustifyContentSpaceBetween
-		// Visible tag
-		content = append(content, render.NewBlocksContent(render.Style{
-			Direction:       render.DirectionHorizontal,
-			AlignItems:      render.AlignItemsCenter,
-			PaddingX:        10,
-			PaddingY:        5,
-			BackgroundColor: HighlightCardColor(style.BackgroundColor),
-			BorderRadius:    10,
-			// Debug:           true,
-		}, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, clanTag)))
+func NewPlayerTitleCard(style render.Style, name, clanTag string, clanSubHeader render.Block) render.Block {
+	if clanTag == "" {
+		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
 	}
+
+	content := make([]render.Block, 0, 3)
+	style.JustifyContent = render.JustifyContentSpaceBetween
+
+	// Visible tag
+	clanTagBlock := render.NewBlocksContent(render.Style{
+		Direction:       render.DirectionHorizontal,
+		AlignItems:      render.AlignItemsCenter,
+		PaddingX:        10,
+		PaddingY:        5,
+		BackgroundColor: HighlightCardColor(style.BackgroundColor),
+		BorderRadius:    10,
+		// Debug:           true,
+	}, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, clanTag))
+
+	clanTagImage, err := clanTagBlock.Render()
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to render clan tag")
+		// This error is not fatal, we can just render the name
+		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
+	}
+	content = append(content, render.NewImageContent(render.Style{Width: float64(clanTagImage.Bounds().Dx()), Height: float64(clanTagImage.Bounds().Dy())}, clanTagImage))
 
 	// Nickname
 	content = append(content, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
 
-	if clanTag != "" {
-		// Invisible tag
-		content = append(content, render.NewBlocksContent(render.Style{
-			Direction:    render.DirectionHorizontal,
-			AlignItems:   render.AlignItemsCenter,
-			PaddingX:     10,
-			PaddingY:     5,
-			BorderRadius: 10,
-			// Debug:        true,
-		}, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: color.RGBA{0, 0, 0, 0}}, clanTag)))
-	}
+	clanBlock := render.NewBlocksContent(render.Style{
+		Width:          float64(clanTagImage.Bounds().Dx()),
+		JustifyContent: render.JustifyContentEnd,
+	}, clanSubHeader)
 
-	return render.NewBlocksContent(style, content...)
+	content = append(content, clanBlock)
+
+	return render.NewBlocksContent(style, render.NewBlocksContent(render.Style{
+		JustifyContent: render.JustifyContentSpaceBetween,
+		Direction:      render.DirectionHorizontal,
+		AlignItems:     render.AlignItemsCenter,
+		Width:          BaseCardWidth,
+		PaddingX:       20,
+		// Debug:          true,
+	}, content...))
 }
 
 func NewStatsBlock(label string, values ...any) render.Block {

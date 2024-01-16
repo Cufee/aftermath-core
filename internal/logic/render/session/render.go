@@ -39,7 +39,7 @@ func RenderStatsImage(player PlayerData, options RenderOptions) (image.Image, er
 
 	// Resize the background image to fit the cards
 	bgImage := imaging.Fill(options.BackgroundImage, frameCtx.Width(), frameCtx.Height(), imaging.Center, imaging.NearestNeighbor)
-	bgImage = imaging.Blur(bgImage, 10.0)
+	bgImage = imaging.Blur(bgImage, 10)
 	frameCtx.DrawImage(bgImage, 0, 0)
 	frameCtx.DrawImage(cardsImage, 0, 0)
 

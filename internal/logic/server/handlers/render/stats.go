@@ -90,10 +90,9 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	options := render.RenderOptions{
-		Locale:             localization.LanguageEN,
-		CardStyle:          render.DefaultCardStyle(nil),
-		SubscriptionHeader: nil,
-		BackgroundImage:    bgImage,
+		Locale:          localization.LanguageEN,
+		CardStyle:       render.DefaultCardStyle(nil),
+		BackgroundImage: bgImage,
 	}
 
 	img, err := render.RenderStatsImage(player, options)

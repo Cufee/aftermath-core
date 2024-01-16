@@ -10,11 +10,16 @@ func statsValueToString(value any) string {
 	switch cast := value.(type) {
 	case string:
 		return cast
+	case float32:
+		if int(cast) == core.InvalidValue {
+			return "-"
+		}
+		return fmt.Sprintf("%.2f", cast)
 	case float64:
 		if int(cast) == core.InvalidValue {
 			return "-"
 		}
-		return fmt.Sprintf("%.2f%%", value)
+		return fmt.Sprintf("%.2f%%", cast)
 	case int:
 		if value == core.InvalidValue {
 			return "-"

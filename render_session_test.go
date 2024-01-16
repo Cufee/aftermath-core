@@ -39,24 +39,27 @@ func TestFullRenderPipeline(t *testing.T) {
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	options := render.RenderOptions{
-		PromoText:          []string{"Aftermath is back!", "amth.one/join"},
-		Locale:             localization.LanguageEN,
-		CardStyle:          render.DefaultCardStyle(nil),
-		SubscriptionHeader: nil,
-		BackgroundImage:    bgImage,
+		PromoText:              []string{"Aftermath is back!", "amth.one/join"},
+		Locale:                 localization.LanguageEN,
+		CardStyle:              render.DefaultCardStyle(nil),
+		UserSubscriptionHeader: nil,
+		ClanSubscriptionHeader: render.ClanSubscriptionPremiumXL,
+		BackgroundImage:        bgImage,
 	}
 
-	tiers := []*render.UserSubscriptionHeader{nil, render.UserSubscriptionPlus, render.UserSubscriptionPremium, render.UserSubscriptionPremiumXL, render.UserSubscriptionSupporter}
+	now := time.Now()
+	tiers := []*render.SubscriptionHeader{nil, render.UserSubscriptionPlus, render.UserSubscriptionPremium, render.UserSubscriptionPremiumXL, render.UserSubscriptionSupporter}
 	var images []image.Image
 	for _, tier := range tiers {
 		optionsWithTier := options
-		optionsWithTier.SubscriptionHeader = tier
+		optionsWithTier.UserSubscriptionHeader = tier
 		img, err := render.RenderStatsImage(player, optionsWithTier)
 		if err != nil {
 			t.Fatal(err)
 		}
 		images = append(images, img)
 	}
+	t.Logf("rendered in %s", time.Since(now).String())
 
 	if len(images) == 0 {
 		t.Fatal("no images rendered")

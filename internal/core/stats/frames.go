@@ -1,33 +1,33 @@
 package stats
 
-import "math"
-
-/*
-	Stats Cards have the following format:
-	[Battles Session] 	[Avg Damage Session]	[Winrate Session] 	[WN8/Accuracy Session]
-	[Battles All Time]	[Avg Damage All Time]	[Winrate All Time] 	[WN8/Accuracy All Time]
-
-	We only need the data required to calculate these values in the session. Additionally, WN8 calculations require Dropped Capture Points, Frags, Spotted, Damage, and Wins
-*/
+import (
+	"log"
+	"math"
+)
 
 const InvalidValue = -1
 
 type ReducedStatsFrame struct {
-	Battles     int `json:"battles" bson:"battles"`
-	BattlesWon  int `json:"battlesWon" bson:"battlesWon"`
-	DamageDealt int `json:"damageDealt" bson:"damageDealt"`
+	Battles         int `json:"battles" bson:"battles"`
+	BattlesWon      int `json:"battlesWon" bson:"battlesWon"`
+	BattlesSurvived int `json:"battlesSurvived" bson:"battlesSurvived"`
+	DamageDealt     int `json:"damageDealt" bson:"damageDealt"`
+	DamageReceived  int `json:"damageReceived" bson:"damageReceived"`
 
 	ShotsHit   int `json:"shotsHit" bson:"shotsHit"`
 	ShotsFired int `json:"shotsFired" bson:"shotsFired"`
 
 	Frags                int `json:"frags" bson:"frags"`
+	MaxFrags             int `json:"maxFrags" bson:"maxFrags"`
 	EnemiesSpotted       int `json:"enemiesSpotted" bson:"enemiesSpotted"`
+	CapturePoints        int `json:"capturePoints" bson:"capturePoints"`
 	DroppedCapturePoints int `json:"droppedCapturePoints" bson:"droppedCapturePoints"`
 
-	wn8       int     `json:"-" bson:"-"`
-	winrate   float64 `json:"-" bson:"-"`
-	accuracy  float64 `json:"-" bson:"-"`
-	avgDamage float64 `json:"-" bson:"-"`
+	wn8         int     `json:"-" bson:"-"`
+	winrate     float64 `json:"-" bson:"-"`
+	accuracy    float64 `json:"-" bson:"-"`
+	avgDamage   float64 `json:"-" bson:"-"`
+	damageRatio float32 `json:"-" bson:"-"`
 }
 
 func (r *ReducedStatsFrame) AvgDamage() float64 {
@@ -38,6 +38,17 @@ func (r *ReducedStatsFrame) AvgDamage() float64 {
 		r.avgDamage = float64(r.DamageDealt) / float64(r.Battles)
 	}
 	return r.avgDamage
+}
+
+func (r *ReducedStatsFrame) DamageRatio() float32 {
+	if r.DamageReceived == 0 {
+		return InvalidValue
+	}
+	if r.damageRatio == 0 {
+		r.damageRatio = float32(r.DamageDealt) / float32(r.DamageReceived)
+	}
+	log.Printf("%d / %d = %f %d", r.DamageDealt, r.DamageReceived, r.damageRatio, r.Battles)
+	return r.damageRatio
 }
 
 func (r *ReducedStatsFrame) Winrate() float64 {
@@ -107,26 +118,40 @@ func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
 func (r *ReducedStatsFrame) Add(other *ReducedStatsFrame) {
 	r.Battles += other.Battles
 	r.BattlesWon += other.BattlesWon
+	r.BattlesSurvived += other.BattlesSurvived
 	r.DamageDealt += other.DamageDealt
+	r.DamageReceived += other.DamageReceived
 
 	r.ShotsHit += other.ShotsHit
 	r.ShotsFired += other.ShotsFired
 
 	r.Frags += other.Frags
+	if r.MaxFrags < other.MaxFrags {
+		r.MaxFrags = other.MaxFrags
+	}
+
 	r.EnemiesSpotted += other.EnemiesSpotted
+	r.CapturePoints += other.CapturePoints
 	r.DroppedCapturePoints += other.DroppedCapturePoints
 }
 
 func (r *ReducedStatsFrame) Subtract(other *ReducedStatsFrame) {
 	r.Battles -= other.Battles
 	r.BattlesWon -= other.BattlesWon
+	r.BattlesSurvived -= other.BattlesSurvived
 	r.DamageDealt -= other.DamageDealt
+	r.DamageReceived -= other.DamageReceived
 
 	r.ShotsHit -= other.ShotsHit
 	r.ShotsFired -= other.ShotsFired
 
 	r.Frags -= other.Frags
+	if r.MaxFrags > other.MaxFrags {
+		r.MaxFrags = other.MaxFrags
+	}
+
 	r.EnemiesSpotted -= other.EnemiesSpotted
+	r.CapturePoints -= other.CapturePoints
 	r.DroppedCapturePoints -= other.DroppedCapturePoints
 }
 

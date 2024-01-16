@@ -2,12 +2,14 @@ package session
 
 import (
 	"image"
+	"image/color"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/rs/zerolog/log"
 )
 
 type PlayerData struct {
@@ -17,11 +19,12 @@ type PlayerData struct {
 }
 
 type RenderOptions struct {
-	Locale             localization.SupportedLanguage
-	PromoText          []string
-	CardStyle          render.Style
-	BackgroundImage    image.Image
-	SubscriptionHeader *UserSubscriptionHeader
+	Locale                 localization.SupportedLanguage
+	PromoText              []string
+	CardStyle              render.Style
+	BackgroundImage        image.Image
+	UserSubscriptionHeader *SubscriptionHeader
+	ClanSubscriptionHeader *SubscriptionHeader
 }
 
 func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
@@ -40,9 +43,9 @@ func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Check if a user is premium
 	// User Status Badge
-	switch options.SubscriptionHeader {
+	switch options.UserSubscriptionHeader {
 	case UserSubscriptionSupporter:
-		subscriptionBlock, err := options.SubscriptionHeader.Block()
+		subscriptionBlock, err := options.UserSubscriptionHeader.Block()
 		if err != nil {
 			return nil, err
 		}
@@ -53,14 +56,14 @@ func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			// Promo Card
 			var textBlocks []render.Block
 			for _, text := range options.PromoText {
-				textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontSmallColor}, text))
+				textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, text))
 			}
 			cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter},
 				textBlocks...,
 			))
 		}
 	default:
-		subscriptionBlock, err := options.SubscriptionHeader.Block()
+		subscriptionBlock, err := options.UserSubscriptionHeader.Block()
 		if err != nil {
 			return nil, err
 		}
@@ -69,8 +72,17 @@ func SnapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Title Card
 	{
-		// TODO: Pass some customization crap, stickers, etc.
-		cards = append(cards, NewPlayerTitleCard(options.CardStyle, player.Snapshot.Account.Nickname, player.Snapshot.Account.Clan.Tag))
+		clanSubBlock := render.NewTextContent(render.Style{Font: &FontMedium, FontColor: color.Transparent}, player.Snapshot.Account.Clan.Tag)
+		if options.ClanSubscriptionHeader != nil {
+			iconBlock, err := options.ClanSubscriptionHeader.Block()
+			if err != nil {
+				log.Warn().Err(err).Msg("failed to render clan tag") // This error is not fatal, but we should avoid trying to render the tag
+			} else {
+				clanSubBlock = iconBlock
+			}
+		}
+		cards = append(cards, NewPlayerTitleCard(options.CardStyle, player.Snapshot.Account.Nickname, player.Snapshot.Account.Clan.Tag, clanSubBlock))
+
 	}
 
 	var totalVehicleWN8 int

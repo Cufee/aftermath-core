@@ -21,8 +21,9 @@ func init() {
 }
 
 var (
-	BaseCardWidth       = 550.0
-	BaseStatsBlockWidth = 120.0
+	BaseCardWidth       = 600.0
+	BaseStatsBlockWidth = 104.0
+	ClanPillWidth       = 80
 
 	FontLarge  font.Face
 	FontMedium font.Face
@@ -67,28 +68,25 @@ type subscriptionPillStyle struct {
 	Icon      render.Style
 	Container render.Style
 }
-type UserSubscriptionHeader struct {
+type SubscriptionHeader struct {
 	Name  string
 	Icon  string
 	Style subscriptionPillStyle
 }
 
-func (sub UserSubscriptionHeader) Block() (render.Block, error) {
+func (sub SubscriptionHeader) Block() (render.Block, error) {
 	if tierImage, ok := assets.GetImage(sub.Icon); ok {
-		blankStyle := sub.Style.Icon
-		blankStyle.BackgroundColor = color.Transparent
-
-		return render.NewBlocksContent(sub.Style.Container,
-			render.NewImageContent(sub.Style.Icon, tierImage),
-			render.NewTextContent(sub.Style.Text, sub.Name),
-			// render.NewImageContent(blankStyle, tierImage),
-		), nil
+		content := []render.Block{render.NewImageContent(sub.Style.Icon, tierImage)}
+		if sub.Name != "" {
+			content = append(content, render.NewTextContent(sub.Style.Text, sub.Name))
+		}
+		return render.NewBlocksContent(sub.Style.Container, content...), nil
 	}
 	return render.Block{}, errors.New("tier icon not found")
 }
 
 var (
-	UserSubscriptionSupporter = &UserSubscriptionHeader{
+	UserSubscriptionSupporter = &SubscriptionHeader{
 		Name: "Supporter",
 		Icon: "images/icons/fire",
 		Style: subscriptionPillStyle{
@@ -97,7 +95,7 @@ var (
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor, PaddingX: 5},
 		},
 	}
-	UserSubscriptionPlus = &UserSubscriptionHeader{
+	UserSubscriptionPlus = &SubscriptionHeader{
 		Name: "Aftermath+",
 		Icon: "images/icons/star",
 		Style: subscriptionPillStyle{
@@ -106,7 +104,7 @@ var (
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor},
 		},
 	}
-	UserSubscriptionPremium = &UserSubscriptionHeader{
+	UserSubscriptionPremium = &SubscriptionHeader{
 		Name: "Aftermath Pro",
 		Icon: "images/icons/star",
 		Style: subscriptionPillStyle{
@@ -115,13 +113,20 @@ var (
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor},
 		},
 	}
-	UserSubscriptionPremiumXL = &UserSubscriptionHeader{
+	UserSubscriptionPremiumXL = &SubscriptionHeader{
 		Name: "Aftermath Pro",
 		Icon: "images/icons/star-multiple",
 		Style: subscriptionPillStyle{
 			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5},
 			Icon:      render.Style{Width: 24, Height: 24, BackgroundColor: FontPremiumColor},
 			Text:      render.Style{Font: &FontSmall, FontColor: FontMediumColor},
+		},
+	}
+	ClanSubscriptionPremiumXL = &SubscriptionHeader{
+		Icon: "images/icons/star-multiple",
+		Style: subscriptionPillStyle{
+			Icon:      render.Style{Width: 24, Height: 24, BackgroundColor: FontPremiumColor},
+			Container: render.Style{Direction: render.DirectionHorizontal},
 		},
 	}
 )
