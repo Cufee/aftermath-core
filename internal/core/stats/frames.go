@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"log"
 	"math"
 )
 
@@ -47,7 +46,6 @@ func (r *ReducedStatsFrame) DamageRatio() float32 {
 	if r.damageRatio == 0 {
 		r.damageRatio = float32(r.DamageDealt) / float32(r.DamageReceived)
 	}
-	log.Printf("%d / %d = %f %d", r.DamageDealt, r.DamageReceived, r.damageRatio, r.Battles)
 	return r.damageRatio
 }
 

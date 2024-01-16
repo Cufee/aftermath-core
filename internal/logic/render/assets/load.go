@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/golang/freetype/truetype"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/image/font"
 )
 
@@ -54,7 +55,7 @@ func loadFonts() (map[string]*truetype.Font, error) {
 			return nil, err
 		}
 		fontsMap[strings.ReplaceAll(file.Name(), ".ttf", "")] = font
-		println("loaded font: " + file.Name())
+		log.Debug().Msg("loaded font: " + file.Name())
 	}
 
 	return fontsMap, nil
@@ -77,7 +78,7 @@ func loadImages() (map[string]image.Image, error) {
 		}
 
 		imagesMap[strings.Split(path, ".")[0]] = image
-		println("loaded image: " + path)
+		log.Debug().Msg("loaded image: " + path)
 	}
 
 	return imagesMap, nil
