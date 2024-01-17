@@ -1,20 +1,20 @@
 package tasks
 
-func splitTasksByTargets(batchSize int) func(task Task[any]) []Task[any] {
-	return func(task Task[any]) []Task[any] {
-		if len(task.Targets()) <= batchSize {
-			return []Task[any]{task}
+func splitTasksByTargets(batchSize int) func(task Task) []Task {
+	return func(task Task) []Task {
+		if len(task.Targets) <= batchSize {
+			return []Task{task}
 		}
 
-		var tasks []Task[any]
-		subTasks := len(task.Targets()) / batchSize
+		var tasks []Task
+		subTasks := len(task.Targets) / batchSize
 
 		for i := 0; i <= subTasks; i++ {
 			subTask := task
-			if len(task.Targets()) > batchSize*(i+1) {
-				subTask.SetTargets(task.Targets()[batchSize*i : batchSize*(i+1)])
+			if len(task.Targets) > batchSize*(i+1) {
+				subTask.Targets = (task.Targets[batchSize*i : batchSize*(i+1)])
 			} else {
-				subTask.SetTargets(task.Targets()[batchSize*i:])
+				subTask.Targets = (task.Targets[batchSize*i:])
 			}
 			tasks = append(tasks, subTask)
 		}

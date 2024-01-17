@@ -2,38 +2,68 @@ package tasks
 
 import (
 	"errors"
+	"strings"
 	"time"
 
+	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type SessionsUpdateTaskData struct {
-	realm     string `bson:"realm"`
-	triesLeft int    `bson:"tries_left"`
-}
+func init() {
+	registerTaskHandler(TaskRecordSessions, TaskHandler{
+		Process: func(task *Task) (string, error) {
+			if task.Data == nil {
+				return "no data provided", errors.New("no data provided")
+			}
+			realm, ok := task.Data["realm"].(string)
+			if !ok {
+				return "invalid realm", errors.New("invalid realm")
+			}
 
-func (data *SessionsUpdateTaskData) RetryOnFail(task *Task[any]) bool {
-	task.SetScheduledAfter(time.Now().Add(5 * time.Minute)) // Backoff for 5 minutes to avoid spamming
-	data.triesLeft -= 1
-	return data.triesLeft > 0
-}
+			accountErrs, err := cache.RefreshSessionsAndAccounts(cache.SessionTypeDaily, realm, task.Targets...)
+			if err != nil {
+				return "failed to refresh sessions on all account", err
+			}
 
-func (data SessionsUpdateTaskData) Process(task *Task[any]) (string, error) {
-	time.Sleep(5 * time.Second) // Simulate processing time
+			if len(accountErrs) == 0 {
+				return "finished session update on all accounts", nil
+			}
 
-	if task.Targets()[0] == 1 {
-		return "simulate error", errors.New("fake error")
-	}
+			var failedAccounts []int
+			for accountId, err := range accountErrs {
+				if err != nil {
+					failedAccounts = append(failedAccounts, accountId)
+				}
+			}
 
-	return "this was a dummy task", nil
+			// Retry failed accounts
+			task.Targets = failedAccounts
+			return "retrying failed accounts", errors.New("some accounts failed")
+		},
+		RetryOnFail: func(task *Task) bool {
+			triesLeft, ok := task.Data["triesLeft"].(int32)
+			if !ok {
+				return false
+			}
+			if triesLeft <= 0 {
+				return false
+			}
+
+			triesLeft -= 1
+			task.Data["triesLeft"] = triesLeft
+			task.ScheduledAfter = time.Now().Add(5 * time.Minute) // Backoff for 5 minutes to avoid spamming
+			return true
+		},
+	})
 }
 
 func CreateSessionUpdateTasks(realm string) error {
-	task := Task[any]{
-		Kind: TaskUpdateClans,
-		Data: &SessionsUpdateTaskData{
-			realm:     realm,
-			triesLeft: 3,
+	realm = strings.ToUpper(realm)
+	task := Task{
+		Type: TaskRecordSessions,
+		Data: map[string]any{
+			"realm":     realm,
+			"triesLeft": int32(3),
 		},
 	}
 	// This update requires (2 + n) requests per n players

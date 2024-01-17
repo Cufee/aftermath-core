@@ -30,11 +30,11 @@ var (
 	ErrTooManyAccountIDs = errors.New("too many account IDs")
 )
 
-func GetLiveSessions(realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {
+func GetLiveSessions(realm string, accountIDs ...int) (map[int]utils.DataWithError[*SessionWithRawData], error) {
 	return GetSessionsWithClient(wargaming.Clients.Live, realm, accountIDs...)
 }
 
-func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]*SessionWithRawData, error) {
+func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*SessionWithRawData], error) {
 	if len(accountIDs) > 100 {
 		return nil, ErrTooManyAccountIDs
 	}
@@ -113,25 +113,31 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 		return nil, accountClans.Err
 	}
 
-	sessions := make(map[int]*SessionWithRawData, len(accountIDs))
+	sessions := make(map[int]utils.DataWithError[*SessionWithRawData], len(accountIDs))
 	for vehicle := range vehiclesChan {
 		if vehicle.Err != nil {
-			return nil, vehicle.Err
+			sessions[vehicle.Data.accountID] = utils.DataWithError[*SessionWithRawData]{Err: vehicle.Err}
+			continue
 		}
 
 		account, ok := accounts.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
 		if !ok || account.ID == 0 {
-			return nil, fmt.Errorf("account %d not found", vehicle.Data.accountID)
+			sessions[vehicle.Data.accountID] = utils.DataWithError[*SessionWithRawData]{
+				Err: fmt.Errorf("account %d not found", vehicle.Data.accountID),
+			}
+			continue
 		}
 
 		clan := accountClans.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
 		session := AccountStatsToSession(account, vehicle.Data.vehicles)
 
-		sessions[vehicle.Data.accountID] = &SessionWithRawData{
-			Clan:     &clan,
-			Session:  session,
-			Account:  &account,
-			Vehicles: vehicle.Data.vehicles,
+		sessions[vehicle.Data.accountID] = utils.DataWithError[*SessionWithRawData]{
+			Data: &SessionWithRawData{
+				Clan:     &clan,
+				Session:  session,
+				Account:  &account,
+				Vehicles: vehicle.Data.vehicles,
+			},
 		}
 	}
 

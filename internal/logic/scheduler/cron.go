@@ -12,7 +12,7 @@ func StartCronJobs() {
 
 	c := gocron.NewScheduler(time.UTC)
 	// Tasks
-	// c.AddFunc("* * * * *", func() { wrk.AutoRunTaskBatch() })
+	c.Cron("* * * * *").Do(runTasksWorker)
 	// c.AddFunc("0 */2 * * *", func() { wrk.AutoRunTaskCleanup() })
 
 	// Glossary
@@ -21,9 +21,9 @@ func StartCronJobs() {
 	// c.AddFunc("40 9 * * 0", updateAchievementsWorker)
 
 	// Sessions
-	c.Cron("0 9 * * *").Do(recordSessionsWorker("NA"))  // NA
-	c.Cron("0 1 * * *").Do(recordSessionsWorker("EU"))  // EU
-	c.Cron("0 18 * * *").Do(recordSessionsWorker("AS")) // Asia
+	c.Cron("0 9 * * *").Do(createSessionTasksWorker("NA"))  // NA
+	c.Cron("0 1 * * *").Do(createSessionTasksWorker("EU"))  // EU
+	c.Cron("0 18 * * *").Do(createSessionTasksWorker("AS")) // Asia
 
 	// Refresh WN8
 	// "45 9 * * *" 	// NA

@@ -10,6 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
 	wg "github.com/cufee/am-wg-proxy-next/types"
+	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,33 +35,48 @@ type SessionDatabaseRecord struct {
 	Session *core.SessionSnapshot `bson:",inline"`
 }
 
-func RefreshSessionsAndAccounts(sessionType SessionType, realm string, accountIDs ...int) error {
+func RefreshSessionsAndAccounts(sessionType SessionType, realm string, accountIDs ...int) (map[int]error, error) {
 	sessions, err := sessions.GetSessionsWithClient(wargaming.Clients.Cache, realm, accountIDs...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var accounts []*wg.ExtendedAccount
 	for _, session := range sessions {
-		accounts = append(accounts, session.Account)
+		accounts = append(accounts, session.Data.Account)
 	}
 	err = UpdatePlayerAccountsFromWG(realm, accounts...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	lastBattle, err := GetLastBattleTimes(sessionType, accountIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	updateErrors := make(map[int]error)
 	var sessionInserts []mongo.WriteModel
-	for _, session := range sessions {
+	for accountId, session := range sessions {
+		if session.Err != nil {
+			updateErrors[accountId] = session.Err
+			continue
+		}
+
+		if lastBattle[session.Data.Account.ID] >= session.Data.Session.LastBattleTime {
+			log.Debug().Msgf("%d played 0 battles since last session, skipping update", session.Data.Account.ID)
+			continue
+		}
 		model := mongo.NewInsertOneModel()
 		model.SetDocument(SessionDatabaseRecord{
 			Type:      sessionType,
 			CreatedAt: time.Now(),
-			Session:   session.Session,
+			Session:   session.Data.Session,
 		})
 		sessionInserts = append(sessionInserts, model)
 	}
 	if len(sessionInserts) == 0 {
-		return nil
+		return updateErrors, nil
 	}
 
 	ctx, cancel := database.DefaultClient.Ctx()
@@ -68,10 +84,10 @@ func RefreshSessionsAndAccounts(sessionType SessionType, realm string, accountID
 
 	_, err = database.DefaultClient.Collection(database.CollectionSessions).BulkWrite(ctx, sessionInserts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return updateErrors, nil
 }
 
 type SessionGetOptions struct {

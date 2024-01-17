@@ -28,11 +28,37 @@ func updateAveragesWorker() {
 	}
 }
 
-func recordSessionsWorker(realm string) func() {
+func createSessionTasksWorker(realm string) func() {
 	return func() {
 		err := tasks.CreateSessionUpdateTasks(realm)
 		if err != nil {
 			log.Err(err).Msg("failed to create session update tasks")
 		}
 	}
+}
+
+func runTasksWorker() {
+	if tasks.DefaultQueue.ActiveWorkers() > 0 {
+		return
+	}
+
+	activeTasks, err := tasks.StartScheduledTasks(nil, 50)
+	if err != nil {
+		log.Err(err).Msg("failed to start scheduled tasks")
+		return
+	}
+	if len(activeTasks) == 0 {
+		return
+	}
+
+	tasks.DefaultQueue.Process(func(err error) {
+		if err != nil {
+			log.Err(err).Msg("failed to process tasks")
+			return
+		}
+
+		// If the queue is now empty, we can run the next batch of tasks right away
+		runTasksWorker()
+
+	}, activeTasks...)
 }

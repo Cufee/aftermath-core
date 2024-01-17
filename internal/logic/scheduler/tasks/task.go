@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
@@ -11,15 +12,27 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Task types
-type taskType string
+const (
+	TaskUpdateClans string = "UPDATE_CLANS"
 
-const TaskUpdateClans taskType = "UPDATE_CLANS"
+	TaskRecordSessions           = "RECORD_ACCOUNT_SESSIONS"
+	TaskUpdateAccountWN8         = "UPDATE_ACCOUNT_WN8"
+	TaskRecordPlayerAchievements = "UPDATE_ACCOUNT_ACHIEVEMENTS"
+)
 
-const TaskRecordSessions taskType = "RECORD_ACCOUNT_SESSIONS"
+var taskHandlers = make(map[string]TaskHandler)
 
-const TaskUpdateAccountWN8 taskType = "UPDATE_ACCOUNT_WN8"
-const TaskRecordPlayerAchievements taskType = "UPDATE_ACCOUNT_ACHIEVEMENTS"
+type TaskHandler struct {
+	RetryOnFail func(*Task) bool
+	Process     func(*Task) (string, error)
+}
+
+func registerTaskHandler(kind string, handler TaskHandler) {
+	if _, ok := taskHandlers[kind]; ok {
+		panic(fmt.Sprintf("task handler for %s already registered", kind))
+	}
+	taskHandlers[kind] = handler
+}
 
 // Task statuses
 type taskStatus string
@@ -29,73 +42,54 @@ const TaskStatusInProgress taskStatus = "TASK_IN_PROGRESS"
 const TaskStatusComplete taskStatus = "TASK_COMPLETE"
 const TaskStatusFailed taskStatus = "TASK_FAILED"
 
-type TaskData[T any] interface {
-	Process(*Task[T]) (string, error)
-	RetryOnFail(*Task[T]) bool
+type Task struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Type      string             `bson:"kind"`
+	CreatedAt time.Time          `bson:"created_at"`
+	UpdatedAt time.Time          `bson:"updated_at"`
+
+	Targets []int `bson:"targets"`
+
+	Logs []AttemptLog `bson:"logs"`
+
+	Status         taskStatus `bson:"status"`
+	ScheduledAfter time.Time  `bson:"scheduled_after"`
+	LastAttempt    time.Time  `bson:"last_attempt"`
+
+	Data map[string]any `bson:"data"`
 }
 
-type Task[T any] struct {
-	id        primitive.ObjectID `bson:"_id,omitempty"`
-	Kind      taskType           `bson:"kind"`
-	createdAt time.Time          `bson:"created_at"`
-	updatedAt time.Time          `bson:"updated_at"`
-
-	targets []int `bson:"targets"`
-
-	logs []AttemptLog `bson:"logs"`
-
-	status         taskStatus `bson:"status"`
-	scheduledAfter time.Time  `bson:"scheduled_after"`
-	lastAttempt    time.Time  `bson:"last_attempt"`
-
-	Data TaskData[T] `bson:"data"`
+func (t *Task) LogAttempt(log AttemptLog) {
+	t.Logs = append(t.Logs, log)
 }
 
-func (t *Task[T]) ID() primitive.ObjectID {
-	return t.id
+func (t *Task) OnCreated() {
+	t.LastAttempt = time.Now()
+	t.CreatedAt = time.Now()
+	t.UpdatedAt = time.Now()
 }
-func (t *Task[T]) Type() taskType {
-	return t.Kind
-}
-
-func (t *Task[T]) Targets() []int {
-	return t.targets
-}
-func (t *Task[T]) SetTargets(targets []int) {
-	t.targets = targets
+func (t *Task) OnUpdated() {
+	t.UpdatedAt = time.Now()
 }
 
-func (t *Task[T]) Status() taskStatus {
-	return t.status
-}
-func (t *Task[T]) SetStatus(status taskStatus) {
-	t.status = status
+func (t *Task) RetryOnFail() bool {
+	handlers, ok := taskHandlers[t.Type]
+	if !ok {
+		return false
+	}
+
+	t.LastAttempt = time.Now()
+	return handlers.RetryOnFail(t)
 }
 
-func (t *Task[T]) LogAttempt(log AttemptLog) {
-	t.logs = append(t.logs, log)
-}
+func (t *Task) Process() (string, error) {
+	handlers, ok := taskHandlers[t.Type]
+	if !ok {
+		return "", fmt.Errorf("no handler for task type %s", t.Type)
+	}
 
-func (t *Task[T]) OnCreated() {
-	t.lastAttempt = time.Now()
-	t.createdAt = time.Now()
-}
-func (t *Task[T]) OnUpdated() {
-	t.updatedAt = time.Now()
-}
-
-func (t *Task[T]) SetScheduledAfter(scheduledAfter time.Time) {
-	t.scheduledAfter = scheduledAfter
-}
-
-func (t *Task[T]) RetryOnFail() bool {
-	t.lastAttempt = time.Now()
-	return t.Data.RetryOnFail(t)
-}
-
-func (t *Task[T]) Process() (string, error) {
-	t.lastAttempt = time.Now()
-	return t.Data.Process(t)
+	t.LastAttempt = time.Now()
+	return handlers.Process(t)
 }
 
 type AttemptLog struct {
@@ -105,9 +99,9 @@ type AttemptLog struct {
 	Error     error     `json:"error" bson:"error"`
 }
 
-func NewAttemptLog(task Task[any], comment string, err error) AttemptLog {
+func NewAttemptLog(task Task, comment string, err error) AttemptLog {
 	return AttemptLog{
-		Targets:   task.Targets(),
+		Targets:   task.Targets,
 		Timestamp: time.Now(),
 		Comment:   comment,
 		Error:     err,
@@ -118,18 +112,18 @@ func NewAttemptLog(task Task[any], comment string, err error) AttemptLog {
 Retrieves all target IDs from the database based on task.Type() and filter, creates a new task in queue.
   - If splitTaskFn is provided, it will split the task into subtasks.
 */
-func CreateBulkTask(filter bson.M, task Task[any], splitTaskFn func(Task[any]) []Task[any]) (err error) {
-	if len(task.Targets()) != 0 {
+func CreateBulkTask(filter bson.M, task Task, splitTaskFn func(Task) []Task) (err error) {
+	if len(task.Targets) != 0 {
 		return errors.New("target IDs already set")
 	}
 
 	ctx, cancel := database.DefaultClient.Ctx()
 	defer cancel()
 
-	switch task.Type() {
+	switch task.Type {
 	case TaskUpdateClans:
 		// Get all clan IDs on the realm
-		result, err := database.DefaultClient.Collection(database.CollectionClans).Distinct(ctx, "externalID", filter)
+		result, err := database.DefaultClient.Collection(database.CollectionClans).Distinct(ctx, "_id", filter)
 		if err != nil {
 			return err
 		}
@@ -143,7 +137,7 @@ func CreateBulkTask(filter bson.M, task Task[any], splitTaskFn func(Task[any]) [
 			}
 		}
 
-		task.SetTargets(targetIDs)
+		task.Targets = targetIDs
 
 	case TaskRecordPlayerAchievements:
 		// All players on the realm
@@ -153,28 +147,33 @@ func CreateBulkTask(filter bson.M, task Task[any], splitTaskFn func(Task[any]) [
 		fallthrough
 	case TaskRecordSessions:
 		// Get all player IDs on the realm
-		result, err := database.DefaultClient.Collection(database.CollectionAccounts).Distinct(ctx, "externalID", filter)
+		result, err := database.DefaultClient.Collection(database.CollectionAccounts).Distinct(ctx, "_id", filter)
 		if err != nil {
 			return err
 		}
 
 		var targetIDs []int
 		for _, id := range result {
-			if idInt, ok := id.(int); ok {
-				targetIDs = append(targetIDs, idInt)
-			} else {
-				log.Error().Msgf("invalid player ID type: %T", id)
+			switch cast := id.(type) {
+			case int:
+				targetIDs = append(targetIDs, cast)
+			case int32:
+				targetIDs = append(targetIDs, int(cast))
+			case int64:
+				targetIDs = append(targetIDs, int(cast))
+			default:
+				log.Error().Msgf("invalid player ID %v type: %T", cast, id)
 			}
 		}
 
-		task.SetTargets(targetIDs)
+		task.Targets = targetIDs
 
 	default:
 		return errors.New("invalid task type")
 	}
 
-	if len(task.Targets()) == 0 {
-		return errors.New("no target IDs found on realm")
+	if len(task.Targets) == 0 {
+		return fmt.Errorf("no targets found for task type %s and filter %+v", task.Type, filter)
 	}
 
 	if splitTaskFn != nil {
@@ -183,15 +182,15 @@ func CreateBulkTask(filter bson.M, task Task[any], splitTaskFn func(Task[any]) [
 	return CreateTasks(task)
 }
 
-func CreateTasks(tasks ...Task[any]) error {
+func CreateTasks(tasks ...Task) error {
 	var writes []mongo.WriteModel
 	for _, task := range tasks {
-		if len(task.Targets()) == 0 {
+		if len(task.Targets) == 0 {
 			return errors.New("task targets not set")
 		}
 
 		task.OnCreated()
-		task.SetStatus(TaskStatusScheduled)
+		task.Status = TaskStatusScheduled
 		writes = append(writes, mongo.NewInsertOneModel().SetDocument(task))
 	}
 
@@ -206,14 +205,14 @@ func CreateTasks(tasks ...Task[any]) error {
 	return err
 }
 
-func UpdateTasks(tasks ...Task[any]) error {
+func UpdateTasks(tasks ...Task) error {
 	var writes []mongo.WriteModel
 	for _, task := range tasks {
-		if task.ID().IsZero() {
+		if task.ID.IsZero() {
 			return errors.New("task ID not set")
 		}
 		task.OnUpdated()
-		writes = append(writes, mongo.NewUpdateOneModel().SetFilter(bson.M{"_id": task.ID()}).SetUpdate(bson.M{"$set": task}))
+		writes = append(writes, mongo.NewUpdateOneModel().SetFilter(bson.M{"_id": task.ID}).SetUpdate(bson.M{"$set": task}))
 	}
 
 	if len(writes) == 0 {
@@ -234,7 +233,7 @@ func UpdateTasks(tasks ...Task[any]) error {
 /*
 Retrieves all tasks with status TaskStatusScheduled that match filter and updates their status to TaskStatusInProgress.
 */
-func StartScheduledTasks(filter bson.M, limit int, target *[]Task[any]) error {
+func StartScheduledTasks(filter bson.M, limit int) ([]Task, error) {
 	if filter == nil {
 		filter = bson.M{}
 	}
@@ -249,10 +248,11 @@ func StartScheduledTasks(filter bson.M, limit int, target *[]Task[any]) error {
 	pipeline = append(pipeline, bson.D{{Key: "$limit", Value: limit}})
 	pipeline = append(pipeline, bson.D{{Key: "$set", Value: bson.M{"status": TaskStatusInProgress}}})
 
+	var tasks []Task
 	cur, err := database.DefaultClient.Collection(database.CollectionTasks).Aggregate(ctx, pipeline)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return cur.All(ctx, target)
+	return tasks, cur.All(ctx, &tasks)
 }

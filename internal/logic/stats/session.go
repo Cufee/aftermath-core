@@ -48,8 +48,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: ErrBadLiveSession}
 			return
 		}
-
-		liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Data: liveSession}
+		liveSessionChan <- liveSession
 	}()
 
 	wg.Add(1)
@@ -73,8 +72,8 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 		if errors.Is(lastSession.Err, cache.ErrNoSessionCache) {
 			go func(realm string, accountId int) {
 				// Refresh the session cache in the background
-				err := cache.RefreshSessionsAndAccounts(cache.SessionTypeDaily, realm, accountId)
-				if err != nil {
+				accountErrs, err := cache.RefreshSessionsAndAccounts(cache.SessionTypeDaily, realm, accountId)
+				if err != nil || len(accountErrs) > 0 {
 					log.Err(err).Msg("failed to refresh session cache")
 				}
 			}(realm, accountId)
