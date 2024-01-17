@@ -119,7 +119,7 @@ func calculateSessionWN8(vehicles map[int]*core.ReducedVehicleStats, averages ma
 	var wn8VehiclesTotal, wn8VehiclesBattles int
 	for id, vehicle := range vehicles {
 		if vehicle.Valid(vehicle.WN8(averages[id])) {
-			wn8VehiclesTotal += vehicle.WN8(averages[id])
+			wn8VehiclesTotal += vehicle.WN8(averages[id]) * vehicle.Battles
 			wn8VehiclesBattles += vehicle.Battles
 		}
 	}
