@@ -46,6 +46,31 @@ func GetPlayerAccount(id int) (*DatabaseAccount, error) {
 	return &account, nil
 }
 
+func CacheAllNewClanMembers(realm string, clanId int) error {
+	clan, err := wargaming.Clients.Cache.GetClanByID(realm, clanId)
+	if err != nil {
+		return err
+	}
+
+	lastBattles, err := GetLastBattleTimes(SessionTypeDaily, clan.MembersIDS...)
+	if err != nil {
+		return err
+	}
+
+	var newAccounts []int
+	for _, member := range clan.MembersIDS {
+		if _, ok := lastBattles[member]; !ok {
+			newAccounts = append(newAccounts, member)
+		}
+	}
+
+	_, err = RefreshSessionsAndAccounts(SessionTypeDaily, realm, newAccounts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func UpdatePlayerAccountsFromWG(realm string, accounts ...*wg.ExtendedAccount) error {
 	var converted []DatabaseAccount
 	for _, account := range accounts {

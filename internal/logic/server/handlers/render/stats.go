@@ -10,6 +10,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
+	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
@@ -73,6 +74,15 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 	session, err := stats.GetCurrentPlayerSession(realm, accountId)
 	if err != nil {
 		return "", err
+	}
+
+	if session.Account.ClanID != 0 {
+		go func() {
+			err := cache.CacheAllNewClanMembers(realm, session.Account.ClanID)
+			if err != nil {
+				log.Err(err).Msg("failed to cache new clan members")
+			}
+		}()
 	}
 
 	averages, err := stats.GetVehicleAverages(session.Diff.Vehicles)

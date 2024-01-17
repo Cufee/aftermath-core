@@ -32,11 +32,11 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 	session.Account.Clan.Tag = "AMTH"
 	player := render.PlayerData{
-		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeProClan}},
-		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProXL}},
-		Snapshot: session,
-		Averages: averages,
-		Vehicles: stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeProClan}},
+		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
+		Snapshot:      session,
+		Averages:      averages,
+		Vehicles:      stats.SortVehicles(session.Diff.Vehicles, averages, opts),
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")

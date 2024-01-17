@@ -7,6 +7,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var (
+// SessionsNA =
+)
+
 func StartCronJobs() {
 	log.Info().Msg("starting cron jobs")
 
