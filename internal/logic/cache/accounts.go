@@ -63,6 +63,9 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 			newAccounts = append(newAccounts, member)
 		}
 	}
+	if len(newAccounts) == 0 {
+		return nil
+	}
 
 	_, err = RefreshSessionsAndAccounts(SessionTypeDaily, realm, newAccounts...)
 	if err != nil {
