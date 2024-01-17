@@ -29,6 +29,19 @@ type ReducedStatsFrame struct {
 	damageRatio float32 `json:"-" bson:"-"`
 }
 
+func (r *ReducedStatsFrame) Valid(value interface{}) bool {
+	switch cast := value.(type) {
+	case int:
+		return cast != InvalidValue
+	case float64:
+		return int(cast) != InvalidValue
+	case float32:
+		return int(cast) != InvalidValue
+	default:
+		return false
+	}
+}
+
 func (r *ReducedStatsFrame) AvgDamage() float64 {
 	if r.Battles == 0 {
 		return InvalidValue

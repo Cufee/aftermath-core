@@ -63,6 +63,21 @@ func DefaultCardStyle(matchToImage image.Image) render.Style {
 	return style
 }
 
+var DefaultStatsBlockStyle = render.Style{
+	Direction:  render.DirectionVertical,
+	AlignItems: render.AlignItemsCenter,
+	Width:      BaseStatsBlockWidth,
+	// Debug:      true,
+}
+
+func HighlightStatsBlockStyle(bgColor color.Color) render.Style {
+	s := DefaultStatsBlockStyle
+	s.PaddingY = 10
+	s.BorderRadius = 10
+	s.BackgroundColor = bgColor
+	return s
+}
+
 type subscriptionPillStyle struct {
 	Text      render.Style
 	Icon      render.Style

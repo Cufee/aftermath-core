@@ -11,6 +11,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
+	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
@@ -96,15 +97,27 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		// We can continue without subscriptions
 	}
 
-	opts := stats.SortOptions{
+	sortOptions := stats.SortOptions{
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
+	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+		SessionStats:          session.Diff,
+		CareerStats:           session.Selected,
+		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, sortOptions),
+		GlobalVehicleAverages: averages,
+	}, dataprep.ExportOptions{
+		Blocks: dataprep.DefaultBlockPresets,
+		Locale: localization.LanguageEN,
+	})
+	if err != nil {
+		return "", err
+	}
+
 	player := render.PlayerData{
-		Snapshot:      session,
-		Averages:      averages,
 		Subscriptions: subscriptions,
-		Vehicles:      stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+		Snapshot:      session,
+		Blocks:        &statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")

@@ -10,7 +10,7 @@ import (
 )
 
 func RenderStatsImage(player PlayerData, options RenderOptions) (image.Image, error) {
-	cards, err := SnapshotToCardsBlocks(player, options)
+	cards, err := snapshotToCardsBlocks(player, options)
 	if err != nil {
 		return nil, err
 	}

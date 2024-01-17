@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
+	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
@@ -31,12 +32,25 @@ func TestFullRenderPipeline(t *testing.T) {
 		Limit: 5,
 	}
 	session.Account.Clan.Tag = "AMTH"
+
+	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+		SessionStats:          session.Diff,
+		CareerStats:           session.Selected,
+		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+		GlobalVehicleAverages: averages,
+	}, dataprep.ExportOptions{
+		Blocks: dataprep.DefaultBlockPresets,
+		Locale: localization.LanguageEN,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	player := render.PlayerData{
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeProClan}},
 		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
 		Snapshot:      session,
-		Averages:      averages,
-		Vehicles:      stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+		Blocks:        &statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
