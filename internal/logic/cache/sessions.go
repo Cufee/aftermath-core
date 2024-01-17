@@ -2,7 +2,6 @@ package cache
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
@@ -161,8 +160,6 @@ func GetLastBattleTimes(sessionType SessionType, accountIDs ...int) (map[int]int
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("results: %+v\n", results)
 
 	for _, result := range results {
 		lastBattles[result.AccountID] = result.LastBattleTime
