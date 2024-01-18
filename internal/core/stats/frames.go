@@ -25,8 +25,8 @@ type ReducedStatsFrame struct {
 	wn8         int     `json:"-" bson:"-"`
 	winrate     float64 `json:"-" bson:"-"`
 	accuracy    float64 `json:"-" bson:"-"`
-	avgDamage   float64 `json:"-" bson:"-"`
-	damageRatio float32 `json:"-" bson:"-"`
+	avgDamage   float64 `json:"-" bson:"-"` // float64 will be rendered as a percentage with 2 decimal places
+	damageRatio float32 `json:"-" bson:"-"` // float32 will be rendered with 2 decimal places
 }
 
 func (r *ReducedStatsFrame) Valid(value interface{}) bool {
