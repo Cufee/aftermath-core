@@ -16,6 +16,7 @@ import (
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/users"
+	"github.com/cufee/aftermath-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
@@ -26,12 +27,8 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
-	realm := c.Query("realm")
-	if realm == "" {
-		return c.Status(400).JSON(server.NewErrorResponse("realm query parameter is required", "c.QueryParam"))
-	}
 
-	imageData, err := getEncodedSessionImage(realm, accountId)
+	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
