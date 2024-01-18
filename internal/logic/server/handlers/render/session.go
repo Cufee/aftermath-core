@@ -50,17 +50,12 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.FindUserConnection"))
 	}
 
-	realm, ok := connection.Metadata["realm"].(string)
-	if realm == "" || !ok {
-		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "connection.Metadata"))
-	}
-
 	accountId, err := strconv.Atoi(connection.ExternalID)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	imageData, err := getEncodedSessionImage(realm, accountId)
+	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}

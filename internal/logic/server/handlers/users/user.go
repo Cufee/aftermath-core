@@ -21,11 +21,6 @@ func UpdateWargamingConnectionHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	realm := c.Query("realm")
-	if realm == "" {
-		return c.Status(400).JSON(server.NewErrorResponse("realm query parameter is required", "c.QueryParam"))
-	}
-
 	user, err := users.FindUserByID(userId)
 	if err != nil {
 		if !errors.Is(err, users.ErrUserNotFound) {
@@ -42,7 +37,7 @@ func UpdateWargamingConnectionHandler(c *fiber.Ctx) error {
 		UserID:         user.ID,
 		ExternalID:     account,
 		ConnectionType: users.ConnectionTypeWargaming,
-		Metadata:       map[string]interface{}{"verified": false, "realm": realm},
+		Metadata:       map[string]interface{}{"verified": false},
 	}
 
 	err = users.UpdateUserConnection(user.ID, connection.ConnectionType, connection, true)
