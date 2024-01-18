@@ -4,8 +4,9 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/server"
-	"github.com/cufee/aftermath-core/internal/logic/users"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -21,26 +22,26 @@ func UpdateWargamingConnectionHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	user, err := users.FindUserByID(userId)
+	user, err := database.FindUserByID(userId)
 	if err != nil {
-		if !errors.Is(err, users.ErrUserNotFound) {
+		if !errors.Is(err, database.ErrUserNotFound) {
 			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
 		}
-		user, err = users.CreateUser(userId)
+		user, err = database.CreateUser(userId)
 		if err != nil {
 			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
 		}
 		// User is created so we can continue
 	}
 
-	connection := users.UserConnection{
+	connection := models.UserConnection{
 		UserID:         user.ID,
 		ExternalID:     account,
-		ConnectionType: users.ConnectionTypeWargaming,
+		ConnectionType: models.ConnectionTypeWargaming,
 		Metadata:       map[string]interface{}{"verified": false},
 	}
 
-	err = users.UpdateUserConnection(user.ID, connection.ConnectionType, connection, true)
+	err = database.UpdateUserConnection(user.ID, connection.ConnectionType, connection, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.UpdateUserConnection"))
 	}

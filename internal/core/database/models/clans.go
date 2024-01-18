@@ -1,8 +1,8 @@
-package cache
+package models
 
 import "time"
 
-type DatabaseClan struct {
+type Clan struct {
 	ID       int    `json:"id" bson:"_id"`
 	Tag      string `json:"tag" bson:"tag"`
 	Name     string `json:"name" bson:"name"`

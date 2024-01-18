@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/cufee/aftermath-core/internal/core/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
@@ -18,32 +17,41 @@ func (c *Client) Database() *mongo.Database {
 	return c.db
 }
 
-var DefaultClient *Client = NewClient()
+var DefaultClient *Client
 
-func NewClient() *Client {
-	connString, err := connstring.ParseAndValidate(utils.MustGetEnv("DATABASE_URL"))
+func Connect(url string) error {
+	client, err := NewClient(url)
 	if err != nil {
-		panic(err)
+		return err
+	}
+	DefaultClient = client
+	return nil
+}
+
+func NewClient(url string) (*Client, error) {
+	connString, err := connstring.ParseAndValidate(url)
+	if err != nil {
+		return nil, err
 	}
 
 	uriOptions := options.Client().ApplyURI(connString.String())
 
 	client, err := mongo.Connect(context.TODO(), uriOptions)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	db := client.Database(connString.Database)
 	return &Client{
 		db: db,
-	}
+	}, nil
 }
 
 func (c *Client) Close() {

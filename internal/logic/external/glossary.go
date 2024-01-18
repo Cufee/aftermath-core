@@ -8,7 +8,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 )
 
 // Response from https://wotinspector.com/en/
@@ -48,4 +51,72 @@ func GetInspectorVehicles() (map[int]InspectorVehicle, error) {
 	fix := strings.ReplaceAll(split[len(split)-2], "},", "}")
 	tanksString = strings.ReplaceAll(tanksString, split[len(split)-2], fix)
 	return tanks, json.Unmarshal([]byte(tanksString), &tanks)
+}
+
+func GetCompleteVehicleGlossary() (map[int]models.Vehicle, error) {
+	vehicles := make(map[int]models.Vehicle)
+	glossaryLocales := []localization.SupportedLanguage{localization.LanguageEN, localization.LanguageRU}
+	for _, locale := range glossaryLocales {
+		glossary, err := wargaming.Clients.Cache.GetVehiclesGlossary(locale.WargamingCode)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, vehicle := range glossary {
+			existingData, ok := vehicles[vehicle.TankID]
+			if !ok {
+				existingData = models.Vehicle{
+					ID:   vehicle.TankID,
+					Tier: vehicle.Tier,
+					LocalizedNames: map[string]string{
+						locale.WargamingCode: vehicle.Name,
+					},
+					Class: models.VehicleClassUnknown,
+					Type:  models.VehicleTypeRegular,
+				}
+				// TODO: Detect classes and collectible vehicles
+				if vehicle.IsPremium {
+					existingData.Type = models.VehicleTypePremium
+				}
+			}
+
+			if strings.HasPrefix(vehicle.Name, "#") {
+				// TODO: Handle secret vehicles
+				continue
+			}
+			existingData.LocalizedNames[locale.WargamingCode] = vehicle.Name
+			existingData.Nation = vehicle.Nation
+			existingData.Tier = vehicle.Tier
+
+			vehicles[vehicle.TankID] = existingData
+		}
+	}
+
+	inspectorData, err := GetInspectorVehicles()
+	if err != nil {
+		return nil, err
+	}
+
+	for id, vehicle := range inspectorData {
+		if _, ok := vehicles[id]; ok {
+			continue
+		}
+		names := make(map[string]string)
+
+		if !strings.HasPrefix(vehicle.NameEn, "#") {
+			names[localization.LanguageEN.WargamingCode] = vehicle.NameEn
+		}
+		if !strings.HasPrefix(vehicle.NameRu, "#") {
+			names[localization.LanguageRU.WargamingCode] = vehicle.NameRu
+		}
+		vehicles[id] = models.Vehicle{
+			ID:             id,
+			Tier:           vehicle.Tier,
+			Class:          models.VehicleClassUnknown,
+			Type:           models.VehicleTypeEarlyAccess,
+			LocalizedNames: names,
+		}
+	}
+
+	return vehicles, nil
 }

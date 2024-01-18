@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
-	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/rs/zerolog/log"
 )
 
@@ -127,7 +127,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 			ids = append(ids, vehicle.VehicleID)
 		}
 
-		vehiclesGlossary, err := cache.GetGlossaryVehicles(ids...)
+		vehiclesGlossary, err := database.GetGlossaryVehicles(ids...)
 		if err != nil {
 			// This is definitely not fatal, but will look ugly
 			log.Warn().Err(err).Msg("failed to get vehicles glossary")

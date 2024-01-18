@@ -4,9 +4,9 @@ import (
 	"errors"
 	"image"
 
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	"github.com/cufee/aftermath-core/internal/logic/users"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
@@ -15,7 +15,7 @@ type PlayerData struct {
 	Clan          *wg.Clan
 	Account       *wg.Account
 	Cards         dataprep.SessionCards
-	Subscriptions []users.UserSubscription
+	Subscriptions []models.UserSubscription
 }
 
 type RenderOptions struct {

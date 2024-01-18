@@ -8,6 +8,8 @@ import (
 	"image/png"
 	"strconv"
 
+	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
@@ -15,7 +17,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
-	"github.com/cufee/aftermath-core/internal/logic/users"
 	"github.com/cufee/aftermath-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -42,12 +43,12 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponse("id path parameter is required", "c.Param"))
 	}
 
-	connection, err := users.FindUserConnection(user, users.ConnectionTypeWargaming)
+	connection, err := database.FindUserConnection(user, models.ConnectionTypeWargaming)
 	if err != nil {
-		if errors.Is(err, users.ErrConnectionNotFound) {
-			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserConnection"))
+		if errors.Is(err, database.ErrConnectionNotFound) {
+			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "models.FindUserConnection"))
 		}
-		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.FindUserConnection"))
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "models.FindUserConnection"))
 	}
 
 	accountId, err := strconv.Atoi(connection.ExternalID)
@@ -83,8 +84,8 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		return "", err
 	}
 
-	subscriptions, err := users.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(session.Account.ID), fmt.Sprint(session.Account.ClanID))
-	if err != nil && !errors.Is(err, users.ErrSubscriptionNotFound) {
+	subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(session.Account.ID), fmt.Sprint(session.Account.ClanID))
+	if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
 		log.Warn().Err(err).Msg("failed to get subscriptions")
 		// We can continue without subscriptions
 	}

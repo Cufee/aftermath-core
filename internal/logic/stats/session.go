@@ -5,6 +5,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/cufee/aftermath-core/internal/core/database"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
@@ -140,7 +141,7 @@ func GetVehicleAverages(vehicles map[int]*core.ReducedVehicleStats) (map[int]*co
 	for _, vehicle := range vehicles {
 		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
 	}
-	return cache.GetVehicleAverages(vehicleIDs...)
+	return database.GetVehicleAverages(vehicleIDs...)
 }
 
 func SortVehicles(vehicles map[int]*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, options ...SortOptions) []*core.ReducedVehicleStats {

@@ -1,19 +1,19 @@
 package session
 
 import (
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	"github.com/cufee/aftermath-core/internal/logic/users"
 )
 
 func (data *PlayerData) userSubscriptionHeader() *subscriptionHeader {
 	for _, subscription := range data.Subscriptions {
 		switch subscription.Type {
-		case users.SubscriptionTypePro:
+		case models.SubscriptionTypePro:
 			return userSubscriptionPro
-		case users.SubscriptionTypePlus:
+		case models.SubscriptionTypePlus:
 			return userSubscriptionPlus
-		case users.SubscriptionTypeSupporter:
+		case models.SubscriptionTypeSupporter:
 			return userSubscriptionSupporter
 		}
 	}
@@ -23,9 +23,9 @@ func (data *PlayerData) userSubscriptionHeader() *subscriptionHeader {
 func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
 	for _, subscription := range data.Subscriptions {
 		switch subscription.Type {
-		case users.SubscriptionTypeProClan:
+		case models.SubscriptionTypeProClan:
 			return clanSubscriptionPro
-		case users.SubscriptionTypeVerifiedClan:
+		case models.SubscriptionTypeVerifiedClan:
 			return clanSubscriptionVerified
 		}
 	}
