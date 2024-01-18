@@ -1,6 +1,8 @@
 package session
 
 import (
+	"image/color"
+
 	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/rs/zerolog/log"
@@ -44,8 +46,8 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 	return content, nil
 }
 
-func newPlayerTitleCard(style render.Style, name, clanTag string, clanSubHeader render.Block) render.Block {
-	if clanTag == "" {
+func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.Block) render.Block {
+	if clanTagBlocks == nil {
 		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
 	}
 
@@ -57,11 +59,12 @@ func newPlayerTitleCard(style render.Style, name, clanTag string, clanSubHeader 
 		Direction:       render.DirectionHorizontal,
 		AlignItems:      render.AlignItemsCenter,
 		PaddingX:        10,
-		PaddingY:        5,
+		PaddingY:        2.5,
+		Gap:             2.5,
 		BackgroundColor: HighlightCardColor(style.BackgroundColor),
 		BorderRadius:    10,
 		// Debug:           true,
-	}, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, clanTag))
+	}, clanTagBlocks...)
 
 	clanTagImage, err := clanTagBlock.Render()
 	if err != nil {
@@ -74,10 +77,11 @@ func newPlayerTitleCard(style render.Style, name, clanTag string, clanSubHeader 
 	// Nickname
 	content = append(content, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
 
+	// Invisible tag to offset the nickname
 	clanBlock := render.NewBlocksContent(render.Style{
 		Width:          float64(clanTagImage.Bounds().Dx()),
 		JustifyContent: render.JustifyContentEnd,
-	}, clanSubHeader)
+	}, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: color.Transparent}, "-"))
 
 	content = append(content, clanBlock)
 
@@ -93,24 +97,6 @@ func newPlayerTitleCard(style render.Style, name, clanTag string, clanSubHeader 
 
 func newTextLabel(label string) render.Block {
 	return render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, label)
-}
-
-func newVehicleLabel(name, tier string) render.Block {
-	var blocks []render.Block
-	if tier != "" {
-		blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, tier))
-	}
-	blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, name))
-
-	return render.NewBlocksContent(
-		render.Style{
-			Direction:  render.DirectionHorizontal,
-			AlignItems: render.AlignItemsCenter,
-			Gap:        5,
-			// Debug:      true,
-		},
-		blocks...,
-	)
 }
 
 func newCardBlock(cardStyle render.Style, label render.Block, stats []render.Block) render.Block {

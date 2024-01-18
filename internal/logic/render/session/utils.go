@@ -25,8 +25,8 @@ func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
 		switch subscription.Type {
 		case users.SubscriptionTypeProClan:
 			return clanSubscriptionPro
-		case users.SubscriptionTypeSupporterClan:
-			return clanSubscriptionSupporter
+		case users.SubscriptionTypeVerifiedClan:
+			return clanSubscriptionVerified
 		}
 	}
 	return nil

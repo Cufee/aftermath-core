@@ -130,17 +130,17 @@ var (
 		},
 	}
 	// Clans
-	clanSubscriptionSupporter = &subscriptionHeader{
-		Icon: "images/icons/fire",
+	clanSubscriptionVerified = &subscriptionHeader{
+		Icon: "images/icons/verify",
 		Style: subscriptionPillStyle{
-			Icon:      render.Style{Width: 28, Height: 28, BackgroundColor: FontPlusColor},
+			Icon:      render.Style{Width: 28, Height: 28, BackgroundColor: FontSmallColor},
 			Container: render.Style{Direction: render.DirectionHorizontal},
 		},
 	}
 	clanSubscriptionPro = &subscriptionHeader{
 		Icon: "images/icons/star-multiple",
 		Style: subscriptionPillStyle{
-			Icon:      render.Style{Width: 32, Height: 32, BackgroundColor: FontPremiumColor},
+			Icon:      render.Style{Width: 28, Height: 28, BackgroundColor: FontSmallColor},
 			Container: render.Style{Direction: render.DirectionHorizontal},
 		},
 	}

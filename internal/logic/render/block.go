@@ -61,14 +61,14 @@ func (content contentText) Render(style Style) (image.Image, error) {
 	valueW, valueH := measureCtx.MeasureString(content.value)
 
 	// Account for font descender height
-	descenderOffset := (float64((*style.Font).Metrics().Descent>>6) - 1)
+	descenderOffset := (float64((*style.Font).Metrics().Descent >> 6))
 	ctx := gg.NewContext(int(style.PaddingX*2+math.Ceil(valueW)+1), int(style.PaddingY*2+math.Ceil(valueH+(descenderOffset*2))))
 
 	// Render text
 	ctx.SetFontFace(*style.Font)
 	ctx.SetColor(style.FontColor)
 
-	ctx.DrawString(content.value, style.PaddingX, valueH+style.PaddingY)
+	ctx.DrawString(content.value, style.PaddingX, valueH+style.PaddingY+1)
 
 	if style.Debug {
 		ctx.SetColor(getDebugColor())

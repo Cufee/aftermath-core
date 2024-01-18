@@ -14,11 +14,11 @@ import (
 type subscriptionType string
 
 const (
-	SubscriptionTypePro           = subscriptionType("aftermath-pro")
-	SubscriptionTypeProClan       = subscriptionType("aftermath-pro-clsn")
-	SubscriptionTypePlus          = subscriptionType("aftermath-plus")
-	SubscriptionTypeSupporter     = subscriptionType("supporter")
-	SubscriptionTypeSupporterClan = subscriptionType("supporter-clan")
+	SubscriptionTypePro          = subscriptionType("aftermath-pro")
+	SubscriptionTypeProClan      = subscriptionType("aftermath-pro-clsn")
+	SubscriptionTypePlus         = subscriptionType("aftermath-plus")
+	SubscriptionTypeSupporter    = subscriptionType("supporter")
+	SubscriptionTypeVerifiedClan = subscriptionType("verified-clan")
 )
 
 var ErrSubscriptionNotFound = errors.New("subscription not found")

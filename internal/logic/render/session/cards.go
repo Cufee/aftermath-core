@@ -3,7 +3,6 @@ package session
 import (
 	"errors"
 	"image"
-	"image/color"
 
 	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -65,21 +64,17 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Title Card
 	{
-		var clanTag string
+		var clanTagBlocks []render.Block
 		if player.Clan != nil {
-			clanTag = player.Clan.Tag
-		}
-
-		clanSubBlock := render.NewTextContent(render.Style{Font: &FontMedium, FontColor: color.Transparent}, clanTag)
-		if sub := player.clanSubscriptionHeader(); sub != nil {
-			iconBlock, err := sub.Block()
-			if err != nil {
-				log.Warn().Err(err).Msg("failed to render clan tag") // This error is not fatal, but we should avoid trying to render the tag
-			} else {
-				clanSubBlock = iconBlock
+			clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, player.Clan.Tag))
+			if sub := player.clanSubscriptionHeader(); sub != nil {
+				iconBlock, err := sub.Block()
+				if err == nil {
+					clanTagBlocks = append(clanTagBlocks, iconBlock)
+				}
 			}
 		}
-		cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTag, clanSubBlock))
+		cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTagBlocks))
 	}
 
 	// Styles

@@ -11,7 +11,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
-	"github.com/cufee/aftermath-core/internal/logic/users"
 )
 
 func TestFullRenderPipeline(t *testing.T) {
@@ -45,12 +44,14 @@ func TestFullRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// session.Account.Nickname = "WWWWWWWWWWWWWWWWWWWWW"
 	player := render.PlayerData{
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
-		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
-		Account:       &session.Account.Account,
-		Clan:          &session.Account.Clan,
-		Cards:         statsBlocks,
+		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeVerifiedClan}},
+		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
+		Account: &session.Account.Account,
+		Clan:    &session.Account.Clan,
+		Cards:   statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
