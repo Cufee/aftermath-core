@@ -1,5 +1,7 @@
 package server
 
+import "errors"
+
 type Response[T any] struct {
 	Success bool `json:"success"`
 	Data    *T   `json:"data"`
@@ -10,6 +12,13 @@ type Response[T any] struct {
 type ResponseError struct {
 	Message string `json:"message,omitempty"`
 	Context string `json:"context,omitempty"`
+}
+
+func (e ResponseError) Err() error {
+	if e.Message == "" {
+		return nil
+	}
+	return errors.New(e.Message)
 }
 
 func NewResponse[T any](data T) Response[T] {
