@@ -86,3 +86,23 @@ func GetGlossaryVehicles(vehicleIDs ...int) (map[int]models.Vehicle, error) {
 
 	return vehicleMap, nil
 }
+
+func UpdateGlossary(vehicles []models.Vehicle) error {
+	var vehicleWrites []mongo.WriteModel
+	for _, vehicle := range vehicles {
+		model := mongo.NewUpdateOneModel()
+		model.SetFilter(bson.M{"_id": vehicle.ID})
+		model.SetUpdate(bson.M{"$set": vehicle})
+		model.SetUpsert(true)
+		vehicleWrites = append(vehicleWrites, model)
+	}
+
+	ctx, cancel := DefaultClient.Ctx()
+	defer cancel()
+
+	_, err := DefaultClient.Collection(CollectionVehicleGlossary).BulkWrite(ctx, vehicleWrites)
+	if err != nil {
+		return err
+	}
+	return nil
+}

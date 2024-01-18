@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -20,7 +21,7 @@ func init() {
 				return "invalid realm", errors.New("invalid realm")
 			}
 
-			accountErrs, err := cache.RefreshSessionsAndAccounts(cache.SessionTypeDaily, realm, task.Targets...)
+			accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, task.Targets...)
 			if err != nil {
 				return "failed to refresh sessions on all account", err
 			}

@@ -7,44 +7,11 @@ import (
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	wg "github.com/cufee/am-wg-proxy-next/types"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-type DatabaseAccount struct {
-	ID       int    `json:"id" bson:"_id"`
-	Realm    string `json:"realm" bson:"realm"`
-	Nickname string `json:"nickname" bson:"nickname"`
-	Private  bool   `json:"private" bson:"private"` // Some accounts have stats API disabled by Wargaming
-
-	Clan *DatabaseAccountClan `json:"clan" bson:"clan"`
-
-	LastBattleTime time.Time `json:"lastBattleTime" bson:"lastBattleTime"` // This will probably end up not being updated too often
-
-	LastUpdated time.Time `json:"lastUpdated" bson:"lastUpdated"`
-}
-
-type DatabaseAccountClan struct {
-	ID       int       `json:"id" bson:"_id"`
-	Role     string    `json:"role" bson:"role"`
-	JoinedAt time.Time `json:"joinedAt" bson:"joinedAt"`
-}
-
-func GetPlayerAccount(id int) (*DatabaseAccount, error) {
-	ctx, cancel := database.DefaultClient.Ctx()
-	defer cancel()
-
-	var account DatabaseAccount
-	err := database.DefaultClient.Collection(database.CollectionAccounts).FindOne(ctx, bson.M{"_id": id}).Decode(&account)
-	if err != nil {
-		return nil, err
-	}
-
-	return &account, nil
-}
 
 func CacheAllNewClanMembers(realm string, clanId int) error {
 	clan, err := wargaming.Clients.Cache.GetClanByID(realm, clanId)
@@ -52,7 +19,7 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 		return err
 	}
 
-	lastBattles, err := GetLastBattleTimes(SessionTypeDaily, clan.MembersIDS...)
+	lastBattles, err := database.GetLastBattleTimes(models.SessionTypeDaily, clan.MembersIDS...)
 	if err != nil {
 		return err
 	}
@@ -67,7 +34,7 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 		return nil
 	}
 
-	_, err = RefreshSessionsAndAccounts(SessionTypeDaily, realm, newAccounts...)
+	_, err = RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, newAccounts...)
 	if err != nil {
 		return err
 	}
@@ -75,60 +42,24 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 }
 
 func UpdatePlayerAccountsFromWG(realm string, accounts ...*wg.ExtendedAccount) error {
-	var converted []DatabaseAccount
+	var converted []models.Account
 	for _, account := range accounts {
 		if account == nil {
 			continue
 		}
 		converted = append(converted, *accountToDatabaseAccount(realm, *account))
 	}
-	return UpdatePlayerAccounts(converted...)
-}
-
-func UpdatePlayerAccounts(accounts ...DatabaseAccount) error {
-	var writes []mongo.WriteModel
-	for _, account := range accounts {
-		model := mongo.NewUpdateOneModel()
-		model.SetFilter(bson.M{"_id": account.ID})
-		model.SetUpdate(bson.M{"$set": account})
-		model.SetUpsert(true)
-		writes = append(writes, model)
-	}
-
-	ctx, cancel := database.DefaultClient.Ctx()
-	defer cancel()
-
-	_, err := database.DefaultClient.Collection(database.CollectionAccounts).BulkWrite(ctx, writes)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return database.UpdatePlayerAccounts(converted...)
 }
 
 /*
 UpdateRealmAccountsCache updates all active accounts for a realm in the cache.
 */
 func UpdateRealmAccountsCache(realm string) error {
-	ctx, cancel := database.DefaultClient.Ctx()
-	defer cancel()
-
-	cur, err := database.DefaultClient.Collection(database.CollectionAccounts).Find(ctx, bson.M{"realm": realm})
+	accountIDs, err := database.GetRealmAccountIDs(realm)
 	if err != nil {
 		return err
 	}
-
-	var accounts []DatabaseAccount
-	err = cur.All(ctx, &accounts)
-	if err != nil {
-		return err
-	}
-
-	var accountIDs []int
-	for _, account := range accounts {
-		accountIDs = append(accountIDs, account.ID)
-	}
-
 	return UpdateAccountsCache(realm, accountIDs)
 }
 
@@ -161,7 +92,7 @@ func UpdateAccountsCache(realm string, accountIDs []int) error {
 	waitGroup.Wait()
 	close(accountsChan)
 
-	var documents []DatabaseAccount
+	var documents []models.Account
 	for accounts := range accountsChan {
 		if accounts.Err != nil {
 			return accounts.Err
@@ -178,11 +109,11 @@ func UpdateAccountsCache(realm string, accountIDs []int) error {
 		}
 	}
 
-	return UpdatePlayerAccounts(documents...)
+	return database.UpdatePlayerAccounts(documents...)
 }
 
-func accountToDatabaseAccount(realm string, acc wg.ExtendedAccount) *DatabaseAccount {
-	return &DatabaseAccount{
+func accountToDatabaseAccount(realm string, acc wg.ExtendedAccount) *models.Account {
+	return &models.Account{
 		ID:       acc.ID,
 		Realm:    strings.ToUpper(realm),
 		Nickname: acc.Nickname,

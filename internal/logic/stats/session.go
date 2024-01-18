@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
@@ -30,7 +31,7 @@ type Snapshot struct {
 	Diff     *core.SessionSnapshot // The difference between the selected and live sessions
 }
 
-func GetCurrentPlayerSession(realm string, accountId int, options ...cache.SessionGetOptions) (*Snapshot, error) {
+func GetCurrentPlayerSession(realm string, accountId int, options ...database.SessionGetOptions) (*Snapshot, error) {
 	liveSessionChan := make(chan utils.DataWithError[*sessions.SessionWithRawData], 1)
 	lastSessionChan := make(chan utils.DataWithError[*core.SessionSnapshot], 1)
 
@@ -55,8 +56,12 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		lastSession, err := cache.GetPlayerSessionSnapshot(accountId, options...)
-		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession, Err: err}
+		lastSession, err := database.GetPlayerSessionSnapshot(accountId, options...)
+		if err != nil {
+			lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Err: err}
+			return
+		}
+		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession.Session}
 	}()
 
 	wg.Wait()
@@ -70,10 +75,10 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...cache.Sessi
 	}
 	lastSession := <-lastSessionChan
 	if lastSession.Err != nil {
-		if errors.Is(lastSession.Err, cache.ErrNoSessionCache) {
+		if errors.Is(lastSession.Err, database.ErrNoSessionCache) {
 			go func(realm string, accountId int) {
 				// Refresh the session cache in the background
-				accountErrs, err := cache.RefreshSessionsAndAccounts(cache.SessionTypeDaily, realm, accountId)
+				accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, accountId)
 				if err != nil || len(accountErrs) > 0 {
 					log.Err(err).Msg("failed to refresh session cache")
 				}

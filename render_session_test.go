@@ -6,7 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/localization"
+	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
@@ -14,6 +16,11 @@ import (
 )
 
 func TestFullRenderPipeline(t *testing.T) {
+	err := database.Connect(utils.MustGetEnv("DATABASE_URL"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	start := time.Now()
 	session, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013072123 1032698345
 	if err != nil {
