@@ -123,7 +123,7 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	options := render.RenderOptions{
-		PromoText:       []string{"Aftermath is back!", "amth.one/join"},
+		PromoText:       []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
 		CardStyle:       render.DefaultCardStyle(nil),
 		BackgroundImage: bgImage,
 	}

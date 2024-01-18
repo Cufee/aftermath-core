@@ -32,7 +32,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	var cards []render.Block
 
-	// User Status Badge
+	// User Subscription Badge and promo text
 	switch sub := player.userSubscriptionHeader(); sub {
 	case userSubscriptionSupporter:
 		// Supporters get a badge and a promo text
@@ -63,26 +63,21 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	// Title Card
-	{
-		var clanTagBlocks []render.Block
-		if player.Clan != nil {
-			clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, player.Clan.Tag))
-			if sub := player.clanSubscriptionHeader(); sub != nil {
-				iconBlock, err := sub.Block()
-				if err == nil {
-					clanTagBlocks = append(clanTagBlocks, iconBlock)
-				}
+	var clanTagBlocks []render.Block
+	if player.Clan != nil {
+		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, player.Clan.Tag))
+		if sub := player.clanSubscriptionHeader(); sub != nil {
+			iconBlock, err := sub.Block()
+			if err == nil {
+				clanTagBlocks = append(clanTagBlocks, iconBlock)
 			}
 		}
-		cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTagBlocks))
 	}
+	cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTagBlocks))
 
-	// Styles
 	styled := func(blocks []dataprep.StatsBlock) []styledStatsBlock {
 		return styleBlocks(blocks, HighlightStatsBlockStyle(options.CardStyle.BackgroundColor), DefaultStatsBlockStyle)
 	}
-	vehicleHighlightBlockStyle := HighlightStatsBlockStyle(options.CardStyle.BackgroundColor)
-	vehicleHighlightBlockStyle.PaddingY = 5
 
 	for _, card := range player.Cards {
 		opts := convertOptions{true, true, true}
