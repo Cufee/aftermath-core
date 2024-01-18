@@ -20,7 +20,11 @@ type InspectorVehicle struct {
 	Premium int    `json:"premium"`
 }
 
-var inspectorVehiclesURL = utils.MustGetEnv("WOT_INSPECTOR_TANK_DB_URL")
+var inspectorVehiclesURL string
+
+func init() {
+	inspectorVehiclesURL = utils.MustGetEnv("WOT_INSPECTOR_TANK_DB_URL")
+}
 
 func GetInspectorVehicles() (map[int]InspectorVehicle, error) {
 	re := regexp.MustCompile(`(\d{1,9}):`)

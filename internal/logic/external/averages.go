@@ -33,7 +33,11 @@ type VehicleAverages struct {
 	} `json:"special,omitempty"`
 }
 
-var starsStatsAveragesURL = utils.MustGetEnv("BLITZ_STARS_AVERAGES_URL")
+var starsStatsAveragesURL string
+
+func init() {
+	starsStatsAveragesURL = utils.MustGetEnv("BLITZ_STARS_AVERAGES_URL")
+}
 
 func GetTankAverages() (map[int]stats.ReducedStatsFrame, error) {
 	res, err := insecureClient.Get(starsStatsAveragesURL)
