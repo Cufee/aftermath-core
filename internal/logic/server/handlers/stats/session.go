@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type sessionStatsResponse struct {
+type SessionStatsResponse struct {
 	Realm      string                `json:"realm"`
 	Locale     string                `json:"locale"`
 	LastBattle int                   `json:"last_battle"`
@@ -75,7 +75,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(stats))
 }
 
-func getSessionStats(realm string, accountId int) (*sessionStatsResponse, error) {
+func getSessionStats(realm string, accountId int) (*SessionStatsResponse, error) {
 	session, err := stats.GetCurrentPlayerSession(realm, accountId)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func getSessionStats(realm string, accountId int) (*sessionStatsResponse, error)
 		return nil, err
 	}
 
-	return &sessionStatsResponse{
+	return &SessionStatsResponse{
 		Realm:      realm,
 		Locale:     localization.LanguageEN.WargamingCode,
 		LastBattle: session.Account.LastBattleTime,
