@@ -16,7 +16,6 @@ func addIndexHandler(collection collectionName, handler func(db *mongo.Collectio
 	indexHandlers[collection] = (func(db *mongo.Database) ([]string, error) {
 		return handler(db.Collection(string(collection)))
 	})
-
 }
 
 func SyncIndexes(db *mongo.Database) error {
