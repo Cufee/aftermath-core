@@ -1,54 +1,37 @@
 package session
 
 import (
+	"errors"
 	"image"
 	"image/color"
-	"sync"
 
-	"github.com/cufee/aftermath-core/internal/core/localization"
-	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/users"
+	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
 
 type PlayerData struct {
-	Blocks        *dataprep.SessionBlocks
-	Snapshot      *stats.Snapshot
+	Clan          *wg.Clan
+	Account       *wg.Account
+	Cards         dataprep.SessionCards
 	Subscriptions []users.UserSubscription
 }
 
 type RenderOptions struct {
-	Locale          localization.SupportedLanguage
 	PromoText       []string
 	CardStyle       render.Style
 	BackgroundImage image.Image
 }
 
 func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
-	var glossarySync sync.WaitGroup
-	glossaryChan := make(chan map[int]cache.VehicleInfo, 1)
-
-	glossarySync.Add(1)
-	go func() {
-		defer glossarySync.Done()
-		defer close(glossaryChan)
-		vehicleIDs := make([]int, 0, len(player.Blocks.Vehicles))
-		for _, vehicle := range player.Blocks.Vehicles {
-			vehicleIDs = append(vehicleIDs, vehicle.ID)
-		}
-		vehiclesGlossary, err := cache.GetGlossaryVehicles(vehicleIDs...)
-		if err != nil {
-			// This is definitely not fatal, but will look ugly
-			log.Warn().Err(err).Msg("failed to get vehicles glossary")
-		}
-		glossaryChan <- vehiclesGlossary
-	}()
+	if player.Account == nil {
+		log.Error().Msg("player account is nil, this should not happen")
+		return nil, errors.New("player account is nil")
+	}
 
 	var cards []render.Block
-	localePrinter := localization.GetPrinter(options.Locale)
 
 	// User Status Badge
 	switch sub := player.userSubscriptionHeader(); sub {
@@ -82,7 +65,12 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Title Card
 	{
-		clanSubBlock := render.NewTextContent(render.Style{Font: &FontMedium, FontColor: color.Transparent}, player.Snapshot.Account.Clan.Tag)
+		var clanTag string
+		if player.Clan != nil {
+			clanTag = player.Clan.Tag
+		}
+
+		clanSubBlock := render.NewTextContent(render.Style{Font: &FontMedium, FontColor: color.Transparent}, clanTag)
 		if sub := player.clanSubscriptionHeader(); sub != nil {
 			iconBlock, err := sub.Block()
 			if err != nil {
@@ -91,8 +79,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 				clanSubBlock = iconBlock
 			}
 		}
-		cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Snapshot.Account.Nickname, player.Snapshot.Account.Clan.Tag, clanSubBlock))
-
+		cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTag, clanSubBlock))
 	}
 
 	// Styles
@@ -102,39 +89,17 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	vehicleHighlightBlockStyle := HighlightStatsBlockStyle(options.CardStyle.BackgroundColor)
 	vehicleHighlightBlockStyle.PaddingY = 5
 
-	{
-		// Regular Battles
-		blocks, err := statsBlocksToCardBlocks(styled(player.Blocks.Regular))
+	for _, card := range player.Cards {
+		opts := convertOptions{true, true, true}
+		if card.Type == dataprep.CardTypeVehicle {
+			opts = convertOptions{true, true, false}
+		}
+
+		blocks, err := statsBlocksToCardBlocks(styled(card.Blocks), opts)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, newCardBlock(options.CardStyle, newTextLabel(localePrinter("label_overview_unrated")), blocks))
+		cards = append(cards, newCardBlock(options.CardStyle, newTextLabel(card.Title), blocks))
 	}
-
-	// Rating Battles
-	if player.Snapshot.Diff.Rating.Battles > 0 {
-		blocks, err := statsBlocksToCardBlocks(styled(player.Blocks.Rating))
-		if err != nil {
-			return nil, err
-		}
-		cards = append(cards, newCardBlock(options.CardStyle, newTextLabel(localePrinter("label_overview_rating")), blocks))
-	}
-
-	{
-		glossarySync.Wait()
-		glossary := <-glossaryChan
-		// Vehicle Cards
-		for _, vehicle := range player.Blocks.Vehicles {
-			styledBlocks := styleBlocks(vehicle.Blocks, vehicleHighlightBlockStyle, DefaultStatsBlockStyle)
-			blocks, err := statsBlocksToCardBlocks(styledBlocks, convertOptions{showSessionStats: true, showCareerStats: true})
-			if err != nil {
-				return nil, err
-			}
-			vehicleInfo := glossary[vehicle.ID]
-			vehicleInfo.ID = vehicle.ID
-			cards = append(cards, newCardBlock(options.CardStyle, newVehicleLabel(vehicleInfo.Name(options.Locale), render.IntToRoman(vehicleInfo.Tier)), blocks))
-		}
-	}
-
 	return cards, nil
 }

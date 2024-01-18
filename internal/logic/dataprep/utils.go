@@ -6,26 +6,26 @@ import (
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 )
 
-func statsValueToString(value any) string {
-	switch cast := value.(type) {
+func statsToValue(v any) value {
+	switch cast := v.(type) {
 	case string:
-		return cast
+		return value{String: cast, Value: v}
 	case float32:
 		if int(cast) == core.InvalidValue {
-			return "-"
+			return value{String: "-", Value: v}
 		}
-		return fmt.Sprintf("%.2f", cast)
+		return value{String: fmt.Sprintf("%.2f", cast), Value: v}
 	case float64:
 		if int(cast) == core.InvalidValue {
-			return "-"
+			return value{String: "-", Value: v}
 		}
-		return fmt.Sprintf("%.2f%%", cast)
+		return value{String: fmt.Sprintf("%.2f%%", cast), Value: v}
 	case int:
-		if value == core.InvalidValue {
-			return "-"
+		if cast == core.InvalidValue {
+			return value{String: "-", Value: v}
 		}
-		return fmt.Sprintf("%d", value)
+		return value{String: fmt.Sprint(cast), Value: v}
 	default:
-		return fmt.Sprint(value)
+		return value{String: "-", Value: v}
 	}
 }

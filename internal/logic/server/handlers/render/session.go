@@ -101,7 +101,7 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
-	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
 		SessionStats:          session.Diff,
 		CareerStats:           session.Selected,
 		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, sortOptions),
@@ -115,15 +115,15 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 	}
 
 	player := render.PlayerData{
+		Clan:          &session.Account.Clan,
+		Account:       &session.Account.Account,
 		Subscriptions: subscriptions,
-		Snapshot:      session,
-		Blocks:        &statsBlocks,
+		Cards:         statsCards,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	options := render.RenderOptions{
 		PromoText:       []string{"Aftermath is back!", "amth.one/join"},
-		Locale:          localization.LanguageEN,
 		CardStyle:       render.DefaultCardStyle(nil),
 		BackgroundImage: bgImage,
 	}

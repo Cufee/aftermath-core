@@ -16,10 +16,12 @@ import (
 )
 
 type sessionStatsResponse struct {
-	Clan     wg.Clan                   `json:"clan"`
-	Account  wg.Account                `json:"account"`
-	Blocks   dataprep.SessionBlocks    `json:"blocks"`
-	Glossary map[int]cache.VehicleInfo `json:"glossary"`
+	Realm      string                `json:"realm"`
+	Locale     string                `json:"locale"`
+	LastBattle int                   `json:"last_battle"`
+	Clan       wg.Clan               `json:"clan"`
+	Account    wg.Account            `json:"account"`
+	Cards      dataprep.SessionCards `json:"cards"`
 }
 
 func SessionFromIDHandler(c *fiber.Ctx) error {
@@ -96,7 +98,7 @@ func getSessionStats(realm string, accountId int) (*sessionStatsResponse, error)
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
-	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
 		SessionStats:          session.Diff,
 		CareerStats:           session.Selected,
 		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, sortOptions),
@@ -109,20 +111,12 @@ func getSessionStats(realm string, accountId int) (*sessionStatsResponse, error)
 		return nil, err
 	}
 
-	vehicleIDs := make([]int, 0, len(statsBlocks.Vehicles))
-	for _, vehicle := range statsBlocks.Vehicles {
-		vehicleIDs = append(vehicleIDs, vehicle.ID)
-	}
-	vehiclesGlossary, err := cache.GetGlossaryVehicles(vehicleIDs...)
-	if err != nil {
-		// This is definitely not fatal, but will look ugly
-		log.Warn().Err(err).Msg("failed to get vehicles glossary")
-	}
-
 	return &sessionStatsResponse{
-		Clan:     session.Account.ClanMember.Clan,
-		Account:  session.Account.Account,
-		Blocks:   statsBlocks,
-		Glossary: vehiclesGlossary,
+		Realm:      realm,
+		Locale:     localization.LanguageEN.WargamingCode,
+		LastBattle: session.Account.LastBattleTime,
+		Clan:       session.Account.ClanMember.Clan,
+		Account:    session.Account.Account,
+		Cards:      statsCards,
 	}, nil
 }

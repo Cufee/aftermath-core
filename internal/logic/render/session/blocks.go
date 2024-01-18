@@ -31,10 +31,10 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 	for i, statsBlock := range stats {
 		blocks := make([]render.Block, 0, 3)
 		if options.showSessionStats {
-			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, statsBlock.Session))
+			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, statsBlock.Session.String))
 		}
-		if options.showCareerStats && statsBlock.Career != "" {
-			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, statsBlock.Career))
+		if options.showCareerStats && statsBlock.Career.String != "" {
+			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, statsBlock.Career.String))
 		}
 		if options.showLabels && i != 0 && statsBlock.Label != "" {
 			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontSmall, FontColor: FontSmallColor}, statsBlock.Label))

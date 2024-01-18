@@ -16,7 +16,7 @@ import (
 
 func TestFullRenderPipeline(t *testing.T) {
 	start := time.Now()
-	session, err := stats.GetCurrentPlayerSession("eu", 681607664) // 1013072123 1032698345
+	session, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,6 @@ func TestFullRenderPipeline(t *testing.T) {
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
-	session.Account.Clan.Tag = "AMTH"
 
 	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
 		SessionStats:          session.Diff,
@@ -47,16 +46,16 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	player := render.PlayerData{
-		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
-		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
-		Snapshot: session,
-		Blocks:   &statsBlocks,
+		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
+		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
+		Account:       &session.Account.Account,
+		Clan:          &session.Account.Clan,
+		Cards:         statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	options := render.RenderOptions{
 		PromoText:       []string{"Aftermath is back!", "amth.one/join"},
-		Locale:          localization.LanguageEN,
 		CardStyle:       render.DefaultCardStyle(nil),
 		BackgroundImage: bgImage,
 	}

@@ -6,6 +6,9 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
+	"github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/logic/cache"
+	"github.com/rs/zerolog/log"
 )
 
 type statsBlockPreset string
@@ -21,21 +24,30 @@ const (
 
 var DefaultBlockPresets = []statsBlockPreset{BlockPresetBattles, BlockPresetAvgDamage, BlockPresetDamageRatio, BlockPresetWinrate, BlockPresetWN8}
 
-type StatsBlock struct {
-	Session string `json:"session"`
-	Career  string `json:"career"`
-	Label   string `json:"label"`
-}
+type cardType string
 
-type VehicleStatsBlock struct {
-	ID     int          `json:"id"`
+const (
+	CardTypeVehicle  cardType = "vehicle"
+	CardTypeOverview cardType = "overview"
+)
+
+type StatsCard struct {
+	Type   cardType     `json:"type"`
+	Title  string       `json:"title"`
 	Blocks []StatsBlock `json:"blocks"`
 }
 
-type SessionBlocks struct {
-	Rating   []StatsBlock        `json:"rating"`
-	Regular  []StatsBlock        `json:"regular"`
-	Vehicles []VehicleStatsBlock `json:"vehicles"`
+type SessionCards []StatsCard
+
+type value struct {
+	Value  any    `json:"value"`
+	String string `json:"string"`
+}
+
+type StatsBlock struct {
+	Session value  `json:"session"`
+	Career  value  `json:"career"`
+	Label   string `json:"label"`
 }
 
 type ExportInput struct {
@@ -50,36 +62,45 @@ type ExportOptions struct {
 	Locale localization.SupportedLanguage
 }
 
-func SnapshotToSession(input ExportInput, options ExportOptions) (SessionBlocks, error) {
+func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, error) {
 	if input.SessionStats == nil || input.CareerStats == nil {
-		return SessionBlocks{}, errors.New("session or career stats are nil")
+		return nil, errors.New("session or career stats are nil")
 	}
 
-	var sessionBlocks SessionBlocks
+	var cards SessionCards
 	printer := localization.GetPrinter(options.Locale)
 
 	// Unrated battles
-	for _, preset := range options.Blocks {
-		if preset == BlockPresetWN8 {
-			// WN8 is a special case that needs to be calculated from vehicles
-			sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
-			if sessionWN8 != core.InvalidValue {
-				sessionBlocks.Regular = append(sessionBlocks.Regular, StatsBlock{
-					Session: statsValueToString(sessionWN8),
-					Label:   printer("label_wn8"),
-				})
-				continue
+	if input.SessionStats.Rating.Battles == 0 || input.SessionStats.Global.Battles > 0 {
+		var unratedBlocks []StatsBlock
+		for _, preset := range options.Blocks {
+			if preset == BlockPresetWN8 {
+				// WN8 is a special case that needs to be calculated from vehicles
+				sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
+				if sessionWN8 != core.InvalidValue {
+					unratedBlocks = append(unratedBlocks, StatsBlock{
+						Session: statsToValue(sessionWN8),
+						Label:   printer("label_wn8"),
+					})
+					continue
+				}
 			}
+			block, err := preset.StatsBlock(input.SessionStats.Global, input.CareerStats.Global, nil, printer)
+			if err != nil {
+				return nil, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
+			}
+			unratedBlocks = append(unratedBlocks, block)
 		}
-		block, err := preset.StatsBlock(input.SessionStats.Global, input.CareerStats.Global, nil, printer)
-		if err != nil {
-			return sessionBlocks, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
-		}
-		sessionBlocks.Regular = append(sessionBlocks.Regular, block)
+		cards = append(cards, StatsCard{
+			Title:  printer("label_overview_unrated"),
+			Blocks: unratedBlocks,
+			Type:   CardTypeOverview,
+		})
 	}
 
 	// Rating battles
 	if input.SessionStats.Rating.Battles > 0 {
+		var ratingBlocks []StatsBlock
 		for _, preset := range options.Blocks {
 			p := preset
 			if preset == BlockPresetWN8 {
@@ -88,33 +109,54 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionBlocks,
 			}
 			ratingBlock, err := p.StatsBlock(input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
 			if err != nil {
-				return sessionBlocks, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
+				return nil, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
 			}
-			sessionBlocks.Rating = append(sessionBlocks.Rating, ratingBlock)
+			ratingBlocks = append(ratingBlocks, ratingBlock)
 		}
-	}
-
-	// Vehicles
-	for _, vehicle := range input.SessionVehicles {
-		var vehicleBlocks []StatsBlock
-		for _, preset := range options.Blocks {
-			var career *core.ReducedStatsFrame
-			if input.CareerStats.Vehicles[vehicle.VehicleID] != nil {
-				career = input.CareerStats.Vehicles[vehicle.VehicleID].ReducedStatsFrame
-			}
-			block, err := preset.StatsBlock(vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID], printer)
-			if err != nil {
-				return sessionBlocks, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
-			}
-			vehicleBlocks = append(vehicleBlocks, block)
-		}
-		sessionBlocks.Vehicles = append(sessionBlocks.Vehicles, VehicleStatsBlock{
-			ID:     vehicle.VehicleID,
-			Blocks: vehicleBlocks,
+		cards = append(cards, StatsCard{
+			Title:  printer("label_overview_rating"),
+			Blocks: ratingBlocks,
+			Type:   CardTypeOverview,
 		})
 	}
 
-	return sessionBlocks, nil
+	// Vehicles
+	if len(input.SessionVehicles) > 0 {
+		var ids []int
+		for _, vehicle := range input.SessionVehicles {
+			ids = append(ids, vehicle.VehicleID)
+		}
+
+		vehiclesGlossary, err := cache.GetGlossaryVehicles(ids...)
+		if err != nil {
+			// This is definitely not fatal, but will look ugly
+			log.Warn().Err(err).Msg("failed to get vehicles glossary")
+		}
+
+		for _, vehicle := range input.SessionVehicles {
+			var vehicleBlocks []StatsBlock
+			for _, preset := range options.Blocks {
+				var career *core.ReducedStatsFrame
+				if input.CareerStats.Vehicles[vehicle.VehicleID] != nil {
+					career = input.CareerStats.Vehicles[vehicle.VehicleID].ReducedStatsFrame
+				}
+				block, err := preset.StatsBlock(vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID], printer)
+				if err != nil {
+					return nil, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
+				}
+				vehicleBlocks = append(vehicleBlocks, block)
+			}
+
+			glossary := vehiclesGlossary[vehicle.VehicleID]
+			cards = append(cards, StatsCard{
+				Title:  fmt.Sprintf("%s %s", utils.IntToRoman(glossary.Tier), glossary.Name(options.Locale)),
+				Blocks: vehicleBlocks,
+				Type:   CardTypeVehicle,
+			})
+		}
+	}
+
+	return cards, nil
 }
 
 func calculateSessionWN8(vehicles map[int]*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame) int {
@@ -139,40 +181,40 @@ func (p *statsBlockPreset) StatsBlock(session, career, averages *core.ReducedSta
 	var block StatsBlock
 	switch *p {
 	case BlockPresetWN8:
-		block.Session = statsValueToString(session.WN8(averages))
+		block.Session = statsToValue(session.WN8(averages))
 		block.Label = printer("label_wn8")
 		if career != nil {
-			block.Career = statsValueToString(career.WN8(averages))
+			block.Career = statsToValue(career.WN8(averages))
 		}
 	case BlockPresetBattles:
-		block.Session = statsValueToString(session.Battles)
+		block.Session = statsToValue(session.Battles)
 		block.Label = printer("label_battles")
 		if career != nil {
-			block.Career = statsValueToString(career.Battles)
+			block.Career = statsToValue(career.Battles)
 		}
 	case BlockPresetWinrate:
-		block.Session = statsValueToString(session.Winrate())
+		block.Session = statsToValue(session.Winrate())
 		block.Label = printer("label_winrate")
 		if career != nil {
-			block.Career = statsValueToString(career.Winrate())
+			block.Career = statsToValue(career.Winrate())
 		}
 	case BlockPresetAccuracy:
-		block.Session = statsValueToString(session.Accuracy())
+		block.Session = statsToValue(session.Accuracy())
 		block.Label = printer("label_accuracy")
 		if career != nil {
-			block.Career = statsValueToString(career.Accuracy())
+			block.Career = statsToValue(career.Accuracy())
 		}
 	case BlockPresetAvgDamage:
-		block.Session = statsValueToString(int(session.AvgDamage()))
+		block.Session = statsToValue(int(session.AvgDamage()))
 		block.Label = printer("label_avg_damage")
 		if career != nil {
-			block.Career = statsValueToString(int(career.AvgDamage()))
+			block.Career = statsToValue(int(career.AvgDamage()))
 		}
 	case BlockPresetDamageRatio:
-		block.Session = statsValueToString(session.DamageRatio())
+		block.Session = statsToValue(session.DamageRatio())
 		block.Label = printer("label_damage_ratio")
 		if career != nil {
-			block.Career = statsValueToString(career.DamageRatio())
+			block.Career = statsToValue(career.DamageRatio())
 		}
 	default:
 		return StatsBlock{}, errors.New("invalid preset")
