@@ -22,20 +22,20 @@ const (
 var DefaultBlockPresets = []statsBlockPreset{BlockPresetBattles, BlockPresetAvgDamage, BlockPresetDamageRatio, BlockPresetWinrate, BlockPresetWN8}
 
 type StatsBlock struct {
-	Session string
-	Career  string
-	Label   string
+	Session string `json:"session"`
+	Career  string `json:"career"`
+	Label   string `json:"label"`
 }
 
 type VehicleStatsBlock struct {
-	ID     int
-	Blocks []StatsBlock
+	ID     int          `json:"id"`
+	Blocks []StatsBlock `json:"blocks"`
 }
 
 type SessionBlocks struct {
-	Rating   []StatsBlock
-	Regular  []StatsBlock
-	Vehicles []VehicleStatsBlock
+	Rating   []StatsBlock        `json:"rating"`
+	Regular  []StatsBlock        `json:"regular"`
+	Vehicles []VehicleStatsBlock `json:"vehicles"`
 }
 
 type ExportInput struct {
@@ -58,6 +58,42 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionBlocks,
 	var sessionBlocks SessionBlocks
 	printer := localization.GetPrinter(options.Locale)
 
+	// Unrated battles
+	for _, preset := range options.Blocks {
+		if preset == BlockPresetWN8 {
+			// WN8 is a special case that needs to be calculated from vehicles
+			sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
+			if sessionWN8 != core.InvalidValue {
+				sessionBlocks.Regular = append(sessionBlocks.Regular, StatsBlock{
+					Session: statsValueToString(sessionWN8),
+					Label:   printer("label_wn8"),
+				})
+				continue
+			}
+		}
+		block, err := preset.StatsBlock(input.SessionStats.Global, input.CareerStats.Global, nil, printer)
+		if err != nil {
+			return sessionBlocks, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
+		}
+		sessionBlocks.Regular = append(sessionBlocks.Regular, block)
+	}
+
+	// Rating battles
+	if input.SessionStats.Rating.Battles > 0 {
+		for _, preset := range options.Blocks {
+			p := preset
+			if preset == BlockPresetWN8 {
+				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
+				p = BlockPresetAccuracy
+			}
+			ratingBlock, err := p.StatsBlock(input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
+			if err != nil {
+				return sessionBlocks, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
+			}
+			sessionBlocks.Rating = append(sessionBlocks.Rating, ratingBlock)
+		}
+	}
+
 	// Vehicles
 	for _, vehicle := range input.SessionVehicles {
 		var vehicleBlocks []StatsBlock
@@ -76,40 +112,6 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionBlocks,
 			ID:     vehicle.VehicleID,
 			Blocks: vehicleBlocks,
 		})
-	}
-
-	// Rating and Unrated battles
-	for _, preset := range options.Blocks {
-		{
-			p := preset
-			if preset == BlockPresetWN8 {
-				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
-				p = BlockPresetAccuracy
-			}
-			ratingBlock, err := p.StatsBlock(input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
-			if err != nil {
-				return sessionBlocks, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
-			}
-			sessionBlocks.Rating = append(sessionBlocks.Rating, ratingBlock)
-		}
-		{
-			if preset == BlockPresetWN8 {
-				// WN8 is a special case that needs to be calculated from vehicles
-				sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
-				if sessionWN8 != core.InvalidValue {
-					sessionBlocks.Regular = append(sessionBlocks.Regular, StatsBlock{
-						Session: statsValueToString(sessionWN8),
-						Label:   printer("label_wn8"),
-					})
-					continue
-				}
-			}
-			block, err := preset.StatsBlock(input.SessionStats.Global, input.CareerStats.Global, nil, printer)
-			if err != nil {
-				return sessionBlocks, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
-			}
-			sessionBlocks.Regular = append(sessionBlocks.Regular, block)
-		}
 	}
 
 	return sessionBlocks, nil

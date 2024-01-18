@@ -47,10 +47,10 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	player := render.PlayerData{
-		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeProClan}},
-		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
-		Snapshot:      session,
-		Blocks:        &statsBlocks,
+		Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
+		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
+		Snapshot: session,
+		Blocks:   &statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")

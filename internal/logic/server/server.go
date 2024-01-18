@@ -5,6 +5,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/accounts"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/render"
+	"github.com/cufee/aftermath-core/internal/logic/server/handlers/stats"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/users"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +30,10 @@ func Start() {
 	renderV1 := v1.Group("/render")
 	renderV1.Get("/session/user/:id", render.SessionFromUserHandler)
 	renderV1.Get("/session/account/:account", render.SessionFromIDHandler)
+
+	statsV1 := v1.Group("/stats")
+	statsV1.Get("/session/user/:id", stats.SessionFromUserHandler)
+	statsV1.Get("/session/account/:account", stats.SessionFromIDHandler)
 
 	accountsV1 := v1.Group("/accounts")
 	accountsV1.Get("/search", accounts.SearchAccountsHandler)

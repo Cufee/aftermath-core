@@ -14,6 +14,10 @@ type Client struct {
 	db *mongo.Database
 }
 
+func (c *Client) Database() *mongo.Database {
+	return c.db
+}
+
 var DefaultClient *Client = NewClient()
 
 func NewClient() *Client {
@@ -37,11 +41,6 @@ func NewClient() *Client {
 	}
 
 	db := client.Database(connString.Database)
-	err = syncIndexes(db)
-	if err != nil {
-		panic(err)
-	}
-
 	return &Client{
 		db: db,
 	}
