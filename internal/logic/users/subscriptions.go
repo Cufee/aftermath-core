@@ -15,7 +15,7 @@ type subscriptionType string
 
 const (
 	SubscriptionTypePro          = subscriptionType("aftermath-pro")
-	SubscriptionTypeProClan      = subscriptionType("aftermath-pro-clsn")
+	SubscriptionTypeProClan      = subscriptionType("aftermath-pro-clan")
 	SubscriptionTypePlus         = subscriptionType("aftermath-plus")
 	SubscriptionTypeSupporter    = subscriptionType("supporter")
 	SubscriptionTypeVerifiedClan = subscriptionType("verified-clan")
