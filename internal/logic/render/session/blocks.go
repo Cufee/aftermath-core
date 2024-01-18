@@ -3,7 +3,7 @@ package session
 import (
 	"image/color"
 
-	"github.com/cufee/aftermath-core/internal/logic/dataprep"
+	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/rs/zerolog/log"
 )

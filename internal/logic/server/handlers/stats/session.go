@@ -6,12 +6,11 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/types"
 
+	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
-	"github.com/cufee/aftermath-core/internal/logic/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/utils"
 
@@ -61,7 +60,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(stats))
 }
 
-func getSessionStats(realm string, accountId int) (*types.SessionStatsResponse, error) {
+func getSessionStats(realm string, accountId int) (*dataprep.SessionStats, error) {
 	session, err := stats.GetCurrentPlayerSession(realm, accountId)
 	if err != nil {
 		return nil, err
@@ -97,7 +96,7 @@ func getSessionStats(realm string, accountId int) (*types.SessionStatsResponse, 
 		return nil, err
 	}
 
-	return &types.SessionStatsResponse{
+	return &dataprep.SessionStats{
 		Realm:      realm,
 		Locale:     localization.LanguageEN.WargamingCode,
 		LastBattle: session.Account.LastBattleTime,

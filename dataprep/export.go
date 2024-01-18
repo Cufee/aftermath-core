@@ -11,45 +11,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type statsBlockPreset string
-
-const (
-	BlockPresetWN8         statsBlockPreset = "wn8"
-	BlockPresetBattles     statsBlockPreset = "battles"
-	BlockPresetWinrate     statsBlockPreset = "winrate"
-	BlockPresetAccuracy    statsBlockPreset = "accuracy"
-	BlockPresetAvgDamage   statsBlockPreset = "avg_damage"
-	BlockPresetDamageRatio statsBlockPreset = "damage_ratio"
-)
-
-var DefaultBlockPresets = []statsBlockPreset{BlockPresetBattles, BlockPresetAvgDamage, BlockPresetDamageRatio, BlockPresetWinrate, BlockPresetWN8}
-
-type cardType string
-
-const (
-	CardTypeVehicle  cardType = "vehicle"
-	CardTypeOverview cardType = "overview"
-)
-
-type StatsCard struct {
-	Type   cardType     `json:"type"`
-	Title  string       `json:"title"`
-	Blocks []StatsBlock `json:"blocks"`
-}
-
-type SessionCards []StatsCard
-
-type value struct {
-	Value  any    `json:"value"`
-	String string `json:"string"`
-}
-
-type StatsBlock struct {
-	Session value  `json:"session"`
-	Career  value  `json:"career"`
-	Label   string `json:"label"`
-}
-
 type ExportInput struct {
 	CareerStats           *core.SessionSnapshot
 	SessionStats          *core.SessionSnapshot
@@ -157,68 +118,4 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 	}
 
 	return cards, nil
-}
-
-func calculateSessionWN8(vehicles map[int]*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame) int {
-	var wn8VehiclesTotal, wn8VehiclesBattles int
-	for id, vehicle := range vehicles {
-		if vehicle.Valid(vehicle.WN8(averages[id])) {
-			wn8VehiclesTotal += vehicle.WN8(averages[id]) * vehicle.Battles
-			wn8VehiclesBattles += vehicle.Battles
-		}
-	}
-	if wn8VehiclesBattles > 0 {
-		return wn8VehiclesTotal / wn8VehiclesBattles
-	}
-	return core.InvalidValue
-}
-
-func (p *statsBlockPreset) StatsBlock(session, career, averages *core.ReducedStatsFrame, printer localization.LocalePrinter) (StatsBlock, error) {
-	if session == nil {
-		return StatsBlock{}, errors.New("session is nil")
-	}
-
-	var block StatsBlock
-	switch *p {
-	case BlockPresetWN8:
-		block.Session = statsToValue(session.WN8(averages))
-		block.Label = printer("label_wn8")
-		if career != nil {
-			block.Career = statsToValue(career.WN8(averages))
-		}
-	case BlockPresetBattles:
-		block.Session = statsToValue(session.Battles)
-		block.Label = printer("label_battles")
-		if career != nil {
-			block.Career = statsToValue(career.Battles)
-		}
-	case BlockPresetWinrate:
-		block.Session = statsToValue(session.Winrate())
-		block.Label = printer("label_winrate")
-		if career != nil {
-			block.Career = statsToValue(career.Winrate())
-		}
-	case BlockPresetAccuracy:
-		block.Session = statsToValue(session.Accuracy())
-		block.Label = printer("label_accuracy")
-		if career != nil {
-			block.Career = statsToValue(career.Accuracy())
-		}
-	case BlockPresetAvgDamage:
-		block.Session = statsToValue(int(session.AvgDamage()))
-		block.Label = printer("label_avg_damage")
-		if career != nil {
-			block.Career = statsToValue(int(career.AvgDamage()))
-		}
-	case BlockPresetDamageRatio:
-		block.Session = statsToValue(session.DamageRatio())
-		block.Label = printer("label_damage_ratio")
-		if career != nil {
-			block.Career = statsToValue(career.DamageRatio())
-		}
-	default:
-		return StatsBlock{}, errors.New("invalid preset")
-	}
-
-	return block, nil
 }
