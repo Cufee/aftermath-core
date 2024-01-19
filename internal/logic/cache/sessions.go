@@ -18,6 +18,9 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, realm string, ac
 
 	var accounts []*wg.ExtendedAccount
 	for _, session := range sessions {
+		if session.Err != nil {
+			continue
+		}
 		accounts = append(accounts, session.Data.Account)
 	}
 	err = UpdatePlayerAccountsFromWG(realm, accounts...)
