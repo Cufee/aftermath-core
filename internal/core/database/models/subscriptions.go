@@ -6,14 +6,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type subscriptionType string
+type SubscriptionType string
 
 const (
-	SubscriptionTypePro          = subscriptionType("aftermath-pro")
-	SubscriptionTypeProClan      = subscriptionType("aftermath-pro-clan")
-	SubscriptionTypePlus         = subscriptionType("aftermath-plus")
-	SubscriptionTypeSupporter    = subscriptionType("supporter")
-	SubscriptionTypeVerifiedClan = subscriptionType("verified-clan")
+	SubscriptionTypePro          = SubscriptionType("aftermath-pro")
+	SubscriptionTypeProClan      = SubscriptionType("aftermath-pro-clan")
+	SubscriptionTypePlus         = SubscriptionType("aftermath-plus")
+	SubscriptionTypeSupporter    = SubscriptionType("supporter")
+	SubscriptionTypeVerifiedClan = SubscriptionType("verified-clan")
 )
 
 type UserSubscription struct {
@@ -21,7 +21,7 @@ type UserSubscription struct {
 	UserID      string             `bson:"userID" json:"userID"`
 	ReferenceID *string            `bson:"referenceID" json:"referenceID"`
 
-	Type         subscriptionType `bson:"subscriptionType" json:"subscriptionType"`
+	Type         SubscriptionType `bson:"subscriptionType" json:"subscriptionType"`
 	ExpiryDate   time.Time        `bson:"expiryDate" json:"expiryDate"`
 	CreationDate time.Time        `bson:"creationDate" json:"creationDate"`
 }

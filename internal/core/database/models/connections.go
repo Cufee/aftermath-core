@@ -15,5 +15,5 @@ type UserConnection struct {
 	ExternalID     string         `bson:"connectionID" json:"connectionID"`
 	ConnectionType ConnectionType `bson:"connectionType" json:"connectionType"`
 
-	Metadata map[string]any `bson:"metadata" json:"metadata"`
+	Metadata map[string]any `bson:"metadata" json:"-"`
 }

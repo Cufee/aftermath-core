@@ -17,3 +17,11 @@ type StatsSessionResponse server.Response[dataprep.SessionStats]
 
 type UserConnection models.UserConnection
 type UsersConnectionResponse server.Response[UserConnection]
+
+type User struct {
+	models.User   `json:",inline"`
+	IsBanned      bool                      `json:"is_banned"`
+	Connections   []models.UserConnection   `json:"connections"`
+	Subscriptions []models.SubscriptionType `json:"subscriptions"`
+}
+type UsersResponse server.Response[User]
