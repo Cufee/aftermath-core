@@ -34,7 +34,7 @@ func GetUserConnections(userId string) ([]models.UserConnection, error) {
 	defer cancel()
 
 	var connections []models.UserConnection
-	err := DefaultClient.Collection(CollectionUserConnections).FindOne(ctx, bson.M{"userID": userId}).Decode(&connections)
+	cur, err := DefaultClient.Collection(CollectionUserConnections).Find(ctx, bson.M{"userID": userId})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, ErrConnectionNotFound
@@ -42,7 +42,7 @@ func GetUserConnections(userId string) ([]models.UserConnection, error) {
 		return nil, err
 	}
 
-	return connections, nil
+	return connections, cur.All(ctx, &connections)
 }
 
 func AddUserConnection(id string, connectionType models.ConnectionType, externalID string, metadata map[string]any) error {
