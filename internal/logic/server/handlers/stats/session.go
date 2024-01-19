@@ -3,6 +3,7 @@ package stats
 import (
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
@@ -25,7 +26,7 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId)
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, strings.Split(c.Query("blocks"), ","))
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -52,7 +53,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId)
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, strings.Split(c.Query("blocks"), ","))
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getSessionStats"))
 	}
@@ -60,7 +61,12 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(stats))
 }
 
-func getSessionStats(realm string, accountId int) (*dataprep.SessionStats, error) {
+func getSessionStats(realm string, accountId int, presets []string) (*dataprep.SessionStats, error) {
+	blocks, err := dataprep.ParsePresets(presets...)
+	if err != nil {
+		return nil, err
+	}
+
 	session, err := stats.GetCurrentPlayerSession(realm, accountId)
 	if err != nil {
 		return nil, err
@@ -89,8 +95,8 @@ func getSessionStats(realm string, accountId int) (*dataprep.SessionStats, error
 		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, sortOptions),
 		GlobalVehicleAverages: averages,
 	}, dataprep.ExportOptions{
-		Blocks: dataprep.DefaultBlockPresets,
 		Locale: localization.LanguageEN,
+		Blocks: blocks,
 	})
 	if err != nil {
 		return nil, err

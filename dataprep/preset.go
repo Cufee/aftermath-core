@@ -19,6 +19,36 @@ const (
 	BlockPresetDamageRatio statsBlockPreset = "damage_ratio"
 )
 
+func ParsePresets(presets ...string) ([]statsBlockPreset, error) {
+	var parsed []statsBlockPreset
+	for _, preset := range presets {
+		if preset == "" {
+			continue
+		}
+		switch preset {
+		case string(BlockPresetWN8):
+			parsed = append(parsed, BlockPresetWN8)
+		case string(BlockPresetBattles):
+			parsed = append(parsed, BlockPresetBattles)
+		case string(BlockPresetWinrate):
+			parsed = append(parsed, BlockPresetWinrate)
+		case string(BlockPresetAccuracy):
+			parsed = append(parsed, BlockPresetAccuracy)
+		case string(BlockPresetAvgDamage):
+			parsed = append(parsed, BlockPresetAvgDamage)
+		case string(BlockPresetDamageRatio):
+			parsed = append(parsed, BlockPresetDamageRatio)
+		default:
+			return nil, errors.New("invalid preset" + preset)
+		}
+	}
+
+	if len(parsed) == 0 {
+		return DefaultBlockPresets, nil
+	}
+	return parsed, nil
+}
+
 var DefaultBlockPresets = []statsBlockPreset{BlockPresetBattles, BlockPresetAvgDamage, BlockPresetDamageRatio, BlockPresetWinrate, BlockPresetWN8}
 
 func (p *statsBlockPreset) StatsBlock(session, career, averages *stats.ReducedStatsFrame, printer localization.LocalePrinter) (StatsBlock, error) {
