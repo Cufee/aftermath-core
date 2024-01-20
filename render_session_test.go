@@ -22,7 +22,7 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	start := time.Now()
-	session, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013072123 1032698345
+	session, err := stats.GetCurrentPlayerSession("na", 1054450640) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,8 +57,8 @@ func TestFullRenderPipeline(t *testing.T) {
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeVerifiedClan}},
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
 		Account: &session.Account.Account,
-		Clan:    &session.Account.Clan,
-		Cards:   statsBlocks,
+		// Clan:    &session.Account.Clan,
+		Cards: statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")

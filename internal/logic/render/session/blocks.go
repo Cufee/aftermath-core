@@ -47,7 +47,7 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 }
 
 func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.Block) render.Block {
-	if clanTagBlocks == nil {
+	if len(clanTagBlocks) == 0 {
 		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
 	}
 
