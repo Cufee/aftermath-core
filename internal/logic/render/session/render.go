@@ -34,7 +34,7 @@ func RenderStatsImage(player PlayerData, options RenderOptions) (image.Image, er
 	frameCtx := gg.NewContextForImage(cardsImage)
 	frameCtx.SetColor(color.RGBA{44, 47, 51, 255})
 	frameCtx.Clear()
-	frameCtx.DrawRoundedRectangle(0, 0, float64(frameCtx.Width()), float64(frameCtx.Height()), 20)
+	frameCtx.DrawRoundedRectangle(0, 0, float64(frameCtx.Width()), float64(frameCtx.Height()), 30)
 	frameCtx.Clip()
 
 	// Resize the background image to fit the cards
