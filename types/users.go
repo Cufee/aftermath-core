@@ -32,3 +32,8 @@ func (u User) WargamingConnection() (int, bool) {
 	}
 	return 0, false
 }
+
+type UserContentPayload[T any] struct {
+	Type models.UserContentType `json:"type"`
+	Data T                      `json:"data"`
+}

@@ -40,6 +40,7 @@ func Start() {
 
 	usersV1 := v1.Group("/users")
 	usersV1.Get("/:id", users.GetUserHandler)
+	usersV1.Post("/:id/content", users.UploadUserContentHandler)
 	usersV1.Post("/:id/connections/wargaming/:account", users.UpdateWargamingConnectionHandler)
 
 	panic(app.Listen(":" + os.Getenv("PORT")))

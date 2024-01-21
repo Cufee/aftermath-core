@@ -14,8 +14,9 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
+	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
-	render "github.com/cufee/aftermath-core/internal/logic/render/session"
+	"github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/utils"
 	"github.com/gofiber/fiber/v2"
@@ -65,26 +66,26 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getEncodedSessionImage(realm string, accountId int) (string, error) {
-	session, err := stats.GetCurrentPlayerSession(realm, accountId)
+	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId)
 	if err != nil {
 		return "", err
 	}
 
-	if session.Account.ClanID != 0 {
+	if sessionData.Account.ClanID != 0 {
 		go func() {
-			err := cache.CacheAllNewClanMembers(realm, session.Account.ClanID)
+			err := cache.CacheAllNewClanMembers(realm, sessionData.Account.ClanID)
 			if err != nil {
 				log.Err(err).Msg("failed to cache new clan members")
 			}
 		}()
 	}
 
-	averages, err := stats.GetVehicleAverages(session.Diff.Vehicles)
+	averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
 	if err != nil {
 		return "", err
 	}
 
-	subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(session.Account.ID), fmt.Sprint(session.Account.ClanID))
+	subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID))
 	if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
 		log.Warn().Err(err).Msg("failed to get subscriptions")
 		// We can continue without subscriptions
@@ -95,9 +96,9 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		Limit: 5,
 	}
 	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-		SessionStats:          session.Diff,
-		CareerStats:           session.Selected,
-		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, sortOptions),
+		SessionStats:          sessionData.Diff,
+		CareerStats:           sessionData.Selected,
+		SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
 		GlobalVehicleAverages: averages,
 	}, dataprep.ExportOptions{
 		Blocks: dataprep.DefaultBlockPresets,
@@ -107,24 +108,24 @@ func getEncodedSessionImage(realm string, accountId int) (string, error) {
 		return "", err
 	}
 
-	player := render.PlayerData{
-		Clan:          &session.Account.Clan,
-		Account:       &session.Account.Account,
+	player := session.PlayerData{
+		Clan:          &sessionData.Account.Clan,
+		Account:       &sessionData.Account.Account,
 		Subscriptions: subscriptions,
 		Cards:         statsCards,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
-	options := render.RenderOptions{
-		PromoText:       []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-		CardStyle:       render.DefaultCardStyle(nil),
-		BackgroundImage: bgImage,
+	options := session.RenderOptions{
+		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
+		CardStyle: session.DefaultCardStyle(nil),
 	}
 
-	img, err := render.RenderStatsImage(player, options)
+	cards, err := session.RenderStatsImage(player, options)
 	if err != nil {
 		return "", err
 	}
+	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30, BackgroundColor: render.DiscordBackgroundColor})
 
 	encoded := new(bytes.Buffer)
 	err = png.Encode(encoded, img)

@@ -62,18 +62,18 @@ func (q *Queue) Process(callback func(error), tasks ...Task) {
 			log.Debug().Msgf("processing task %s", t.ID)
 
 			comment, err := t.Process()
-			if err != nil {
-				t.Status = TaskStatusFailed
-			}
-			if t.Status != TaskStatusFailed {
-				t.Status = TaskStatusComplete
-			}
-
 			attempt := AttemptLog{
 				Timestamp: time.Now(),
 				Targets:   t.Targets,
 				Comment:   comment,
-				Error:     err,
+			}
+			if err != nil {
+				attempt.Error = err.Error()
+				t.Status = TaskStatusFailed
+			}
+
+			if t.Status != TaskStatusFailed {
+				t.Status = TaskStatusComplete
 			}
 			t.LogAttempt(attempt)
 		}(task)

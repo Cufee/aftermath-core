@@ -2,7 +2,6 @@ package session
 
 import (
 	"errors"
-	"image"
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
@@ -19,9 +18,8 @@ type PlayerData struct {
 }
 
 type RenderOptions struct {
-	PromoText       []string
-	CardStyle       render.Style
-	BackgroundImage image.Image
+	PromoText []string
+	CardStyle render.Style
 }
 
 func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {

@@ -10,8 +10,9 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
-	render "github.com/cufee/aftermath-core/internal/logic/render/session"
+	"github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 )
 
@@ -22,13 +23,13 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	start := time.Now()
-	session, err := stats.GetCurrentPlayerSession("na", 1054450640) // 1013072123 1032698345
+	sessionData, err := stats.GetCurrentPlayerSession("na", 1054450640) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("got session in %s", time.Since(start).String())
 
-	averages, err := stats.GetVehicleAverages(session.Diff.Vehicles)
+	averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,9 +40,9 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-		SessionStats:          session.Diff,
-		CareerStats:           session.Selected,
-		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, opts),
+		SessionStats:          sessionData.Diff,
+		CareerStats:           sessionData.Selected,
+		SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, opts),
 		GlobalVehicleAverages: averages,
 	}, dataprep.ExportOptions{
 		Blocks: dataprep.DefaultBlockPresets,
@@ -52,27 +53,28 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	// session.Account.Nickname = "WWWWWWWWWWWWWWWWWWWWW"
-	player := render.PlayerData{
+	player := session.PlayerData{
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeVerifiedClan}},
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
-		Account: &session.Account.Account,
+		Account: &sessionData.Account.Account,
 		// Clan:    &session.Account.Clan,
 		Cards: statsBlocks,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
-	options := render.RenderOptions{
-		PromoText:       []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-		CardStyle:       render.DefaultCardStyle(nil),
-		BackgroundImage: bgImage,
+	options := session.RenderOptions{
+		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
+		CardStyle: session.DefaultCardStyle(nil),
+		// BackgroundImage: bgImage,
 	}
 
 	now := time.Now()
-	img, err := render.RenderStatsImage(player, options)
+	cards, err := session.RenderStatsImage(player, options)
 	if err != nil {
 		t.Fatal(err)
 	}
+	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30, BackgroundColor: render.DiscordBackgroundColor})
 
 	t.Logf("rendered in %s", time.Since(now).String())
 

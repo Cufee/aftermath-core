@@ -6,6 +6,8 @@ import (
 	"image/color"
 
 	"github.com/EdlinOrg/prominentcolor"
+	"github.com/disintegration/imaging"
+	"github.com/fogleman/gg"
 )
 
 func getDebugColor() color.Color {
@@ -33,4 +35,23 @@ func GetMatchingImageColor(img image.Image) (color.Color, error) {
 		return nil, errors.New("no matching colors found")
 	}
 	return matches[0], nil
+}
+
+func AddBackground(content, background image.Image, style Style) image.Image {
+	// Fill background with black and round the corners
+	frameCtx := gg.NewContextForImage(content)
+	if style.BackgroundColor != nil {
+		frameCtx.SetColor(style.BackgroundColor)
+		frameCtx.Clear()
+	}
+	frameCtx.DrawRoundedRectangle(0, 0, float64(frameCtx.Width()), float64(frameCtx.Height()), style.BorderRadius)
+	frameCtx.Clip()
+
+	// Resize the background image to fit the cards
+	bgImage := imaging.Fill(background, frameCtx.Width(), frameCtx.Height(), imaging.Center, imaging.NearestNeighbor)
+	bgImage = imaging.Blur(bgImage, style.Blur)
+	frameCtx.DrawImage(bgImage, 0, 0)
+	frameCtx.DrawImage(content, 0, 0)
+
+	return frameCtx.Image()
 }

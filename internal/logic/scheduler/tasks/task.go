@@ -96,10 +96,10 @@ type AttemptLog struct {
 	Targets   []int     `json:"targets" bson:"targets"`
 	Timestamp time.Time `json:"timestamp" bson:"timestamp"`
 	Comment   string    `json:"result" bson:"result"`
-	Error     error     `json:"error" bson:"error"`
+	Error     string    `json:"error" bson:"error"`
 }
 
-func NewAttemptLog(task Task, comment string, err error) AttemptLog {
+func NewAttemptLog(task Task, comment, err string) AttemptLog {
 	return AttemptLog{
 		Targets:   task.Targets,
 		Timestamp: time.Now(),

@@ -12,6 +12,7 @@ type collectionName string
 
 const (
 	CollectionUsers             = collectionName("users")
+	CollectionUserContent       = collectionName("user-content")
 	CollectionUserConnections   = collectionName("user-connections")
 	CollectionUserSubscriptions = collectionName("user-subscriptions")
 
@@ -38,6 +39,19 @@ func init() {
 		return coll.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
 			{
 				Keys: bson.M{"featureFlags": 1},
+			},
+		})
+	})
+	addIndexHandler(CollectionUserContent, func(coll *mongo.Collection) ([]string, error) {
+		return coll.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+			{
+				Keys: bson.M{"userID": 1},
+			},
+			{
+				Keys: bson.D{
+					{Key: "userID", Value: 1},
+					{Key: "type", Value: 1},
+				},
 			},
 		})
 	})

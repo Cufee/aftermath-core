@@ -45,6 +45,7 @@ type Style struct {
 
 	BorderRadius    float64
 	BackgroundColor color.Color
+	Blur            float64
 
 	Debug bool
 }
