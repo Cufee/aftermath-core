@@ -23,11 +23,12 @@ func init() {
 		cloudName: utils.MustGetEnv("CLOUDINARY_API_CLOUD_NAME"),
 		apiSecret: utils.MustGetEnv("CLOUDINARY_API_SECRET"),
 		apiKey:    utils.MustGetEnv("CLOUDINARY_API_KEY"),
-		preset:    utils.MustGetEnv("CLOUDINARY_API_PRESET_NAME"),
+
+		host:    "api.cloudinary.com",
+		version: "v1_1",
 
 		signatureExclude: []string{"file", "cloud_name", "resource_type", "api_key"},
 	}
-	DefaultClient.baseURL = fmt.Sprintf("https://api.cloudinary.com/v1_1/%s", DefaultClient.cloudName)
 }
 
 type uploadResponse struct {
@@ -42,8 +43,9 @@ type Client struct {
 	apiSecret string
 	apiKey    string
 
-	baseURL          string
-	preset           string
+	host    string
+	version string
+
 	signatureExclude []string
 }
 
@@ -54,7 +56,9 @@ func (c *Client) newUploadURL(preset, fileName, fileData string) (string, url.Va
 	// Generate form
 	form := url.Values{}
 	form.Add("file", fileData)
-	form.Add("public_id", fileName)
+	if fileName != "" {
+		form.Add("public_id", fileName)
+	}
 	form.Add("upload_preset", preset)
 
 	form.Add("api_key", c.apiKey)
@@ -77,7 +81,17 @@ func (c *Client) newUploadURL(preset, fileName, fileData string) (string, url.Va
 	signature := hex.EncodeToString(h.Sum(nil))
 	form.Add("signature", signature)
 
-	return c.baseURL + "/image/upload", form
+	return fmt.Sprintf("https://%s/%s/%s", c.host, c.version, c.cloudName) + "/image/upload", form
+}
+
+func (c *Client) adminUrl(path string) (*url.URL, error) {
+	link, err := url.Parse(fmt.Sprintf("https://%s/%s/%s", c.host, c.version, c.cloudName) + path)
+	if err != nil {
+		return nil, err
+	}
+
+	link.User = url.UserPassword(c.apiKey, c.apiSecret)
+	return link, nil
 }
 
 /*
@@ -90,8 +104,8 @@ func (c *Client) UploadWithModeration(name, image string) (string, error) {
 /*
 Uploads a base64 encoded image to Cloudinary without moderation
 */
-func (c *Client) ManualUpload(name, image string) (string, error) {
-	return c.uploadImage("manual-upload", name, image)
+func (c *Client) ManualUpload(image string) (string, error) {
+	return c.uploadImage("manual-upload", "", image)
 }
 
 func (c *Client) uploadImage(preset, name, image string) (string, error) {
@@ -100,7 +114,10 @@ func (c *Client) uploadImage(preset, name, image string) (string, error) {
 
 	// Send post request
 	url, form := c.newUploadURL(preset, name, image)
-	req, _ := http.NewRequestWithContext(ctx, "POST", url, strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", err
+	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	res, err := http.DefaultClient.Do(req)
@@ -123,4 +140,53 @@ func (c *Client) uploadImage(preset, name, image string) (string, error) {
 	}
 
 	return response.URL, nil
+}
+
+func (c *Client) GetFolderImages(folder string, limit int) ([]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+
+	requestUrl, err := c.adminUrl("/resources/image/upload")
+	if err != nil {
+		return nil, err
+	}
+
+	form := url.Values{}
+	form.Add("prefix", folder)
+	if limit > 0 {
+		form.Add("max_results", strconv.Itoa(limit))
+	}
+
+	req, err := http.NewRequest("GET", requestUrl.String(), strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := http.DefaultClient.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(res.Status)
+	}
+
+	var result struct {
+		Resources []struct {
+			SecureURL string `json:"secure_url"`
+		} `json:"resources"`
+	}
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	var images []string
+	for _, asset := range result.Resources {
+		images = append(images, asset.SecureURL)
+	}
+
+	return images, nil
 }

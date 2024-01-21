@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/accounts"
+	"github.com/cufee/aftermath-core/internal/logic/server/handlers/moderation"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/render"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/stats"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/users"
@@ -42,6 +43,9 @@ func Start() {
 	usersV1.Get("/:id", users.GetUserHandler)
 	usersV1.Post("/:id/content", users.UploadUserContentHandler)
 	usersV1.Post("/:id/connections/wargaming/:account", users.UpdateWargamingConnectionHandler)
+
+	moderationV1 := v1.Group("/moderation")
+	moderationV1.Post("/content/upload", moderation.UploadBackgroundImageHandler)
 
 	panic(app.Listen(":" + os.Getenv("PORT")))
 }

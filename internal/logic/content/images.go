@@ -17,6 +17,20 @@ import (
 )
 
 func UploadUserImage(userID, remoteImage string) (string, error) {
+	encodedImage, err := EncodeRemoteImage(remoteImage)
+	if err != nil {
+		return "", err
+	}
+
+	link, err := cloudinary.DefaultClient.UploadWithModeration(userID, encodedImage)
+	if err != nil {
+		return "", err
+	}
+
+	return link, nil
+}
+
+func EncodeRemoteImage(remoteImage string) (string, error) {
 	remoteUrl, err := url.Parse(remoteImage)
 	if err != nil {
 		return "", err
@@ -56,10 +70,5 @@ func UploadUserImage(userID, remoteImage string) (string, error) {
 		return "", errors.ErrInvalidImageFormat
 	}
 
-	link, err := cloudinary.DefaultClient.UploadWithModeration(userID, encodedImage)
-	if err != nil {
-		return "", err
-	}
-
-	return link, nil
+	return encodedImage, nil
 }
