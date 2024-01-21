@@ -38,6 +38,10 @@ func GetMatchingImageColor(img image.Image) (color.Color, error) {
 }
 
 func AddBackground(content, background image.Image, style Style) image.Image {
+	if background == nil {
+		return content
+	}
+
 	// Fill background with black and round the corners
 	frameCtx := gg.NewContextForImage(content)
 	if style.BackgroundColor != nil {

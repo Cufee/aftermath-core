@@ -4,7 +4,6 @@ go 1.21.5
 
 require (
 	github.com/EdlinOrg/prominentcolor v1.0.0
-	github.com/cloudinary/cloudinary-go/v2 v2.7.0
 	github.com/cufee/am-wg-proxy-next v1.4.4
 	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
@@ -22,11 +21,9 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.5.0 // indirect
-	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -37,6 +34,7 @@ require (
 	github.com/oliamb/cutter v0.2.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

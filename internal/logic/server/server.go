@@ -10,6 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/users"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"github.com/gofiber/contrib/fiberzerolog"
 	_ "github.com/joho/godotenv/autoload"
@@ -19,8 +20,8 @@ func Start() {
 	app := fiber.New(fiber.Config{
 		Network: os.Getenv("NETWORK"),
 	})
-
 	app.Use(fiberzerolog.New())
+	app.Use(recover.New())
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendStatus(200)
@@ -45,6 +46,7 @@ func Start() {
 	usersV1.Post("/:id/connections/wargaming/:account", users.UpdateWargamingConnectionHandler)
 
 	moderationV1 := v1.Group("/moderation")
+	moderationV1.Get("/content/rotate", moderation.RotateBackgroundImagesHandler)
 	moderationV1.Post("/content/upload", moderation.UploadBackgroundImageHandler)
 
 	panic(app.Listen(":" + os.Getenv("PORT")))

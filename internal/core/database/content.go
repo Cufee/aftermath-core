@@ -14,8 +14,9 @@ var (
 	ErrUserContentNotFound = errors.New("content not found")
 )
 
-func UpdateUserContent[T any](userID string, contentType models.UserContentType, data T, metadata map[string]any, upsert bool) error {
+func UpdateUserContent[T any](userID, referenceID string, contentType models.UserContentType, data T, metadata map[string]any, upsert bool) error {
 	var payload models.UserContent[T]
+	payload.ReferenceID = referenceID
 	payload.CreatedAt = time.Now()
 	payload.Metadata = metadata
 	payload.UserID = userID
@@ -40,6 +41,26 @@ func GetUserContent[T any](userID string, contentType models.UserContentType) (*
 
 	var content models.UserContent[T]
 	err := DefaultClient.Collection(CollectionUserContent).FindOne(ctx, bson.M{"userId": userID, "type": contentType}).Decode(&content)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrUserContentNotFound
+		}
+		return nil, err
+	}
+
+	return &content, nil
+}
+
+func GetContentByReferenceIDs[T any](contentType models.UserContentType, referenceIDs ...string) (*models.UserContent[T], error) {
+	if len(referenceIDs) == 0 {
+		return nil, ErrUserContentNotFound
+	}
+
+	ctx, cancel := DefaultClient.Ctx()
+	defer cancel()
+
+	var content models.UserContent[T]
+	err := DefaultClient.Collection(CollectionUserContent).FindOne(ctx, bson.M{"referenceId": bson.M{"$in": referenceIDs}, "type": contentType}).Decode(&content)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, ErrUserContentNotFound

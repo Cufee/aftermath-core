@@ -22,8 +22,9 @@ func (t UserContentType) Valid() bool {
 }
 
 type UserContent[T any] struct {
-	ID     primitive.ObjectID `bson:"_id,omitempty"`
-	UserID string             `bson:"userId"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	UserID      string             `bson:"userId"`
+	ReferenceID string             `bson:"referenceId"`
 
 	Type      UserContentType `bson:"type"`
 	CreatedAt time.Time       `bson:"createdAt"`

@@ -14,6 +14,7 @@ import (
 
 	"github.com/cufee/aftermath-core/errors"
 	"github.com/cufee/aftermath-core/internal/core/cloudinary"
+	"github.com/cufee/aftermath-core/internal/core/database"
 )
 
 func UploadUserImage(userID, remoteImage string) (string, error) {
@@ -30,25 +31,42 @@ func UploadUserImage(userID, remoteImage string) (string, error) {
 	return link, nil
 }
 
-func EncodeRemoteImage(remoteImage string) (string, error) {
+func GetCurrentImageSelection() ([]string, error) {
+	config, err := database.GetAppConfiguration[[]string]("backgroundImagesSelection")
+	if err != nil {
+		return nil, err
+	}
+	return config.Value, nil
+}
+
+func LoadRemoteImage(remoteImage string) (image.Image, string, error) {
 	remoteUrl, err := url.Parse(remoteImage)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	remoteUrl.RawQuery = ""
 
 	res, err := http.DefaultClient.Get(remoteUrl.String())
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	defer res.Body.Close()
 
 	rawImage, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	img, format, err := image.Decode(bytes.NewReader(rawImage))
+	if err != nil {
+		return nil, "", err
+	}
+
+	return img, format, nil
+}
+
+func EncodeRemoteImage(remoteImage string) (string, error) {
+	img, format, err := LoadRemoteImage(remoteImage)
 	if err != nil {
 		return "", errors.ErrInvalidImageFormat
 	}

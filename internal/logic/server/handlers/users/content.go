@@ -40,12 +40,20 @@ func UploadUserContentHandler(c *fiber.Ctx) error {
 		// User is created so we can continue
 	}
 
+	// TODO: ReferenceID should be a verified account ID
+	// connections, err := database.FindUserConnection(details.ID, models.ConnectionTypeWargaming)
+	// if err != nil {
+	// 	if !errors.Is(err, database.ErrConnectionNotFound) {
+	// 		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "models.FindUserConnection"))
+	// 	}
+	// }
+
 	link, err := content.UploadUserImage(details.ID, body.Data)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "content.UploadUserImage"))
 	}
 
-	err = database.UpdateUserContent(details.ID, body.Type, link, nil, true)
+	err = database.UpdateUserContent(details.ID, details.ID, body.Type, link, nil, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}

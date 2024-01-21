@@ -2,6 +2,7 @@ package moderation
 
 import (
 	"github.com/cufee/aftermath-core/internal/core/cloudinary"
+	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/content"
 	"github.com/cufee/aftermath-core/types"
@@ -32,4 +33,17 @@ func UploadBackgroundImageHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(server.NewResponse(link))
+}
+
+func RotateBackgroundImagesHandler(c *fiber.Ctx) error {
+	images, err := content.PickRandomBackgroundImages(2)
+	if err != nil {
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "content.PickRandomBackgroundImages"))
+	}
+
+	err = database.UpdateAppConfiguration[[]string]("backgroundImagesSelection", images, nil, true)
+	if err != nil {
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateAppConfiguration"))
+	}
+	return c.JSON(server.NewResponse(images))
 }

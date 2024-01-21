@@ -141,6 +141,31 @@ const (
 	SortByLastBattle    = vehicleSortOptions("lastBattleTime")
 )
 
+func ParseSortOptions(sort string) vehicleSortOptions {
+	switch sort {
+	case string(SortByBattlesDesc):
+		return SortByBattlesDesc
+	case string(SortByBattlesAsc):
+		return SortByBattlesAsc
+	case string(SortByWinrateDesc):
+		return SortByWinrateDesc
+	case string(SortByWinrateAsc):
+		return SortByWinrateAsc
+	case string(SortByWN8Desc):
+		return SortByWN8Desc
+	case string(SortByWN8Asc):
+		return SortByWN8Asc
+	case string(SortByAvgDamageDesc):
+		return SortByAvgDamageDesc
+	case string(SortByAvgDamageAsc):
+		return SortByAvgDamageAsc
+	case string(SortByLastBattle):
+		return SortByLastBattle
+	default:
+		return SortByLastBattle
+	}
+}
+
 func GetVehicleAverages(vehicles map[int]*core.ReducedVehicleStats) (map[int]*core.ReducedStatsFrame, error) {
 	var vehicleIDs []int
 	for _, vehicle := range vehicles {
