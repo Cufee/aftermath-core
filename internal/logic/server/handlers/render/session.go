@@ -101,19 +101,23 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 	imageWg.Add(1)
 	go func() {
 		defer imageWg.Done()
-		backgrounds, err := database.GetContentByReferenceIDs[[]string](models.UserContentTypeBackground, fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID))
+		referenceIDs := []string{fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID)}
+		backgrounds, err := database.GetContentByReferenceIDs[string](models.UserContentTypeBackground, referenceIDs...)
 		if err != nil {
+			log.Warn().Err(err).Msg("failed to get backgrounds")
 			bgImage, _ := assets.GetImage("images/backgrounds/default")
 			backgroundChan <- bgImage
 			return
 		}
 		// Try to load the first background image
-		for _, c := range backgrounds.Data {
-			if c != "" {
-				image, _, err := content.LoadRemoteImage(c)
-				if err == nil && image != nil {
-					backgroundChan <- image
-					return
+		for _, id := range referenceIDs {
+			for _, c := range backgrounds {
+				if c.Data != "" && c.ReferenceID == id {
+					image, _, err := content.LoadRemoteImage(c.Data)
+					if err == nil && image != nil {
+						backgroundChan <- image
+						return
+					}
 				}
 			}
 		}

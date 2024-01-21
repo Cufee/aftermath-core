@@ -27,7 +27,7 @@ type UserContent[T any] struct {
 	ReferenceID string             `bson:"referenceId"`
 
 	Type      UserContentType `bson:"type"`
-	CreatedAt time.Time       `bson:"createdAt"`
+	UpdatedAt time.Time       `bson:"createdAt"`
 
 	Data     T              `bson:"data"`
 	Metadata map[string]any `bson:"metadata"`
