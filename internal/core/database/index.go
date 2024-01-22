@@ -80,21 +80,21 @@ func SyncIndexes(db *mongo.Database) error {
 	}
 
 	for collection, names := range indexesToDelete {
-		log.Debug().Msgf("Deleting indexes for %s: %v", collection, names)
 		for _, name := range names {
 			_, err := db.Collection(string(collection)).Indexes().DropOne(context.Background(), name)
 			if err != nil {
 				return err
 			}
 		}
+		log.Debug().Msgf("Deleted indexes for %s: %v", collection, names)
 	}
 
 	for collection, indexes := range indexesToCreate {
-		log.Debug().Msgf("Creating indexes for %s", collection)
-		_, err := db.Collection(string(collection)).Indexes().CreateMany(context.Background(), indexes)
+		names, err := db.Collection(string(collection)).Indexes().CreateMany(context.Background(), indexes)
 		if err != nil {
 			return err
 		}
+		log.Debug().Msgf("Created indexes for %s: %v", collection, names)
 	}
 
 	return nil
