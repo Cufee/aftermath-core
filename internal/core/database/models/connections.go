@@ -9,11 +9,11 @@ const (
 )
 
 type UserConnection struct {
-	ID primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	ID primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 
 	UserID         string         `bson:"userID" json:"userID"`
 	ExternalID     string         `bson:"connectionID" json:"connectionID"`
 	ConnectionType ConnectionType `bson:"connectionType" json:"connectionType"`
 
-	Metadata map[string]any `bson:"metadata" json:"-"`
+	Metadata map[string]any `bson:"metadata" json:"metadata"`
 }

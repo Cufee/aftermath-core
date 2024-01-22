@@ -56,3 +56,20 @@ func GetNonceByID(id string) (*models.Nonce, error) {
 
 	return &nonce, nil
 }
+
+func ExpireNonceByID(id string) error {
+	ctx, cancel := DefaultClient.Ctx()
+	defer cancel()
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	_, err = DefaultClient.Collection(CollectionNonce).UpdateOne(ctx, bson.M{"_id": oid}, bson.M{"$set": bson.M{"expiresAt": time.Now()}})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -14,6 +14,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/types"
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 )
 
 var frontendURL = utils.MustGetEnv("FRONTEND_URL")
@@ -41,6 +42,12 @@ func CompleteUserVerificationHandler(c *fiber.Ctx) error {
 		}
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "database.GetNonceByID"))
 	}
+	go func() {
+		err := database.ExpireNonceByID(nonceID)
+		if err != nil {
+			log.Warn().Err(err).Msg("failed to expire nonce")
+		}
+	}()
 
 	if nonce.ReferenceID == "" {
 		return c.Status(400).JSON(server.NewErrorResponse("nonce referenceID is required", "c.Param"))
