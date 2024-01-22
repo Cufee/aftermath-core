@@ -5,6 +5,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/server"
+	"github.com/cufee/aftermath-core/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,18 +20,29 @@ type User struct {
 	Subscriptions []models.SubscriptionType `json:"subscriptions"`
 }
 
-func (u User) WargamingConnection() (int, bool) {
+type wargamingConnection struct {
+	AccountID int    `json:"account_id"`
+	Verified  bool   `json:"verified"`
+	Realm     string `json:"realm"`
+}
+
+func (u User) WargamingConnection() (*wargamingConnection, bool) {
 	for _, connection := range u.Connections {
 		if connection.ConnectionType == models.ConnectionTypeWargaming {
 			accountID, err := strconv.Atoi(connection.ExternalID)
 			if err != nil {
 				log.Warn().Err(err).Msg("failed to parse account id")
-				return 0, false
+				return nil, false
 			}
-			return accountID, true
+			verified, _ := connection.Metadata["verified"].(bool)
+			return &wargamingConnection{
+				AccountID: accountID,
+				Verified:  verified,
+				Realm:     utils.RealmFromAccountID(accountID),
+			}, true
 		}
 	}
-	return 0, false
+	return nil, false
 }
 
 type UserContentPayload[T any] struct {
