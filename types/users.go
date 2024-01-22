@@ -37,3 +37,10 @@ type UserContentPayload[T any] struct {
 	Type models.UserContentType `json:"type"`
 	Data T                      `json:"data"`
 }
+
+type UserVerificationPayload struct {
+	AccessTokenExpiresAt int64  `json:"access_token_expires_at"` // Not used
+	AccessToken          string `json:"access_token"`            // Not used
+
+	AccountID string `json:"account_id"`
+}

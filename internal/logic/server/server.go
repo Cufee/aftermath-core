@@ -45,6 +45,10 @@ func Start() {
 	usersV1.Post("/:id/content", users.UploadUserContentHandler)
 	usersV1.Post("/:id/connections/wargaming/:account", users.UpdateWargamingConnectionHandler)
 
+	connectionsV1 := v1.Group("/connections")
+	connectionsV1.Get("/wargaming/verify/:id", users.StartUserVerificationHandler)
+	connectionsV1.Post("/wargaming/verify/:nonce", users.CompleteUserVerificationHandler)
+
 	moderationV1 := v1.Group("/moderation")
 	moderationV1.Get("/content/rotate", moderation.RotateBackgroundImagesHandler)
 	moderationV1.Post("/content/upload", moderation.UploadBackgroundImageHandler)
