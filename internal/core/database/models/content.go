@@ -7,14 +7,17 @@ import (
 )
 
 const (
-	UserContentTypeBackground = UserContentType("background-image")
+	UserContentTypeClanBackground     = UserContentType("clan-background-image")
+	UserContentTypePersonalBackground = UserContentType("personal-background-image")
 )
 
 type UserContentType string
 
 func (t UserContentType) Valid() bool {
 	switch t {
-	case UserContentTypeBackground:
+	case UserContentTypeClanBackground:
+		return true
+	case UserContentTypePersonalBackground:
 		return true
 	default:
 		return false
@@ -23,7 +26,7 @@ func (t UserContentType) Valid() bool {
 
 type UserContent[T any] struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
-	UserID      string             `bson:"userId"`
+	UserID      string             `bson:"userID"`
 	ReferenceID string             `bson:"referenceId"`
 
 	Type      UserContentType `bson:"type"`

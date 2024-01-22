@@ -101,15 +101,17 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 	imageWg.Add(1)
 	go func() {
 		defer imageWg.Done()
+
 		referenceIDs := []string{fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID)}
-		backgrounds, err := database.GetContentByReferenceIDs[string](models.UserContentTypeBackground, referenceIDs...)
+		backgrounds, err := database.GetContentByReferenceIDs[string](referenceIDs, models.UserContentTypePersonalBackground, models.UserContentTypeClanBackground)
 		if err != nil {
 			log.Warn().Err(err).Msg("failed to get backgrounds")
 			bgImage, _ := assets.GetImage("images/backgrounds/default")
 			backgroundChan <- bgImage
 			return
 		}
-		// Try to load the first background image
+
+		// We should get personal image over clan image when possible, fallback to default
 		for _, id := range referenceIDs {
 			for _, c := range backgrounds {
 				if c.Data != "" && c.ReferenceID == id {

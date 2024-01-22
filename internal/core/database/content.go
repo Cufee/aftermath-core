@@ -30,12 +30,30 @@ func UpdateUserContent[T any](userID, referenceID string, contentType models.Use
 
 	_, err := DefaultClient.Collection(CollectionUserContent).UpdateOne(ctx, bson.M{"userId": userID, "type": contentType}, bson.M{"$set": payload}, opts)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return ErrUserContentNotFound
+		}
 		return err
 	}
 	return nil
 }
 
-func GetUserContent[T any](userID string, contentType models.UserContentType) (*models.UserContent[T], error) {
+func UpdateUserContentReferenceID[T any](userID string, contentType models.UserContentType, newReferenceID string) (*models.UserContent[T], error) {
+	ctx, cancel := DefaultClient.Ctx()
+	defer cancel()
+
+	var content models.UserContent[T]
+	err := DefaultClient.Collection(CollectionUserContent).FindOneAndUpdate(ctx, bson.M{"userId": userID, "type": contentType}, bson.M{"$set": bson.M{"referenceId": newReferenceID}}).Decode(&content)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrUserContentNotFound
+		}
+		return nil, err
+	}
+	return &content, nil
+}
+
+func GetUserContent[T any](userID string, contentType ...models.UserContentType) (*models.UserContent[T], error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -51,7 +69,7 @@ func GetUserContent[T any](userID string, contentType models.UserContentType) (*
 	return &content, nil
 }
 
-func GetContentByReferenceIDs[T any](contentType models.UserContentType, referenceIDs ...string) ([]models.UserContent[T], error) {
+func GetContentByReferenceIDs[T any](referenceIDs []string, contentType ...models.UserContentType) ([]models.UserContent[T], error) {
 	if len(referenceIDs) == 0 {
 		return nil, ErrUserContentNotFound
 	}
