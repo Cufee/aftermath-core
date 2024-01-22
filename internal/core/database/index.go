@@ -47,6 +47,7 @@ func SyncIndexes(db *mongo.Database) error {
 	defer log.Info().Msg("Finished syncing indexes")
 
 	indexesToDelete := make(map[string][]string)
+	indexesToCreate := make(map[string][]mongo.IndexModel)
 
 	for collection, indexes := range collectionIndexes {
 		currentIndexes, err := db.Collection(string(collection)).Indexes().ListSpecifications(context.Background())
@@ -59,8 +60,6 @@ func SyncIndexes(db *mongo.Database) error {
 		}
 
 		var desiredCollectionIndexNames []string = []string{"_id_"}
-		var indexesToCreate []mongo.IndexModel
-
 		for _, index := range indexes {
 			name, err := index.Name()
 			if err != nil {
@@ -69,7 +68,7 @@ func SyncIndexes(db *mongo.Database) error {
 			desiredCollectionIndexNames = append(desiredCollectionIndexNames, name)
 
 			if !slices.Contains(currentIndexNames, name) {
-				indexesToCreate = append(indexesToCreate, mongo.IndexModel(index))
+				indexesToCreate[collection] = append(indexesToCreate[collection], mongo.IndexModel(index))
 			}
 		}
 
@@ -78,17 +77,6 @@ func SyncIndexes(db *mongo.Database) error {
 				indexesToDelete[collection] = append(indexesToDelete[collection], index.Name)
 			}
 		}
-
-		if len(indexesToCreate) == 0 {
-			log.Debug().Msgf("No new indexes to create for %s", collection)
-			continue
-		}
-
-		createdNames, err := db.Collection(collection).Indexes().CreateMany(context.Background(), indexesToCreate)
-		if err != nil {
-			return err
-		}
-		log.Debug().Msgf("Created indexes for %s: %v", collection, createdNames)
 	}
 
 	for collection, names := range indexesToDelete {
@@ -98,6 +86,14 @@ func SyncIndexes(db *mongo.Database) error {
 			if err != nil {
 				return err
 			}
+		}
+	}
+
+	for collection, indexes := range indexesToCreate {
+		log.Debug().Msgf("Creating indexes for %s", collection)
+		_, err := db.Collection(string(collection)).Indexes().CreateMany(context.Background(), indexes)
+		if err != nil {
+			return err
 		}
 	}
 
