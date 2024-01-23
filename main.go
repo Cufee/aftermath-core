@@ -24,6 +24,9 @@ func main() {
 		panic(err)
 	}
 
-	scheduler.StartCronJobs()
+	if os.Getenv("SCHEDULER_ENABLED") != "false" {
+		scheduler.StartCronJobs()
+	}
+
 	server.Start()
 }
