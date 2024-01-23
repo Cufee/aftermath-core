@@ -6,7 +6,6 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/utils"
-	encode "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/content"
 	"github.com/cufee/aftermath-core/internal/logic/preview/mock"
 	"github.com/cufee/aftermath-core/internal/logic/render/session"
@@ -28,7 +27,7 @@ func CurrentBackgroundsPreview() (*types.RenderPreviewResponse, error) {
 
 	var preview types.RenderPreviewResponse
 	preview.Options = data.Value
-	preview.Image, err = encode.EncodeImage(image)
+	preview.Image, err = utils.EncodeImage(image)
 	if err != nil {
 		return nil, err
 	}
