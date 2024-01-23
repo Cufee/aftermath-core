@@ -1,10 +1,12 @@
 package types
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/server"
+	"github.com/cufee/aftermath-core/utils"
 )
 
 type UsersResponse server.Response[User]
@@ -14,6 +16,23 @@ type UsersConnectionResponse server.Response[UserConnection]
 type User struct {
 	models.CompleteUser `json:",inline"`
 	IsBanned            bool `json:"is_banned"`
+}
+
+func (u User) WargamingConnection() (*wargamingConnection, bool) {
+	connection := u.Connection(models.ConnectionTypeWargaming)
+	if connection == nil {
+		return nil, false
+	}
+	id, err := strconv.Atoi(connection.ExternalID)
+	if err != nil {
+		return nil, false
+	}
+
+	var wargamingConnection wargamingConnection
+	wargamingConnection.AccountID = id
+	wargamingConnection.Verified, _ = connection.Metadata["verified"].(bool)
+	wargamingConnection.Realm = utils.RealmFromAccountID(id)
+	return &wargamingConnection, true
 }
 
 type wargamingConnection struct {
