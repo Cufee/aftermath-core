@@ -20,6 +20,10 @@ func (c *Client) Database() *mongo.Database {
 var DefaultClient *Client
 
 func Connect(url string) error {
+	if DefaultClient != nil {
+		return nil
+	}
+
 	client, err := NewClient(url)
 	if err != nil {
 		return err

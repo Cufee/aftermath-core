@@ -70,7 +70,7 @@ func GetUserContent[T any](userID string, contentType ...models.UserContentType)
 }
 
 func GetContentByReferenceIDs[T any](referenceIDs []string, contentType ...models.UserContentType) ([]models.UserContent[T], error) {
-	if len(referenceIDs) == 0 {
+	if len(referenceIDs) == 0 || len(contentType) == 0 {
 		return nil, ErrUserContentNotFound
 	}
 
@@ -78,7 +78,7 @@ func GetContentByReferenceIDs[T any](referenceIDs []string, contentType ...model
 	defer cancel()
 
 	var content []models.UserContent[T]
-	cur, err := DefaultClient.Collection(CollectionUserContent).Find(ctx, bson.M{"referenceId": bson.M{"$in": referenceIDs}, "type": contentType})
+	cur, err := DefaultClient.Collection(CollectionUserContent).Find(ctx, bson.M{"referenceId": bson.M{"$in": referenceIDs}, "type": bson.M{"$in": contentType}})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, ErrUserContentNotFound

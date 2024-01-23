@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/accounts"
+	"github.com/cufee/aftermath-core/internal/logic/server/handlers/content"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/moderation"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/render"
 	"github.com/cufee/aftermath-core/internal/logic/server/handlers/stats"
@@ -43,6 +44,8 @@ func Start() {
 	usersV1 := v1.Group("/users")
 	usersV1.Get("/:id", users.GetUserHandler)
 	usersV1.Post("/:id/content", users.UploadUserContentHandler)
+	usersV1.Get("/:id/content/select", content.PreviewCurrentBackgroundSelectionHandler)
+	usersV1.Post("/:id/content/select/:index", users.SelectBackgroundPresetHandler)
 	usersV1.Post("/:id/connections/wargaming/:account", users.UpdateWargamingConnectionHandler)
 
 	connectionsV1 := v1.Group("/connections")

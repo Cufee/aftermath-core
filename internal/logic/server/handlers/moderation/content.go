@@ -36,7 +36,7 @@ func UploadBackgroundImageHandler(c *fiber.Ctx) error {
 }
 
 func RotateBackgroundImagesHandler(c *fiber.Ctx) error {
-	images, err := content.PickRandomBackgroundImages(2)
+	images, err := content.PickRandomBackgroundImages(3)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "content.PickRandomBackgroundImages"))
 	}

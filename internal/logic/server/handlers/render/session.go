@@ -1,12 +1,9 @@
 package render
 
 import (
-	"bytes"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"image"
-	"image/png"
 	"strconv"
 	"sync"
 
@@ -15,6 +12,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
+	encode "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/content"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -172,10 +170,5 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 
 	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30, BackgroundColor: render.DiscordBackgroundColor})
 
-	encoded := new(bytes.Buffer)
-	err = png.Encode(encoded, img)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(encoded.Bytes()), nil
+	return encode.EncodeImage(img)
 }

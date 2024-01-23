@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"image/png"
 	"os"
 	"testing"
@@ -23,7 +24,7 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	start := time.Now()
-	sessionData, err := stats.GetCurrentPlayerSession("na", 1054450640) // 1013072123 1032698345
+	sessionData, err := stats.GetCurrentPlayerSession("na", 1013072123) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,6 +75,13 @@ func TestFullRenderPipeline(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	data, err := json.MarshalIndent(player.Cards, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile("test.json", data, 0644)
+
 	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30, BackgroundColor: render.DiscordBackgroundColor})
 
 	t.Logf("rendered in %s", time.Since(now).String())
