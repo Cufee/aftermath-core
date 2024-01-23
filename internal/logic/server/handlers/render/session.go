@@ -168,7 +168,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 	close(backgroundChan)
 	bgImage := <-backgroundChan
 
-	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30, BackgroundColor: render.DiscordBackgroundColor})
+	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30})
 
 	return encode.EncodeImage(img)
 }

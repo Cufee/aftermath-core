@@ -79,7 +79,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 	lastX := 0
 	backgroundWidth := statsImage.Bounds().Dx() / len(options)
 	frameCtx := gg.NewContext(statsImage.Bounds().Dx(), statsImage.Bounds().Dy())
-	frameCtx.DrawRoundedRectangle(0, 0, float64(statsImage.Bounds().Dx()), float64(statsImage.Bounds().Dy()), 20)
+	frameCtx.DrawRoundedRectangle(0, 0, float64(statsImage.Bounds().Dx()), float64(statsImage.Bounds().Dy()), 30)
 	frameCtx.Clip()
 
 	for _, preview := range previews {
