@@ -34,6 +34,9 @@ func StartCronJobs() {
 	// "45 1 * * *" 	// EU
 	// "45 18 * * *" 	// Asia
 
+	// Configurations
+	c.Cron("0 0 */7 * *").Do(rotateBackgroundPresetsWorker)
+
 	// Start the Cron job scheduler
 	c.StartAsync()
 }

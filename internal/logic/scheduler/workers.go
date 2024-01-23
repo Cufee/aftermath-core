@@ -1,10 +1,26 @@
 package scheduler
 
 import (
+	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
+	"github.com/cufee/aftermath-core/internal/logic/content"
 	"github.com/cufee/aftermath-core/internal/logic/scheduler/tasks"
 	"github.com/rs/zerolog/log"
 )
+
+func rotateBackgroundPresetsWorker() {
+	// We just run the logic directly as it's not a heavy task and it doesn't matter if it fails due to the app failing
+	log.Info().Msg("rotating background presets")
+	images, err := content.PickRandomBackgroundImages(3)
+	if err != nil {
+		log.Err(err).Msg("failed to pick random background images")
+		return
+	}
+	err = database.UpdateAppConfiguration[[]string]("backgroundImagesSelection", images, nil, true)
+	if err != nil {
+		log.Err(err).Msg("failed to update background images selection")
+	}
+}
 
 func updateGlossaryWorker() {
 	// We just run the logic directly as it's not a heavy task and it doesn't matter if it fails due to the app failing
