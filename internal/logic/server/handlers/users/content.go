@@ -98,7 +98,12 @@ func SelectBackgroundPresetHandler(c *fiber.Ctx) error {
 		// User is created so we can continue
 	}
 
-	err = database.UpdateUserContent(details.ID, details.ID, models.UserContentTypePersonalBackground, data.Value[i], nil, true)
+	connection, err := database.FindUserConnection(details.ID, models.ConnectionTypeWargaming)
+	if err != nil {
+		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "models.FindUserConnection"))
+	}
+
+	err = database.UpdateUserContent(details.ID, connection.ExternalID, models.UserContentTypePersonalBackground, data.Value[i], nil, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}

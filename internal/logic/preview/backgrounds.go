@@ -90,7 +90,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 		frameCtx.DrawImage(preview.Data, lastX, 0)
 		lastX += backgroundWidth
 	}
-	frameCtx.DrawImage(imaging.Blur(frameCtx.Image(), 10), 0, 0)
+	frameCtx.DrawImage(imaging.Blur(frameCtx.Image(), 10-float64(len(options)-1)), 0, 0)
 	frameCtx.DrawImage(statsImage, 0, 0)
 
 	return frameCtx.Image(), nil
