@@ -53,7 +53,7 @@ func CompleteUserVerificationHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponse("nonce referenceID is required", "c.Param"))
 	}
 
-	user, err := database.FindUserByID(nonce.ReferenceID)
+	user, err := database.GetUserByID(nonce.ReferenceID)
 	if err != nil {
 		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
 	}
@@ -88,19 +88,12 @@ func StartUserVerificationHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponse("realm query parameter is required", "c.Param"))
 	}
 
-	details, err := database.FindUserByID(userId)
+	user, err := database.GetOrCreateUserByID(userId)
 	if err != nil {
-		if !errors.Is(err, database.ErrUserNotFound) {
-			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
-		}
-		details, err = database.CreateUser(userId)
-		if err != nil {
-			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
-		}
-		// User is created so we can continue
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
 	}
 
-	nonce, err := database.NewNonce(details.ID, time.Duration(5*time.Minute))
+	nonce, err := database.NewNonce(user.ID, time.Duration(5*time.Minute))
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.NewNonce"))
 	}

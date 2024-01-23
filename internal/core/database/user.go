@@ -12,28 +12,32 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-func FindUserByID(id string) (*models.User, error) {
-	ctx, cancel := DefaultClient.Ctx()
-	defer cancel()
-
-	var user models.User
-	err := DefaultClient.Collection(CollectionUsers).FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+func GetOrCreateUserByID(id string) (*models.CompleteUser, error) {
+	user, err := GetUserByID(id)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrUserNotFound
+		if !errors.Is(err, ErrUserNotFound) {
+			return nil, err
 		}
-		return nil, err
+		partial, err := CreateUser(id)
+		if err != nil {
+			return nil, err
+		}
+		user = &models.CompleteUser{User: *partial}
 	}
-
-	return &user, nil
+	return user, nil
 }
 
-func FindUserByConnection(connectionType models.ConnectionType, externalID string) (*models.User, error) {
+func GetUserByID(id string) (*models.CompleteUser, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
-	var connection models.UserConnection
-	err := DefaultClient.Collection(CollectionUsers).FindOne(ctx, bson.M{"connectionType": connectionType, "connectionID": externalID}).Decode(&connection)
+	var pipeline mongo.Pipeline
+	pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: id}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$limit", Value: 1}})
+	pipeline = append(pipeline, bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: CollectionUserConnections}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "userID"}, {Key: "as", Value: "connections"}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: CollectionUserSubscriptions}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "userID"}, {Key: "as", Value: "subscriptions"}}}})
+
+	cur, err := DefaultClient.Collection(CollectionUsers).Aggregate(ctx, pipeline)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, ErrUserNotFound
@@ -41,7 +45,55 @@ func FindUserByConnection(connectionType models.ConnectionType, externalID strin
 		return nil, err
 	}
 
-	return FindUserByID(connection.UserID)
+	var results []models.CompleteUser
+	if err := cur.All(ctx, &results); err != nil {
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, ErrUserNotFound
+	}
+	if len(results) > 1 {
+		return nil, errors.New("multiple users found")
+	}
+
+	return &results[0], nil
+}
+
+func FindUserByConnection(connectionType models.ConnectionType, externalID string) (*models.CompleteUser, error) {
+	ctx, cancel := DefaultClient.Ctx()
+	defer cancel()
+
+	var pipeline mongo.Pipeline
+	pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.D{{Key: "connectionType", Value: connectionType}, {Key: "connectionID", Value: externalID}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$limit", Value: 1}})
+	pipeline = append(pipeline, bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: CollectionUsers}, {Key: "localField", Value: "userID"}, {Key: "foreignField", Value: "_id"}, {Key: "as", Value: "user"}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$user"}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$user"}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: CollectionUserConnections}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "userID"}, {Key: "as", Value: "connections"}}}})
+	pipeline = append(pipeline, bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: CollectionUserSubscriptions}, {Key: "localField", Value: "_id"}, {Key: "foreignField", Value: "userID"}, {Key: "as", Value: "subscriptions"}}}})
+
+	cur, err := DefaultClient.Collection(CollectionUsers).Aggregate(ctx, pipeline)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	var users []models.CompleteUser
+	if err := cur.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return nil, ErrUserNotFound
+	}
+	if len(users) > 1 {
+		return nil, errors.New("multiple users found")
+	}
+
+	return &users[0], nil
 }
 
 func CreateUser(id string) (*models.User, error) {

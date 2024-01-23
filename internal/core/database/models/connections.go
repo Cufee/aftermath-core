@@ -1,6 +1,9 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"github.com/cufee/aftermath-core/permissions/v1"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type ConnectionType string
 
@@ -11,9 +14,10 @@ const (
 type UserConnection struct {
 	ID primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 
-	UserID         string         `bson:"userID" json:"userID"`
-	ExternalID     string         `bson:"connectionID" json:"connectionID"`
-	ConnectionType ConnectionType `bson:"connectionType" json:"connectionType"`
+	UserID         string                  `bson:"userID" json:"userID"`
+	ExternalID     string                  `bson:"connectionID" json:"connectionID"`
+	ConnectionType ConnectionType          `bson:"connectionType" json:"connectionType"`
+	Permissions    permissions.Permissions `bson:"permissions" json:"permissions"`
 
 	Metadata map[string]any `bson:"metadata" json:"metadata"`
 }

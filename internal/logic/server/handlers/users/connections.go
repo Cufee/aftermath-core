@@ -23,16 +23,9 @@ func UpdateWargamingConnectionHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	user, err := database.FindUserByID(userId)
+	user, err := database.GetOrCreateUserByID(userId)
 	if err != nil {
-		if !errors.Is(err, database.ErrUserNotFound) {
-			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
-		}
-		user, err = database.CreateUser(userId)
-		if err != nil {
-			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
-		}
-		// User is created so we can continue
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.GetOrCreateUserByID"))
 	}
 
 	connection := models.UserConnection{

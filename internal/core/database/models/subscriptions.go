@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/cufee/aftermath-core/permissions/v1"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -16,10 +17,28 @@ const (
 	SubscriptionTypeVerifiedClan = SubscriptionType("verified-clan")
 )
 
+func ParseSubscriptionType(s string) SubscriptionType {
+	switch s {
+	case "aftermath-pro":
+		return SubscriptionTypePro
+	case "aftermath-pro-clan":
+		return SubscriptionTypeProClan
+	case "aftermath-plus":
+		return SubscriptionTypePlus
+	case "supporter":
+		return SubscriptionTypeSupporter
+	case "verified-clan":
+		return SubscriptionTypeVerifiedClan
+	default:
+		return ""
+	}
+}
+
 type UserSubscription struct {
-	id          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	UserID      string             `bson:"userID" json:"userID"`
-	ReferenceID *string            `bson:"referenceID" json:"referenceID"`
+	id          primitive.ObjectID      `bson:"_id,omitempty" json:"-"`
+	UserID      string                  `bson:"userID" json:"userID"`
+	ReferenceID string                  `bson:"referenceID" json:"referenceID"`
+	Permissions permissions.Permissions `bson:"permissions" json:"permissions"`
 
 	Type         SubscriptionType `bson:"subscriptionType" json:"subscriptionType"`
 	ExpiryDate   time.Time        `bson:"expiryDate" json:"expiryDate"`

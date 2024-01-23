@@ -1,7 +1,6 @@
 package users
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
@@ -30,32 +29,22 @@ func UploadUserContentHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponse("body data invalid", ""))
 	}
 
-	details, err := database.FindUserByID(userId)
+	user, err := database.GetOrCreateUserByID(userId)
 	if err != nil {
-		if !errors.Is(err, database.ErrUserNotFound) {
-			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
-		}
-		details, err = database.CreateUser(userId)
-		if err != nil {
-			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
-		}
-		// User is created so we can continue
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.GetOrCreateUserByID"))
 	}
 
-	connection, err := database.FindUserConnection(details.ID, models.ConnectionTypeWargaming)
-	if err != nil {
-		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "models.FindUserConnection"))
-	}
-	if connection.Metadata["verified"] != true {
-		return c.Status(400).JSON(server.NewErrorResponse("user account is not verified", ""))
+	connection := user.Connection(models.ConnectionTypeWargaming)
+	if connection == nil {
+		return c.Status(404).JSON(server.NewErrorResponse("user has no wargaming connection", ""))
 	}
 
-	link, err := content.UploadUserImage(details.ID, body.Data)
+	link, err := content.UploadUserImage(user.ID, body.Data)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "content.UploadUserImage"))
 	}
 
-	err = database.UpdateUserContent(details.ID, connection.ExternalID, body.Type, link, nil, true)
+	err = database.UpdateUserContent(user.ID, connection.ExternalID, body.Type, link, nil, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}
@@ -86,24 +75,20 @@ func SelectBackgroundPresetHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponse("index out of range", ""))
 	}
 
-	details, err := database.FindUserByID(userId)
+	user, err := database.GetOrCreateUserByID(userId)
 	if err != nil {
-		if !errors.Is(err, database.ErrUserNotFound) {
-			return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
-		}
-		details, err = database.CreateUser(userId)
-		if err != nil {
-			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
-		}
-		// User is created so we can continue
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
 	}
 
-	connection, err := database.FindUserConnection(details.ID, models.ConnectionTypeWargaming)
-	if err != nil {
-		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "models.FindUserConnection"))
+	connection := user.Connection(models.ConnectionTypeWargaming)
+	if connection == nil {
+		return c.Status(404).JSON(server.NewErrorResponse("user has no wargaming connection", ""))
+	}
+	if verified, ok := connection.Metadata["verified"].(bool); !ok || !verified {
+		return c.Status(400).JSON(server.NewErrorResponse("user wargaming connection not verified", ""))
 	}
 
-	err = database.UpdateUserContent(details.ID, connection.ExternalID, models.UserContentTypePersonalBackground, data.Value[i], nil, true)
+	err = database.UpdateUserContent(user.ID, connection.ExternalID, models.UserContentTypePersonalBackground, data.Value[i], nil, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}
