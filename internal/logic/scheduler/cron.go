@@ -19,12 +19,15 @@ func StartCronJobs() {
 	c.Cron("* * * * *").Do(runTasksWorker)
 	// c.AddFunc("0 */2 * * *", func() { wrk.AutoRunTaskCleanup() })
 
-	// Glossary
+	// Glossary - Do it around the same time WG releases game updates
 	c.Cron("0 10 * * *").Do(updateGlossaryWorker)
 	c.Cron("0 12 * * *").Do(updateGlossaryWorker)
-	c.Cron("0 10 * * *").Do(updateAveragesWorker)
-	c.Cron("0 12 * * *").Do(updateAveragesWorker)
 	// c.AddFunc("40 9 * * 0", updateAchievementsWorker)
+
+	// Averages - Update averages shortly after session refreshes
+	c.Cron("0 10 * * *").Do(updateAveragesWorker)
+	c.Cron("0 2 * * *").Do(updateAveragesWorker)
+	c.Cron("0 19 * * *").Do(updateAveragesWorker)
 
 	// Sessions
 	c.Cron("0 9 * * *").Do(createSessionTasksWorker("NA"))  // NA
