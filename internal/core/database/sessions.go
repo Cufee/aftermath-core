@@ -16,9 +16,9 @@ var (
 )
 
 type SessionGetOptions struct {
-	LastBattleAfter *int
-	Before          time.Time
-	Type            models.SessionType
+	LastBattleBefore *int
+	Before           time.Time
+	Type             models.SessionType
 }
 
 func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Snapshot, error) {
@@ -41,8 +41,8 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Sn
 	if opts.Type != "" {
 		query["type"] = opts.Type
 	}
-	if opts.LastBattleAfter != nil {
-		query["lastBattleTime"] = bson.M{"$gt": *opts.LastBattleAfter}
+	if opts.LastBattleBefore != nil {
+		query["lastBattleTime"] = bson.M{"$lt": *opts.LastBattleBefore}
 	}
 
 	var snapshot models.Snapshot

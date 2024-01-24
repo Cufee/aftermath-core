@@ -30,6 +30,32 @@ var (
 	ErrTooManyAccountIDs = errors.New("too many account IDs")
 )
 
+func GetLiveLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error) {
+	if len(accountIDs) == 0 {
+		return make(map[int]int), nil
+	}
+	if len(accountIDs) > 100 {
+		return nil, ErrTooManyAccountIDs
+	}
+
+	ids := make([]string, len(accountIDs))
+	for i, id := range accountIDs {
+		ids[i] = fmt.Sprintf("%d", id)
+	}
+
+	players, err := wargaming.Clients.Live.BulkGetAccountsByID(ids, realm, "account_id", "last_battle_time")
+	if err != nil {
+		return nil, err
+	}
+
+	lastBattleTimes := make(map[int]int, len(players))
+	for _, player := range players {
+		lastBattleTimes[player.ID] = player.LastBattleTime
+	}
+
+	return lastBattleTimes, nil
+}
+
 func GetLiveSessions(realm string, accountIDs ...int) (map[int]utils.DataWithError[*SessionWithRawData], error) {
 	return GetSessionsWithClient(wargaming.Clients.Live, realm, accountIDs...)
 }

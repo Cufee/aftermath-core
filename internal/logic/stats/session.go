@@ -32,14 +32,36 @@ type Snapshot struct {
 }
 
 func GetCurrentPlayerSession(realm string, accountId int, options ...database.SessionGetOptions) (*Snapshot, error) {
+	opts := database.SessionGetOptions{}
+	if len(options) > 0 {
+		opts = options[0]
+	}
+
+	var battleTimeWg sync.WaitGroup
+	if opts.LastBattleBefore == nil {
+		battleTimeWg.Add(1)
+		go func() {
+			defer battleTimeWg.Done()
+
+			lastBattles, err := sessions.GetLiveLastBattleTimes(realm, accountId)
+			if err != nil {
+				log.Err(err).Msg("failed to get last battles")
+				// This is not a fatal error, so we can continue
+				return
+			}
+			lastBattle := lastBattles[accountId]
+			opts.LastBattleBefore = &lastBattle
+		}()
+	}
+
 	liveSessionChan := make(chan utils.DataWithError[*sessions.SessionWithRawData], 1)
 	lastSessionChan := make(chan utils.DataWithError[*core.SessionSnapshot], 1)
 
 	var wg sync.WaitGroup
-
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
 		liveSessions, err := sessions.GetLiveSessions(realm, accountId)
 		if err != nil {
 			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: err}
@@ -56,7 +78,9 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		lastSession, err := database.GetPlayerSessionSnapshot(accountId, options...)
+
+		battleTimeWg.Wait()
+		lastSession, err := database.GetPlayerSessionSnapshot(accountId, opts)
 		if err != nil {
 			lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Err: err}
 			return

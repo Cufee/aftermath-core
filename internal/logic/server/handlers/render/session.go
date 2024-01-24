@@ -12,7 +12,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
-	encode "github.com/cufee/aftermath-core/internal/core/utils"
+	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/content"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -82,23 +82,14 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 		}()
 	}
 
-	averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
-	if err != nil {
-		return "", err
-	}
-
-	subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID))
-	if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
-		log.Warn().Err(err).Msg("failed to get subscriptions")
-		// We can continue without subscriptions
-	}
-
 	// Fetch the background image in a separate goroutine
-	var imageWg sync.WaitGroup
+	var wait sync.WaitGroup
 	backgroundChan := make(chan image.Image, 1)
-	imageWg.Add(1)
+	cardsChan := make(chan core.DataWithError[image.Image], 1)
+
+	wait.Add(1)
 	go func() {
-		defer imageWg.Done()
+		defer wait.Done()
 
 		referenceIDs := []string{fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID)}
 		backgrounds, err := database.GetContentByReferenceIDs[string](referenceIDs, models.UserContentTypePersonalBackground, models.UserContentTypeClanBackground)
@@ -126,49 +117,70 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 		backgroundChan <- bgImage
 	}()
 
-	sortOptions := stats.SortOptions{
-		Limit: options.TankLimit,
-		By:    stats.ParseSortOptions(options.SortBy),
-	}
-	if sortOptions.Limit == 0 {
-		sortOptions.Limit = 5
-	}
+	wait.Add(1)
+	go func() {
+		defer wait.Done()
 
-	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-		SessionStats:          sessionData.Diff,
-		CareerStats:           sessionData.Selected,
-		SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
-		GlobalVehicleAverages: averages,
-	}, dataprep.ExportOptions{
-		Blocks: dataprep.DefaultBlockPresets,
-		Locale: localization.LanguageEN,
-	})
-	if err != nil {
-		return "", err
-	}
+		averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
+		if err != nil {
+			cardsChan <- core.DataWithError[image.Image]{Err: err}
+			return
+		}
 
-	player := session.PlayerData{
-		Clan:          &sessionData.Account.Clan,
-		Account:       &sessionData.Account.Account,
-		Subscriptions: subscriptions,
-		Cards:         statsCards,
-	}
+		subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID))
+		if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
+			log.Warn().Err(err).Msg("failed to get subscriptions")
+			// We can continue without subscriptions
+		}
 
-	renderOptions := session.RenderOptions{
-		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-		CardStyle: session.DefaultCardStyle(nil),
-	}
+		sortOptions := stats.SortOptions{
+			Limit: options.TankLimit,
+			By:    stats.ParseSortOptions(options.SortBy),
+		}
+		if sortOptions.Limit == 0 {
+			sortOptions.Limit = 5
+		}
 
-	cards, err := session.RenderStatsImage(player, renderOptions)
-	if err != nil {
-		return "", err
-	}
+		statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+			SessionStats:          sessionData.Diff,
+			CareerStats:           sessionData.Selected,
+			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
+			GlobalVehicleAverages: averages,
+		}, dataprep.ExportOptions{
+			Blocks: dataprep.DefaultBlockPresets,
+			Locale: localization.LanguageEN,
+		})
+		if err != nil {
+			cardsChan <- core.DataWithError[image.Image]{Err: err}
+			return
+		}
 
-	imageWg.Wait()
+		player := session.PlayerData{
+			Clan:          &sessionData.Account.Clan,
+			Account:       &sessionData.Account.Account,
+			Subscriptions: subscriptions,
+			Cards:         statsCards,
+		}
+
+		renderOptions := session.RenderOptions{
+			PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
+			CardStyle: session.DefaultCardStyle(nil),
+		}
+
+		cards, err := session.RenderStatsImage(player, renderOptions)
+		cardsChan <- core.DataWithError[image.Image]{Data: cards, Err: err}
+	}()
+
+	wait.Wait()
+	close(cardsChan)
 	close(backgroundChan)
+
+	cards := <-cardsChan
+	if cards.Err != nil {
+		return "", cards.Err
+	}
+
 	bgImage := <-backgroundChan
-
-	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30})
-
-	return encode.EncodeImage(img)
+	img := render.AddBackground(cards.Data, bgImage, render.Style{Blur: 10, BorderRadius: 30})
+	return core.EncodeImage(img)
 }
