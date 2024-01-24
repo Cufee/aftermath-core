@@ -7,6 +7,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/content"
+	"github.com/cufee/aftermath-core/permissions/v1"
 	"github.com/cufee/aftermath-core/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,9 +23,6 @@ func UploadUserContentHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
-	if !body.Type.Valid() {
-		return c.Status(400).JSON(server.NewErrorResponse("body type invalid", "c.BodyParser"))
-	}
 	if body.Data == "" {
 		return c.Status(400).JSON(server.NewErrorResponse("body data invalid", ""))
 	}
@@ -32,6 +30,9 @@ func UploadUserContentHandler(c *fiber.Ctx) error {
 	user, err := database.GetOrCreateUserByID(userId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.GetOrCreateUserByID"))
+	}
+	if !user.Permissions().Has(permissions.UploadPersonalBackground) {
+		return c.Status(403).JSON(server.NewErrorResponse("user has no permissions", ""))
 	}
 
 	connection := user.Connection(models.ConnectionTypeWargaming)
@@ -44,7 +45,7 @@ func UploadUserContentHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "content.UploadUserImage"))
 	}
 
-	err = database.UpdateUserContent(user.ID, connection.ExternalID, body.Type, link, nil, true)
+	err = database.UpdateUserContent(user.ID, connection.ExternalID, models.UserContentTypePersonalBackground, link, nil, true)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}
@@ -78,6 +79,9 @@ func SelectBackgroundPresetHandler(c *fiber.Ctx) error {
 	user, err := database.GetOrCreateUserByID(userId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
+	}
+	if !user.Permissions().Has(permissions.SelectPersonalBackgroundPreset) {
+		return c.Status(403).JSON(server.NewErrorResponse("user has no permissions", ""))
 	}
 
 	connection := user.Connection(models.ConnectionTypeWargaming)

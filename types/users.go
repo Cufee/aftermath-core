@@ -42,8 +42,7 @@ type wargamingConnection struct {
 }
 
 type UserContentPayload[T any] struct {
-	Type models.UserContentType `json:"type"`
-	Data T                      `json:"data"`
+	Data T `json:"data"`
 }
 
 type UserVerificationPayload struct {
