@@ -62,7 +62,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Title Card
 	var clanTagBlocks []render.Block
-	if player.Clan != nil {
+	if player.Clan != nil && player.Clan.Tag != "" {
 		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, player.Clan.Tag))
 		if sub := player.clanSubscriptionHeader(); sub != nil {
 			iconBlock, err := sub.Block()

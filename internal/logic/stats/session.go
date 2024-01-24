@@ -3,12 +3,10 @@ package stats
 import (
 	"errors"
 	"sort"
-	"sync"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
-	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
 	wg "github.com/cufee/am-wg-proxy-next/types"
@@ -37,93 +35,49 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 		opts = options[0]
 	}
 
-	var battleTimeWg sync.WaitGroup
+	liveSessions, err := sessions.GetLiveSessions(realm, accountId)
+	if err != nil {
+		log.Err(err).Msg("failed to get live sessions")
+		return nil, err
+	}
+	liveSession, ok := liveSessions[accountId]
+	if !ok {
+		log.Err(ErrBadLiveSession).Msg("failed to get live session")
+		return nil, ErrBadLiveSession
+	}
+
 	if opts.LastBattleBefore == nil {
-		battleTimeWg.Add(1)
-		go func() {
-			defer battleTimeWg.Done()
+		opts.LastBattleBefore = &liveSession.Data.Account.LastBattleTime
+	}
 
-			lastBattles, err := sessions.GetLiveLastBattleTimes(realm, accountId)
-			if err != nil {
-				log.Err(err).Msg("failed to get last battles")
-				// This is not a fatal error, so we can continue
-				return
+	lastSession, err := database.GetPlayerSessionSnapshot(accountId, opts)
+	if errors.Is(err, database.ErrNoSessionCache) {
+		// Refresh the session cache in the background
+		go func(realm string, accountId int) {
+			accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, accountId)
+			if err != nil || len(accountErrs) > 0 {
+				log.Err(err).Msg("failed to refresh session cache")
 			}
-			lastBattle := lastBattles[accountId]
-			opts.LastBattleBefore = &lastBattle
-		}()
+		}(realm, accountId)
+
+		// There is no session cache, so the live session is the same as the last session and there is no diff
+		return &Snapshot{
+			Selected: liveSession.Data.Session,
+			Account: SnapshotAccount{
+				ExtendedAccount: *liveSession.Data.Account,
+				ClanMember:      *liveSession.Data.Clan,
+			},
+			Live: liveSession.Data.Session,
+			Diff: core.EmptySession(liveSession.Data.Account.ID, liveSession.Data.Account.LastBattleTime),
+		}, nil
+	}
+	// All other errors
+	if err != nil {
+		log.Err(err).Msg("failed to get last session")
+		return nil, err
 	}
 
-	liveSessionChan := make(chan utils.DataWithError[*sessions.SessionWithRawData], 1)
-	lastSessionChan := make(chan utils.DataWithError[*core.SessionSnapshot], 1)
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		liveSessions, err := sessions.GetLiveSessions(realm, accountId)
-		if err != nil {
-			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: err}
-			return
-		}
-		liveSession, ok := liveSessions[accountId]
-		if !ok {
-			liveSessionChan <- utils.DataWithError[*sessions.SessionWithRawData]{Err: ErrBadLiveSession}
-			return
-		}
-		liveSessionChan <- liveSession
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		battleTimeWg.Wait()
-		lastSession, err := database.GetPlayerSessionSnapshot(accountId, opts)
-		if err != nil {
-			lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Err: err}
-			return
-		}
-		lastSessionChan <- utils.DataWithError[*core.SessionSnapshot]{Data: lastSession.Session}
-	}()
-
-	wg.Wait()
-	close(liveSessionChan)
-	close(lastSessionChan)
-
-	liveSession := <-liveSessionChan
-	if liveSession.Err != nil {
-		log.Err(liveSession.Err).Msg("failed to get live session")
-		return nil, liveSession.Err
-	}
-	lastSession := <-lastSessionChan
-	if lastSession.Err != nil {
-		if errors.Is(lastSession.Err, database.ErrNoSessionCache) {
-			go func(realm string, accountId int) {
-				// Refresh the session cache in the background
-				accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, accountId)
-				if err != nil || len(accountErrs) > 0 {
-					log.Err(err).Msg("failed to refresh session cache")
-				}
-			}(realm, accountId)
-
-			// There is no session cache, so the live session is the same as the last session and there is no diff
-			return &Snapshot{
-				Selected: liveSession.Data.Session,
-				Account: SnapshotAccount{
-					ExtendedAccount: *liveSession.Data.Account,
-					ClanMember:      *liveSession.Data.Clan,
-				},
-				Live: liveSession.Data.Session,
-				Diff: core.EmptySession(liveSession.Data.Account.ID, liveSession.Data.Account.LastBattleTime),
-			}, nil
-		}
-		log.Err(lastSession.Err).Msg("failed to get last session")
-		return nil, lastSession.Err
-	}
-
-	diffSession, err := liveSession.Data.Session.Diff(lastSession.Data)
+	diffSession, err := liveSession.Data.Session.Diff(lastSession.Session)
 	if err != nil {
 		log.Err(err).Msg("failed to diff sessions")
 		return nil, err
@@ -137,7 +91,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 	}
 
 	return &Snapshot{
-		Selected: lastSession.Data,
+		Selected: lastSession.Session,
 		Account: SnapshotAccount{
 			ExtendedAccount: *liveSession.Data.Account,
 			ClanMember:      *liveSession.Data.Clan,
