@@ -23,12 +23,11 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	start := time.Now()
-	sessionData, err := stats.GetCurrentPlayerSession("eu", 555282454) // 1013072123 1032698345
+	sessionData, err := stats.GetCurrentPlayerSession("as", 2017236789) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("got session in %s", time.Since(start).String())
-
 	averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
 	if err != nil {
 		t.Fatal(err)

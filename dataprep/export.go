@@ -109,6 +109,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 			}
 
 			glossary := vehiclesGlossary[vehicle.VehicleID]
+			glossary.ID = vehicle.VehicleID
 			cards = append(cards, StatsCard{
 				Title:  fmt.Sprintf("%s %s", utils.IntToRoman(glossary.Tier), glossary.Name(options.Locale)),
 				Blocks: vehicleBlocks,
