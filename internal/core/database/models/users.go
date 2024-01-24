@@ -39,7 +39,7 @@ type CompleteUser struct {
 }
 
 func (u CompleteUser) Permissions() permissions.Permissions {
-	perms := u.User.Permissions | permissions.User // User is the minimum permission level
+	perms := u.User.Permissions | permissions.User
 	for _, c := range u.Connections {
 		perms = perms.Add(c.Permissions)
 	}

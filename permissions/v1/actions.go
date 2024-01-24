@@ -2,19 +2,19 @@ package permissions
 
 // Basic user actions
 const (
-	UseCommands Permissions = 10 << iota
+	UseCommands Permissions = BasicUserActions | 1<<(10+iota)
 
 	// Content
-	SelectPersonalBackgroundPreset Permissions = 11 << iota
+	SelectPersonalBackgroundPreset Permissions = BasicUserActions | 1<<(11+iota)
 	UploadPersonalBackground
 
 	// Connections
-	CreatePersonalConnection Permissions = 11 << iota
+	CreatePersonalConnection Permissions = BasicUserActions | 1<<(12+iota)
 	UpdatePersonalConnection
 	RemovePersonalConnection
 
 	// Subscriptions
-	RetrievePersonalSubscriptions Permissions = 12 << iota
+	RetrievePersonalSubscriptions Permissions = BasicUserActions | 1<<(13+iota)
 	CreatePersonalSubscription
 	ExtendPersonalSubscription
 )
@@ -22,31 +22,31 @@ const (
 // Moderation actions
 const (
 	// Background Presets
-	UploadBackgroundPreset Permissions = 15 << iota
+	UploadBackgroundPreset Permissions = ModerationActions | 1<<(20+iota)
 	RemoveBackgroundPreset
 
 	// Manage User Content
-	UpdateUserBackground Permissions = 16 << iota
+	UpdateUserBackground Permissions = ModerationActions | 1<<(21+iota)
 	RemoveUserBackground
 
 	// Subscriptions
-	RetrieveUserSubscriptions Permissions = 20 << iota
+	RetrieveUserSubscriptions Permissions = ModerationActions | 1<<(22+iota)
 	CreateUserSubscription
 	ExtendUserSubscription
 	TerminateUserSubscription
 
 	// Connections
-	RetrieveUserConnections Permissions = 21 << iota
+	RetrieveUserConnections Permissions = ModerationActions | 1<<(23+iota)
 	ManageUserConnectionVerification
 	RemoveUserConnection
 
 	// Restrictions
-	RetrieveUserRestrictions Permissions = 22 << iota
+	RetrieveUserRestrictions Permissions = ModerationActions | 1<<(24+iota)
 	CreateUserRestriction
 	RemoveUserRestriction
 )
 
 const (
 	// Admin
-	ManageUserRoles Permissions = 30 << iota
+	ManageUserRoles Permissions = AdminActions | 1<<(30+iota)
 )
