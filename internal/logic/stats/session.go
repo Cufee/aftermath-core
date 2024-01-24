@@ -46,7 +46,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 		return nil, ErrBadLiveSession
 	}
 
-	if opts.LastBattleBefore == nil {
+	if opts.LastBattleBefore == nil && liveSession.Data.Account.LastBattleTime > 0 {
 		opts.LastBattleBefore = &liveSession.Data.Account.LastBattleTime
 	}
 

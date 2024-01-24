@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
@@ -67,7 +68,9 @@ func getSessionStats(realm string, accountId int, presets []string) (*dataprep.S
 		return nil, err
 	}
 
-	session, err := stats.GetCurrentPlayerSession(realm, accountId)
+	now := int(time.Now().Unix())
+	opts := database.SessionGetOptions{LastBattleBefore: &now}
+	session, err := stats.GetCurrentPlayerSession(realm, accountId, opts)
 	if err != nil {
 		return nil, err
 	}
