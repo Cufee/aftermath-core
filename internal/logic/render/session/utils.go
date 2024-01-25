@@ -128,8 +128,8 @@ func comparisonIconFromBlock(block dataprep.StatsBlock) *comparisonIcon {
 		return nil
 	}
 	return &comparisonIcon{
-		left:  render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: iconColor}, icon),
-		right: render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: color.Transparent}, icon),
+		left:  render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: iconColor}, icon),
+		right: render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: color.Transparent}, icon),
 	}
 }
 

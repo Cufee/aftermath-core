@@ -12,6 +12,7 @@ type convertOptions struct {
 	showSessionStats bool
 	showCareerStats  bool
 	showLabels       bool
+	showIcons        bool
 }
 
 type styledStatsBlock struct {
@@ -24,22 +25,35 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 		showSessionStats: true,
 		showCareerStats:  true,
 		showLabels:       true,
+		showIcons:        true,
 	}
 	if len(opts) > 0 {
 		options = opts[0]
 	}
 
+	sessionStyle := render.Style{Font: &FontLarge, FontColor: FontLargeColor}
+	careerStyle := render.Style{Font: &FontMedium, FontColor: FontMediumColor}
+	labelStyle := render.Style{Font: &FontSmall, FontColor: FontSmallColor}
+
 	var content []render.Block
 	for _, statsBlock := range stats {
 		blocks := make([]render.Block, 0, 3)
 		if options.showSessionStats {
-			blocks = append(blocks, newStatsBlockRow(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, statsBlock.Session, comparisonIconFromBlock(statsBlock.StatsBlock)))
+			if options.showIcons {
+				blocks = append(blocks, newStatsBlockRow(sessionStyle, statsBlock.Session, comparisonIconFromBlock(statsBlock.StatsBlock)))
+			} else {
+				blocks = append(blocks, render.NewTextContent(sessionStyle, statsBlock.Session.String))
+			}
 		}
 		if options.showCareerStats && statsBlock.Career.String != "" {
-			blocks = append(blocks, newStatsBlockRow(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, statsBlock.Career, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
+			if options.showIcons {
+				blocks = append(blocks, newStatsBlockRow(careerStyle, statsBlock.Career, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
+			} else {
+				blocks = append(blocks, render.NewTextContent(careerStyle, statsBlock.Career.String))
+			}
 		}
 		if options.showLabels && statsBlock.Tag != dataprep.TagBattles {
-			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontSmall, FontColor: FontSmallColor}, statsBlock.Label))
+			blocks = append(blocks, render.NewTextContent(labelStyle, statsBlock.Label))
 		}
 		content = append(content, render.NewBlocksContent(statsBlock.style, blocks...))
 	}
