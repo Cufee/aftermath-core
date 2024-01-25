@@ -31,6 +31,28 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 	var cards SessionCards
 	printer := localization.GetPrinter(options.Locale)
 
+	// Rating battles
+	if input.SessionStats.Rating.Battles > 0 {
+		var ratingBlocks []StatsBlock
+		for _, preset := range options.Blocks {
+			p := preset
+			if preset == BlockPresetWN8 {
+				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
+				p = BlockPresetAccuracy
+			}
+			ratingBlock, err := p.StatsBlock(input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
+			if err != nil {
+				return nil, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
+			}
+			ratingBlocks = append(ratingBlocks, ratingBlock)
+		}
+		cards = append(cards, StatsCard{
+			Title:  printer("label_overview_rating"),
+			Blocks: ratingBlocks,
+			Type:   CardTypeOverview,
+		})
+	}
+
 	// Unrated battles
 	if input.SessionStats.Rating.Battles == 0 || input.SessionStats.Global.Battles > 0 {
 		var unratedBlocks []StatsBlock
@@ -56,28 +78,6 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 		cards = append(cards, StatsCard{
 			Title:  printer("label_overview_unrated"),
 			Blocks: unratedBlocks,
-			Type:   CardTypeOverview,
-		})
-	}
-
-	// Rating battles
-	if input.SessionStats.Rating.Battles > 0 {
-		var ratingBlocks []StatsBlock
-		for _, preset := range options.Blocks {
-			p := preset
-			if preset == BlockPresetWN8 {
-				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
-				p = BlockPresetAccuracy
-			}
-			ratingBlock, err := p.StatsBlock(input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
-			if err != nil {
-				return nil, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
-			}
-			ratingBlocks = append(ratingBlocks, ratingBlock)
-		}
-		cards = append(cards, StatsCard{
-			Title:  printer("label_overview_rating"),
-			Blocks: ratingBlocks,
 			Type:   CardTypeOverview,
 		})
 	}
