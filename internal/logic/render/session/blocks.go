@@ -30,20 +30,33 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 	}
 
 	var content []render.Block
-	for i, statsBlock := range stats {
+	for _, statsBlock := range stats {
 		blocks := make([]render.Block, 0, 3)
 		if options.showSessionStats {
-			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, statsBlock.Session.String))
+			blocks = append(blocks, newStatsBlockRow(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, statsBlock.Session, comparisonIconFromBlock(statsBlock.StatsBlock)))
 		}
 		if options.showCareerStats && statsBlock.Career.String != "" {
-			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, statsBlock.Career.String))
+			blocks = append(blocks, newStatsBlockRow(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, statsBlock.Career, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
 		}
-		if options.showLabels && i != 0 && statsBlock.Label != "" {
+		if options.showLabels && statsBlock.Tag != dataprep.TagBattles {
 			blocks = append(blocks, render.NewTextContent(render.Style{Font: &FontSmall, FontColor: FontSmallColor}, statsBlock.Label))
 		}
 		content = append(content, render.NewBlocksContent(statsBlock.style, blocks...))
 	}
 	return content, nil
+}
+
+func newStatsBlockRow(style render.Style, stats dataprep.Value, icon *comparisonIcon) render.Block {
+	if icon == nil {
+		return render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, stats.String)
+	}
+
+	return render.NewBlocksContent(
+		render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter},
+		icon.left,
+		render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, stats.String),
+		icon.right,
+	)
 }
 
 func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.Block) render.Block {

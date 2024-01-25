@@ -42,6 +42,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 					unratedBlocks = append(unratedBlocks, StatsBlock{
 						Session: statsToValue(sessionWN8),
 						Label:   printer("label_wn8"),
+						Tag:     TagWN8,
 					})
 					continue
 				}

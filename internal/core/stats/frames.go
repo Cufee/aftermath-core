@@ -30,6 +30,10 @@ type ReducedStatsFrame struct {
 }
 
 func (r *ReducedStatsFrame) Valid(value interface{}) bool {
+	return ValueValid(value)
+}
+
+func ValueValid(value interface{}) bool {
 	switch cast := value.(type) {
 	case int:
 		return cast != InvalidValue

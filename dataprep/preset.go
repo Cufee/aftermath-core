@@ -61,36 +61,42 @@ func (p *statsBlockPreset) StatsBlock(session, career, averages *stats.ReducedSt
 	case BlockPresetWN8:
 		block.Session = statsToValue(session.WN8(averages))
 		block.Label = printer("label_wn8")
+		block.Tag = TagWN8
 		if career != nil {
 			block.Career = statsToValue(career.WN8(averages))
 		}
 	case BlockPresetBattles:
 		block.Session = statsToValue(session.Battles)
 		block.Label = printer("label_battles")
+		block.Tag = TagBattles
 		if career != nil {
 			block.Career = statsToValue(career.Battles)
 		}
 	case BlockPresetWinrate:
 		block.Session = statsToValue(session.Winrate())
 		block.Label = printer("label_winrate")
+		block.Tag = TagWinrate
 		if career != nil {
 			block.Career = statsToValue(career.Winrate())
 		}
 	case BlockPresetAccuracy:
 		block.Session = statsToValue(session.Accuracy())
 		block.Label = printer("label_accuracy")
+		block.Tag = TagAccuracy
 		if career != nil {
 			block.Career = statsToValue(career.Accuracy())
 		}
 	case BlockPresetAvgDamage:
 		block.Session = statsToValue(int(session.AvgDamage()))
 		block.Label = printer("label_avg_damage")
+		block.Tag = TagAvgDamage
 		if career != nil {
 			block.Career = statsToValue(int(career.AvgDamage()))
 		}
 	case BlockPresetDamageRatio:
 		block.Session = statsToValue(session.DamageRatio())
 		block.Label = printer("label_damage_ratio")
+		block.Tag = TagDamageRatio
 		if career != nil {
 			block.Career = statsToValue(career.DamageRatio())
 		}
@@ -101,26 +107,26 @@ func (p *statsBlockPreset) StatsBlock(session, career, averages *stats.ReducedSt
 	return block, nil
 }
 
-func statsToValue(v any) value {
+func statsToValue(v any) Value {
 	switch cast := v.(type) {
 	case string:
-		return value{String: cast, Value: v}
+		return Value{String: cast, Value: v}
 	case float32:
 		if int(cast) == stats.InvalidValue {
-			return value{String: "-", Value: v}
+			return Value{String: "-", Value: v}
 		}
-		return value{String: fmt.Sprintf("%.2f", cast), Value: v}
+		return Value{String: fmt.Sprintf("%.2f", cast), Value: v}
 	case float64:
 		if int(cast) == stats.InvalidValue {
-			return value{String: "-", Value: v}
+			return Value{String: "-", Value: v}
 		}
-		return value{String: fmt.Sprintf("%.2f%%", cast), Value: v}
+		return Value{String: fmt.Sprintf("%.2f%%", cast), Value: v}
 	case int:
 		if cast == stats.InvalidValue {
-			return value{String: "-", Value: v}
+			return Value{String: "-", Value: v}
 		}
-		return value{String: fmt.Sprint(cast), Value: v}
+		return Value{String: fmt.Sprint(cast), Value: v}
 	default:
-		return value{String: "-", Value: v}
+		return Value{String: "-", Value: v}
 	}
 }
