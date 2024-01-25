@@ -84,7 +84,7 @@
           "string": "3900"
         },
         "career": {
-          "value": 3500,
+          "value": -1,
           "string": "3500"
         },
         "label": "Damage"

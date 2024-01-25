@@ -60,7 +60,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 			if preset == BlockPresetWN8 {
 				// WN8 is a special case that needs to be calculated from vehicles
 				sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
-				if sessionWN8 != core.InvalidValue {
+				if sessionWN8 != core.InvalidValueInt {
 					unratedBlocks = append(unratedBlocks, StatsBlock{
 						Session: statsToValue(sessionWN8),
 						Label:   printer("label_wn8"),

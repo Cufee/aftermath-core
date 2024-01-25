@@ -4,7 +4,11 @@ import (
 	"math"
 )
 
-const InvalidValue = -1
+const (
+	InvalidValueFloat64 float64 = -1
+	InvalidValueFloat32 float32 = -1
+	InvalidValueInt     int     = -1
+)
 
 type ReducedStatsFrame struct {
 	Battles         int `json:"battles" bson:"battles"`
@@ -36,11 +40,11 @@ func (r *ReducedStatsFrame) Valid(value interface{}) bool {
 func ValueValid(value interface{}) bool {
 	switch cast := value.(type) {
 	case int:
-		return cast != InvalidValue
+		return cast != InvalidValueInt
 	case float64:
-		return int(cast) != InvalidValue
+		return cast != InvalidValueFloat64
 	case float32:
-		return int(cast) != InvalidValue
+		return cast != InvalidValueFloat32
 	default:
 		return false
 	}
@@ -48,7 +52,7 @@ func ValueValid(value interface{}) bool {
 
 func (r *ReducedStatsFrame) AvgDamage() float64 {
 	if r.Battles == 0 {
-		return InvalidValue
+		return InvalidValueFloat64
 	}
 	if r.avgDamage == 0 {
 		r.avgDamage = float64(r.DamageDealt) / float64(r.Battles)
@@ -58,7 +62,7 @@ func (r *ReducedStatsFrame) AvgDamage() float64 {
 
 func (r *ReducedStatsFrame) DamageRatio() float32 {
 	if r.Battles == 0 || r.DamageReceived == 0 {
-		return InvalidValue
+		return InvalidValueFloat32
 	}
 	if r.damageRatio == 0 {
 		r.damageRatio = float32(r.DamageDealt) / float32(r.DamageReceived)
@@ -68,7 +72,7 @@ func (r *ReducedStatsFrame) DamageRatio() float32 {
 
 func (r *ReducedStatsFrame) Winrate() float64 {
 	if r.Battles == 0 {
-		return InvalidValue
+		return InvalidValueFloat64
 	}
 	if r.winrate == 0 {
 		r.winrate = float64(r.BattlesWon) / float64(r.Battles) * 100
@@ -78,7 +82,7 @@ func (r *ReducedStatsFrame) Winrate() float64 {
 
 func (r *ReducedStatsFrame) Accuracy() float64 {
 	if r.Battles == 0 || r.ShotsFired == 0 {
-		return InvalidValue
+		return InvalidValueFloat64
 	}
 	if r.accuracy == 0 {
 		r.accuracy = float64(r.ShotsHit) / float64(r.ShotsFired) * 100
@@ -95,7 +99,7 @@ func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
 		return r.wn8
 	}
 	if average == nil || r.Battles == 0 || average.Battles == 0 {
-		return InvalidValue
+		return InvalidValueInt
 	}
 
 	// Expected values for WN8

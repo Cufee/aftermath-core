@@ -25,5 +25,5 @@ func calculateSessionWN8(vehicles map[int]*stats.ReducedVehicleStats, averages m
 	if wn8VehiclesBattles > 0 {
 		return wn8VehiclesTotal / wn8VehiclesBattles
 	}
-	return stats.InvalidValue
+	return stats.InvalidValueInt
 }

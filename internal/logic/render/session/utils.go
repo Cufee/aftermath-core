@@ -6,6 +6,7 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/fogleman/gg"
@@ -104,6 +105,10 @@ func comparisonIconFromBlock(block dataprep.StatsBlock) *comparisonIcon {
 		// Don't show comparison icons for battle count
 		return nil
 	}
+	if !stats.ValueValid(block.Session.Value) || !stats.ValueValid(block.Career.Value) {
+		return nil
+	}
+
 	if block.Tag == dataprep.TagWN8 {
 		// WN8 icons need to show the color
 		return blockToWN8Icon(block.Session, block.Tag)
@@ -129,7 +134,7 @@ func comparisonIconFromBlock(block dataprep.StatsBlock) *comparisonIcon {
 }
 
 func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) *comparisonIcon {
-	if tag != dataprep.TagWN8 {
+	if tag != dataprep.TagWN8 || !stats.ValueValid(value.Value) {
 		return nil
 	}
 	return &comparisonIcon{
