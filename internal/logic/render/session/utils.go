@@ -9,19 +9,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
-	"github.com/fogleman/gg"
 )
-
-var wn8Icon image.Image
-
-func init() {
-	ctx := gg.NewContext(20, 20)
-	// ctx.DrawCircle(7.5, 10, 7.5)
-	ctx.DrawRoundedRectangle(7, 0, 7, 20, 3.5)
-	ctx.SetColor(color.RGBA{R: 255, G: 255, B: 255, A: 255})
-	ctx.Fill()
-	wn8Icon = ctx.Image()
-}
 
 func (data *PlayerData) userSubscriptionHeader() *subscriptionHeader {
 	for _, subscription := range data.Subscriptions {
@@ -95,18 +83,9 @@ func getWN8Color(r int) color.Color {
 	return color.Transparent
 }
 
-type comparisonIcon struct {
-	left  render.Block
-	right render.Block
-}
-
-func comparisonIconFromBlock(block dataprep.StatsBlock) *comparisonIcon {
-	if block.Tag == dataprep.TagBattles {
-		// Don't show comparison icons for battle count
-		return nil
-	}
+func comparisonIconFromBlock(block dataprep.StatsBlock) render.Block {
 	if !stats.ValueValid(block.Session.Value) || !stats.ValueValid(block.Career.Value) {
-		return nil
+		return blankIconBlock
 	}
 
 	if block.Tag == dataprep.TagWN8 {
@@ -125,20 +104,15 @@ func comparisonIconFromBlock(block dataprep.StatsBlock) *comparisonIcon {
 		iconColor = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	}
 	if icon == nil {
-		return nil
+		return blankIconBlock
 	}
-	return &comparisonIcon{
-		left:  render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: iconColor}, icon),
-		right: render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: color.Transparent}, icon),
-	}
+
+	return render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: iconColor}, icon)
 }
 
-func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) *comparisonIcon {
+func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) render.Block {
 	if tag != dataprep.TagWN8 || !stats.ValueValid(value.Value) {
-		return nil
+		return blankIconBlock
 	}
-	return &comparisonIcon{
-		left:  render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: getWN8Color(int(value.Value))}, wn8Icon),
-		right: render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: color.Transparent}, wn8Icon),
-	}
+	return render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: getWN8Color(int(value.Value))}, wn8Icon)
 }

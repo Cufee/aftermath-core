@@ -39,37 +39,36 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 	for _, statsBlock := range stats {
 		blocks := make([]render.Block, 0, 3)
 		if options.showSessionStats {
-			if options.showIcons {
-				blocks = append(blocks, newStatsBlockRow(sessionStyle, statsBlock.Session, comparisonIconFromBlock(statsBlock.StatsBlock)))
+			if options.showIcons && statsBlock.Tag != dataprep.TagBattles {
+				blocks = append(blocks, newStatsBlockRow(sessionStyle, statsBlock.Session.String, comparisonIconFromBlock(statsBlock.StatsBlock)))
 			} else {
 				blocks = append(blocks, render.NewTextContent(sessionStyle, statsBlock.Session.String))
 			}
 		}
 		if options.showCareerStats && statsBlock.Career.String != "" {
-			if options.showIcons {
-				blocks = append(blocks, newStatsBlockRow(careerStyle, statsBlock.Career, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
+			if options.showIcons && statsBlock.Tag != dataprep.TagBattles {
+				blocks = append(blocks, newStatsBlockRow(careerStyle, statsBlock.Career.String, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
 			} else {
 				blocks = append(blocks, render.NewTextContent(careerStyle, statsBlock.Career.String))
 			}
 		}
 		if options.showLabels && statsBlock.Tag != dataprep.TagBattles {
-			blocks = append(blocks, render.NewTextContent(labelStyle, statsBlock.Label))
+			if options.showIcons {
+				blocks = append(blocks, newStatsBlockRow(labelStyle, statsBlock.Label, blankIconBlock))
+			} else {
+				blocks = append(blocks, render.NewTextContent(labelStyle, statsBlock.Label))
+			}
 		}
 		content = append(content, render.NewBlocksContent(statsBlock.style, blocks...))
 	}
 	return content, nil
 }
 
-func newStatsBlockRow(style render.Style, stats dataprep.Value, icon *comparisonIcon) render.Block {
-	if icon == nil {
-		return render.NewTextContent(style, stats.String)
-	}
-
+func newStatsBlockRow(style render.Style, value string, icon render.Block) render.Block {
 	return render.NewBlocksContent(
 		render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter},
-		icon.left,
-		render.NewTextContent(style, stats.String),
-		icon.right,
+		icon,
+		render.NewTextContent(style, value),
 	)
 }
 

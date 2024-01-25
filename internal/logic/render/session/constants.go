@@ -7,22 +7,42 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
+	"github.com/fogleman/gg"
 	"golang.org/x/image/font"
 )
 
 func init() {
-	fontFaces, ok := assets.GetFontFaces("default", 24, 18, 14)
-	if !ok {
-		panic("default font not found")
+	{
+		fontFaces, ok := assets.GetFontFaces("default", 24, 18, 14)
+		if !ok {
+			panic("default font not found")
+		}
+		FontLarge = fontFaces[24]
+		FontMedium = fontFaces[18]
+		FontSmall = fontFaces[14]
 	}
-	FontLarge = fontFaces[24]
-	FontMedium = fontFaces[18]
-	FontSmall = fontFaces[14]
+
+	{
+		ctx := gg.NewContext(iconSize, iconSize)
+		ctx.DrawRoundedRectangle(13, 2.5, 6, 17.5, 3)
+		ctx.SetColor(color.RGBA{R: 255, G: 255, B: 255, A: 255})
+		ctx.Fill()
+		wn8Icon = ctx.Image()
+	}
+
+	{
+		ctx := gg.NewContext(iconSize, 1)
+		blankIconBlock = render.NewImageContent(render.Style{Width: float64(iconSize), Height: 1}, ctx.Image())
+	}
 }
 
 var (
-	BaseCardWidth       = 730.0
-	BaseStatsBlockWidth = 130.0
+	iconSize       = 25
+	wn8Icon        image.Image
+	blankIconBlock render.Block
+
+	BaseCardWidth       = 680.0
+	BaseStatsBlockWidth = 120.0
 	ClanPillWidth       = 80
 
 	FontLarge  font.Face
