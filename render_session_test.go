@@ -62,7 +62,6 @@ func TestFullRenderPipeline(t *testing.T) {
 	}
 
 	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30})
-
 	t.Logf("rendered in %s", time.Since(now).String())
 
 	f, err := os.Create("test.png")

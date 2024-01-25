@@ -6,7 +6,6 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/fogleman/gg"
@@ -112,11 +111,11 @@ func comparisonIconFromBlock(block dataprep.StatsBlock) *comparisonIcon {
 
 	var icon image.Image
 	var iconColor color.Color
-	if block.Session.Compare(block.Career) > 0 {
+	if block.Session.Value > block.Career.Value {
 		icon, _ = assets.GetImage("images/icons/chevron-up-single")
 		iconColor = color.RGBA{R: 0, G: 255, B: 0, A: 255}
 	}
-	if block.Session.Compare(block.Career) < 0 {
+	if block.Session.Value < block.Career.Value {
 		icon, _ = assets.GetImage("images/icons/chevron-down-single")
 		iconColor = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	}
@@ -133,22 +132,8 @@ func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) *comparisonIcon {
 	if tag != dataprep.TagWN8 {
 		return nil
 	}
-
-	var parsed int
-	switch cast := value.Value.(type) {
-	case int:
-		parsed = cast
-	case float64:
-		parsed = int(cast)
-	default:
-		return nil
-	}
-	if !stats.ValueValid(parsed) {
-		return nil
-	}
-
 	return &comparisonIcon{
-		left:  render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: getWN8Color(int(parsed))}, wn8Icon),
+		left:  render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: getWN8Color(int(value.Value))}, wn8Icon),
 		right: render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: color.Transparent}, wn8Icon),
 	}
 }

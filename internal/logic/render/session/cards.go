@@ -81,7 +81,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		var showCareer bool
 		for _, block := range card.Blocks {
 			if block.Tag == dataprep.TagBattles {
-				showCareer = block.Career.Float64() > 0
+				showCareer = block.Career.Value > 0
 				break
 			}
 		}

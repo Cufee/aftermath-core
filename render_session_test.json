@@ -18,44 +18,44 @@
       {
         "session": {
           "value": 3900,
-          "string": "3900"
+          "string": "99999"
         },
         "career": {
           "value": 3500,
-          "string": "3500"
+          "string": "99999"
         },
         "label": "Damage"
       },
       {
         "session": {
           "value": 4.20,
-          "string": "4.20"
+          "string": "99.99"
         },
         "career": {
           "value": 2.228,
-          "string": "2.22"
+          "string": "99.99"
         },
         "label": "Damage Ratio"
       },
       {
         "session": {
           "value": 96.96,
-          "string": "96.96%"
+          "string": "999.99%"
         },
         "career": {
           "value": 69.69,
-          "string": "69.69%"
+          "string": "999.99%"
         },
         "label": "Winrate"
       },
       {
         "session": {
           "value": 6400,
-          "string": "6400"
+          "string": "99999"
         },
         "career": {
           "value": 4600,
-          "string": "4600"
+          "string": "99999"
         },
         "label": "WN8",
         "tag": "wn8"
