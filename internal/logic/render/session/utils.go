@@ -17,7 +17,7 @@ var wn8Icon image.Image
 func init() {
 	ctx := gg.NewContext(20, 20)
 	// ctx.DrawCircle(7.5, 10, 7.5)
-	ctx.DrawRoundedRectangle(3, 0, 7, 20, 3.5)
+	ctx.DrawRoundedRectangle(7, 0, 7, 20, 3.5)
 	ctx.SetColor(color.RGBA{R: 255, G: 255, B: 255, A: 255})
 	ctx.Fill()
 	wn8Icon = ctx.Image()
@@ -133,12 +133,22 @@ func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) *comparisonIcon {
 	if tag != dataprep.TagWN8 {
 		return nil
 	}
-	parsed, ok := value.Value.(int)
-	if !stats.ValueValid(value) || !ok {
+
+	var parsed int
+	switch cast := value.Value.(type) {
+	case int:
+		parsed = cast
+	case float64:
+		parsed = int(cast)
+	default:
 		return nil
 	}
+	if !stats.ValueValid(parsed) {
+		return nil
+	}
+
 	return &comparisonIcon{
-		left:  render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: getWN8Color(parsed)}, wn8Icon),
+		left:  render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: getWN8Color(int(parsed))}, wn8Icon),
 		right: render.NewImageContent(render.Style{Width: 20, Height: 20, BackgroundColor: color.Transparent}, wn8Icon),
 	}
 }

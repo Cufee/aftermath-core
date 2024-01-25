@@ -48,13 +48,13 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 
 func newStatsBlockRow(style render.Style, stats dataprep.Value, icon *comparisonIcon) render.Block {
 	if icon == nil {
-		return render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, stats.String)
+		return render.NewTextContent(style, stats.String)
 	}
 
 	return render.NewBlocksContent(
 		render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter},
 		icon.left,
-		render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, stats.String),
+		render.NewTextContent(style, stats.String),
 		icon.right,
 	)
 }

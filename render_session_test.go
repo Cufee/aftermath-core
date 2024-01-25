@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"image/png"
 	"os"
 	"testing"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
@@ -17,36 +17,23 @@ import (
 )
 
 func TestFullRenderPipeline(t *testing.T) {
-	err := database.Connect(utils.MustGetEnv("DATABASE_URL"))
+	file, err := os.ReadFile("render_session_test.json")
+	if err != nil {
+		panic(err)
+	}
+
+	var statsCards dataprep.SessionCards
+	err = json.Unmarshal(file, &statsCards)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	start := time.Now()
-	sessionData, err := stats.GetCurrentPlayerSession("as", 2017236789) // 1013072123 1032698345
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("got session in %s", time.Since(start).String())
-	averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
+	err = database.Connect(utils.MustGetEnv("DATABASE_URL"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	opts := stats.SortOptions{
-		By:    stats.SortByLastBattle,
-		Limit: 5,
-	}
-
-	statsBlocks, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-		SessionStats:          sessionData.Diff,
-		CareerStats:           sessionData.Selected,
-		SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, opts),
-		GlobalVehicleAverages: averages,
-	}, dataprep.ExportOptions{
-		Blocks: dataprep.DefaultBlockPresets,
-		Locale: localization.LanguageEN,
-	})
+	sessionData, err := stats.GetCurrentPlayerSession("eu", 581650793) // 1013072123 1032698345
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +45,7 @@ func TestFullRenderPipeline(t *testing.T) {
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
 		Account: &sessionData.Account.Account,
 		// Clan:    &session.Account.Clan,
-		Cards: statsBlocks,
+		Cards: statsCards,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/default")

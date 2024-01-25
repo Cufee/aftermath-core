@@ -110,23 +110,23 @@ func (p *statsBlockPreset) StatsBlock(session, career, averages *stats.ReducedSt
 func statsToValue(v any) Value {
 	switch cast := v.(type) {
 	case string:
-		return Value{String: cast, Value: v}
+		return Value{String: cast, Value: cast}
 	case float32:
 		if int(cast) == stats.InvalidValue {
-			return Value{String: "-", Value: v}
+			return Value{String: "-", Value: cast}
 		}
-		return Value{String: fmt.Sprintf("%.2f", cast), Value: v}
+		return Value{String: fmt.Sprintf("%.2f", cast), Value: cast}
 	case float64:
 		if int(cast) == stats.InvalidValue {
-			return Value{String: "-", Value: v}
+			return Value{String: "-", Value: cast}
 		}
-		return Value{String: fmt.Sprintf("%.2f%%", cast), Value: v}
+		return Value{String: fmt.Sprintf("%.2f%%", cast), Value: cast}
 	case int:
 		if cast == stats.InvalidValue {
-			return Value{String: "-", Value: v}
+			return Value{String: "-", Value: cast}
 		}
-		return Value{String: fmt.Sprint(cast), Value: v}
+		return Value{String: fmt.Sprint(cast), Value: cast}
 	default:
-		return Value{String: "-", Value: v}
+		return Value{String: "-", Value: cast}
 	}
 }

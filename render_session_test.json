@@ -80,7 +80,7 @@
       },
       {
         "session": {
-          "value": 3900,
+          "value": 999999,
           "string": "3900"
         },
         "career": {
@@ -102,8 +102,8 @@
       },
       {
         "session": {
-          "value": 96.96,
-          "string": "96.96%"
+          "value": 100.00,
+          "string": "100.00%"
         },
         "career": {
           "value": 69.69,
@@ -113,7 +113,7 @@
       },
       {
         "session": {
-          "value": 6400,
+          "value": 99999,
           "string": "6400"
         },
         "career": {

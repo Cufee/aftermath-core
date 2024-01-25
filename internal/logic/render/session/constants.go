@@ -21,8 +21,8 @@ func init() {
 }
 
 var (
-	BaseCardWidth       = 630.0
-	BaseStatsBlockWidth = 110.0
+	BaseCardWidth       = 680.0
+	BaseStatsBlockWidth = 120.0
 	ClanPillWidth       = 80
 
 	FontLarge  font.Face

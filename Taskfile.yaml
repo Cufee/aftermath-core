@@ -16,7 +16,7 @@ tasks:
     sources:
       - '**/*.go'
     cmds:
-      - go test -timeout 30s -run TestFullRenderPipeline github.com/cufee/aftermath-core -v
+      - go test -timeout 30s --count=1 -run TestFullRenderPipeline github.com/cufee/aftermath-core -v
   test:
     desc: Run tests
     cmds:
