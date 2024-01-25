@@ -44,26 +44,23 @@ func (v *Value) Compare(other Value) int {
 	if !stats.ValueValid(v.Value) || !stats.ValueValid(other.Value) {
 		return 0
 	}
+	if v.Float64() > other.Float64() {
+		return 1
+	}
+	if v.Float64() < other.Float64() {
+		return -1
+	}
+	return 0
+}
+
+func (v Value) Float64() float64 {
 	switch v.Value.(type) {
 	case int:
-		if v.Value.(int) > other.Value.(int) {
-			return 1
-		} else if v.Value.(int) < other.Value.(int) {
-			return -1
-		}
+		return float64(v.Value.(int))
 	case float64:
-		if v.Value.(float64) > other.Value.(float64) {
-			return 1
-		} else if v.Value.(float64) < other.Value.(float64) {
-			return -1
-		}
+		return v.Value.(float64)
 	case float32:
-		if v.Value.(float32) > other.Value.(float32) {
-			return 1
-		}
-		if v.Value.(float32) < other.Value.(float32) {
-			return -1
-		}
+		return float64(v.Value.(float32))
 	}
 	return 0
 }

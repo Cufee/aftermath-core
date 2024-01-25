@@ -78,9 +78,16 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	for _, card := range player.Cards {
-		opts := convertOptions{true, true, true}
+		var showCareer bool
+		for _, block := range card.Blocks {
+			if block.Tag == dataprep.TagBattles {
+				showCareer = block.Career.Float64() > 0
+				break
+			}
+		}
+		opts := convertOptions{true, showCareer, true}
 		if card.Type == dataprep.CardTypeVehicle {
-			opts = convertOptions{true, true, false}
+			opts = convertOptions{true, showCareer, false}
 		}
 
 		blocks, err := statsBlocksToCardBlocks(styled(card.Blocks), opts)
