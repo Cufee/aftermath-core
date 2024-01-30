@@ -75,7 +75,7 @@ func DefaultCardStyle(matchToImage image.Image) render.Style {
 		Direction:       render.DirectionVertical,
 		PaddingX:        20,
 		PaddingY:        20,
-		BackgroundColor: color.RGBA{10, 10, 10, 120},
+		BackgroundColor: color.RGBA{10, 10, 10, 180},
 		BorderRadius:    20,
 		Width:           BaseCardWidth,
 		// Debug:           true,
