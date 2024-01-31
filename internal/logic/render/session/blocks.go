@@ -31,9 +31,9 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 		options = opts[0]
 	}
 
-	sessionStyle := render.Style{Font: &FontLarge, FontColor: FontLargeColor}
-	careerStyle := render.Style{Font: &FontMedium, FontColor: FontMediumColor}
-	labelStyle := render.Style{Font: &FontSmall, FontColor: FontSmallColor}
+	sessionStyle := render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}
+	careerStyle := render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}
+	labelStyle := render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}
 
 	var content []render.Block
 	for _, statsBlock := range stats {
@@ -74,7 +74,7 @@ func newStatsBlockRow(style render.Style, value string, icon render.Block) rende
 
 func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.Block) render.Block {
 	if len(clanTagBlocks) == 0 {
-		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
+		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, name))
 	}
 
 	content := make([]render.Block, 0, 3)
@@ -96,18 +96,18 @@ func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to render clan tag")
 		// This error is not fatal, we can just render the name
-		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
+		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, name))
 	}
 	content = append(content, render.NewImageContent(render.Style{Width: float64(clanTagImage.Bounds().Dx()), Height: float64(clanTagImage.Bounds().Dy())}, clanTagImage))
 
 	// Nickname
-	content = append(content, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: FontLargeColor}, name))
+	content = append(content, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, name))
 
 	// Invisible tag to offset the nickname
 	clanBlock := render.NewBlocksContent(render.Style{
 		Width:          float64(clanTagImage.Bounds().Dx()),
 		JustifyContent: render.JustifyContentEnd,
-	}, render.NewTextContent(render.Style{Font: &FontLarge, FontColor: color.Transparent}, "-"))
+	}, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: color.Transparent}, "-"))
 
 	content = append(content, clanBlock)
 
@@ -122,7 +122,7 @@ func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.
 }
 
 func newTextLabel(label string) render.Block {
-	return render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, label)
+	return render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, label)
 }
 
 func newCardBlock(cardStyle render.Style, label render.Block, stats []render.Block) render.Block {

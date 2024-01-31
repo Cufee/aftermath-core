@@ -45,7 +45,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		if options.PromoText != nil {
 			var textBlocks []render.Block
 			for _, text := range options.PromoText {
-				textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, text))
+				textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, text))
 			}
 			cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter},
 				textBlocks...,
@@ -63,7 +63,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	// Title Card
 	var clanTagBlocks []render.Block
 	if player.Clan != nil && player.Clan.Tag != "" {
-		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &FontMedium, FontColor: FontMediumColor}, player.Clan.Tag))
+		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, player.Clan.Tag))
 		if sub := player.clanSubscriptionHeader(); sub != nil {
 			iconBlock, err := sub.Block()
 			if err == nil {
@@ -87,6 +87,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 				break
 			}
 		}
+
 		opts := convertOptions{true, hasCareer, true, hasCareer && hasSession}
 		if card.Type == dataprep.CardTypeVehicle {
 			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession}
