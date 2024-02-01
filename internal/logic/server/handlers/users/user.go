@@ -3,6 +3,7 @@ package users
 import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/server"
+	"github.com/cufee/aftermath-core/permissions/v1"
 	"github.com/cufee/aftermath-core/types"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,9 +19,13 @@ func GetUserHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
 	}
+	if user.User.Permissions == permissions.Blank {
+		user.User.Permissions = permissions.User
+	}
 
 	var extended types.User
 	extended.CompleteUser = *user
 	extended.IsBanned = false // TODO: Find ban records
+
 	return c.JSON(server.NewResponse(user))
 }
