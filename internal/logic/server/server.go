@@ -53,6 +53,7 @@ func Start() {
 	connectionsV1.Post("/wargaming/verify/:nonce", users.CompleteUserVerificationHandler)
 
 	moderationV1 := v1.Group("/moderation")
+	moderationV1.Get("/permissions", moderation.GetPermissionsMapHandler)
 	moderationV1.Get("/content/rotate", moderation.RotateBackgroundImagesHandler)
 	moderationV1.Post("/content/upload", moderation.UploadBackgroundImageHandler)
 

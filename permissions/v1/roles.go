@@ -8,3 +8,10 @@ const (
 
 	Admin = GlobalModerator | ManageUserRoles
 )
+
+func init() {
+	PermissionsMap["roles/user"] = User
+	PermissionsMap["roles/contentModerator"] = ContentModerator
+	PermissionsMap["roles/globalModerator"] = GlobalModerator
+	PermissionsMap["roles/admin"] = Admin
+}

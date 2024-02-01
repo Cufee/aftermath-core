@@ -50,3 +50,39 @@ const (
 	// Admin
 	ManageUserRoles Permissions = AdminActions | 1<<(30+iota)
 )
+
+func init() {
+	PermissionsMap["actions/useCommands"] = UseCommands
+
+	PermissionsMap["actions/selectPersonalBackgroundPreset"] = SelectPersonalBackgroundPreset
+	PermissionsMap["actions/uploadPersonalBackground"] = UploadPersonalBackground
+
+	PermissionsMap["actions/createPersonalConnection"] = CreatePersonalConnection
+	PermissionsMap["actions/updatePersonalConnection"] = UpdatePersonalConnection
+	PermissionsMap["actions/removePersonalConnection"] = RemovePersonalConnection
+
+	PermissionsMap["actions/retrievePersonalSubscriptions"] = RetrievePersonalSubscriptions
+	PermissionsMap["actions/createPersonalSubscription"] = CreatePersonalSubscription
+	PermissionsMap["actions/extendPersonalSubscription"] = ExtendPersonalSubscription
+
+	PermissionsMap["actions/uploadBackgroundPreset"] = UploadBackgroundPreset
+	PermissionsMap["actions/removeBackgroundPreset"] = RemoveBackgroundPreset
+
+	PermissionsMap["actions/updateUserBackground"] = UpdateUserBackground
+	PermissionsMap["actions/removeUserBackground"] = RemoveUserBackground
+
+	PermissionsMap["actions/retrieveUserSubscriptions"] = RetrieveUserSubscriptions
+	PermissionsMap["actions/createUserSubscription"] = CreateUserSubscription
+	PermissionsMap["actions/extendUserSubscription"] = ExtendUserSubscription
+	PermissionsMap["actions/terminateUserSubscription"] = TerminateUserSubscription
+
+	PermissionsMap["actions/retrieveUserConnections"] = RetrieveUserConnections
+	PermissionsMap["actions/manageUserConnectionVerification"] = ManageUserConnectionVerification
+	PermissionsMap["actions/removeUserConnection"] = RemoveUserConnection
+
+	PermissionsMap["actions/retrieveUserRestrictions"] = RetrieveUserRestrictions
+	PermissionsMap["actions/createUserRestriction"] = CreateUserRestriction
+	PermissionsMap["actions/removeUserRestriction"] = RemoveUserRestriction
+
+	PermissionsMap["actions/manageUserRoles"] = ManageUserRoles
+}
