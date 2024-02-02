@@ -78,3 +78,11 @@ func runTasksWorker() {
 
 	}, activeTasks...)
 }
+
+func restartTasksWorker() {
+	_, err := tasks.RestartAbandonedTasks(nil)
+	if err != nil {
+		log.Err(err).Msg("failed to start scheduled tasks")
+		return
+	}
+}

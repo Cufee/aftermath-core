@@ -17,7 +17,7 @@ func StartCronJobs() {
 	c := gocron.NewScheduler(time.UTC)
 	// Tasks
 	c.Cron("* * * * *").Do(runTasksWorker)
-	// c.AddFunc("0 */2 * * *", func() { wrk.AutoRunTaskCleanup() })
+	c.Cron("0 * * * *").Do(restartTasksWorker)
 
 	// Glossary - Do it around the same time WG releases game updates
 	c.Cron("0 10 * * *").Do(updateGlossaryWorker)

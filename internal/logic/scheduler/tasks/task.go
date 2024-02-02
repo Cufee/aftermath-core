@@ -259,3 +259,29 @@ func StartScheduledTasks(filter bson.M, limit int) ([]Task, error) {
 
 	return tasks, cur.All(ctx, &tasks)
 }
+
+/*
+Retrieves all tasks with status TaskStatusInProgress that match filter and updates their status to TaskStatusScheduled if their last attempt was more than an hour ago.
+*/
+func RestartAbandonedTasks(filter bson.M) ([]Task, error) {
+	if filter == nil {
+		filter = bson.M{}
+	}
+
+	ctx, cancel := database.DefaultClient.Ctx()
+	defer cancel()
+
+	var pipeline mongo.Pipeline
+	filter["status"] = TaskStatusInProgress
+	filter["last_attempt"] = bson.M{"$lte": time.Now().Add(-time.Hour)}
+	pipeline = append(pipeline, bson.D{{Key: "$match", Value: filter}})
+	pipeline = append(pipeline, bson.D{{Key: "$set", Value: bson.M{"status": TaskStatusScheduled}}})
+
+	var tasks []Task
+	cur, err := database.DefaultClient.Collection(database.CollectionTasks).Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, cur.All(ctx, &tasks)
+}
