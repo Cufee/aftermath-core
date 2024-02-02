@@ -6,10 +6,6 @@
 app = 'aftermath-core'
 primary_region = 'lhr'
 
-[build]
-builder = 'paketobuildpacks/builder:base'
-buildpacks = ['gcr.io/paketo-buildpacks/go']
-
 [env]
 WOT_INSPECTOR_TANK_DB_URL = 'https://armor.wotinspector.com/static/armorinspector/tank_db_blitz.js'
 BLITZ_STARS_AVERAGES_URL = 'https://www.blitzstars.com/api/tankaverages.json'
