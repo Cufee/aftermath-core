@@ -26,15 +26,14 @@ func init() {
 				return "failed to refresh sessions on all account", err
 			}
 
-			if len(accountErrs) == 0 {
-				return "finished session update on all accounts", nil
-			}
-
 			var failedAccounts []int
 			for accountId, err := range accountErrs {
-				if err != nil {
+				if err != nil && accountId != 0 {
 					failedAccounts = append(failedAccounts, accountId)
 				}
+			}
+			if len(failedAccounts) == 0 {
+				return "finished session update on all accounts", nil
 			}
 
 			// Retry failed accounts

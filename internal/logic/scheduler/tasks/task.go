@@ -154,18 +154,21 @@ func CreateBulkTask(filter bson.M, task Task, splitTaskFn func(Task) []Task) (er
 
 		var targetIDs []int
 		for _, id := range result {
+			var idInt int
 			switch cast := id.(type) {
 			case int:
-				targetIDs = append(targetIDs, cast)
+				idInt = cast
 			case int32:
-				targetIDs = append(targetIDs, int(cast))
+				idInt = int(cast)
 			case int64:
-				targetIDs = append(targetIDs, int(cast))
+				idInt = int(cast)
 			default:
 				log.Error().Msgf("invalid player ID %v type: %T", cast, id)
 			}
+			if idInt != 0 {
+				targetIDs = append(targetIDs, idInt)
+			}
 		}
-
 		task.Targets = targetIDs
 
 	default:
