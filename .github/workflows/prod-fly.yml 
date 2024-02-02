@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   deploy:
-      name: Deploy app
+      name: Deploy app to production
       runs-on: ubuntu-latest
       concurrency: deploy-group
       steps:
