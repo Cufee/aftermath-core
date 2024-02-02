@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy app to production
+    name: Deploy app to canary
     runs-on: ubuntu-latest
     concurrency: deploy-group
     steps:
