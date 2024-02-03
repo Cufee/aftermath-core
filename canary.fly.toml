@@ -6,8 +6,6 @@
 app = 'aftermath-core-canary'
 primary_region = 'lhr'
 
-[build]
-
 [env]
 BLITZ_STARS_AVERAGES_URL = 'https://www.blitzstars.com/api/tankaverages.json'
 CACHE_WG_PROXY_URL = 'http://aftermath-wg-proxy-cache.internal:9090/v1'
@@ -18,6 +16,7 @@ NETWORK = 'tcp'
 PORT = '9090'
 SCHEDULER_ENABLED = 'false'
 WOT_INSPECTOR_TANK_DB_URL = 'https://armor.wotinspector.com/static/armorinspector/tank_db_blitz.js'
+WOT_INSPECTOR_REPLAYS_URL = 'https://api.wotinspector.com/v2/blitz/replays/'
 
 [[vm]]
 cpu_kind = 'shared'
