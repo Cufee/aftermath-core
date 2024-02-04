@@ -70,7 +70,7 @@ func FindSubscriptionsByReferenceIDs(referenceIDs ...string) ([]models.UserSubsc
 	defer cancel()
 
 	var subscriptions []models.UserSubscription
-	opts := options.Find().SetSort(bson.M{"creationDate": -1})
+	opts := options.Find().SetSort(bson.M{"creationDate": 1})
 	cur, err := DefaultClient.Collection(CollectionUserSubscriptions).Find(ctx, bson.M{"referenceID": bson.M{"$in": referenceIDs}}, opts)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {

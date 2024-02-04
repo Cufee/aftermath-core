@@ -81,10 +81,12 @@ type subscriptionPillStyle struct {
 	Icon      render.Style
 	Container render.Style
 }
+
 type subscriptionHeader struct {
-	Name  string
-	Icon  string
-	Style subscriptionPillStyle
+	weight int
+	Name   string
+	Icon   string
+	Style  subscriptionPillStyle
 }
 
 func (sub subscriptionHeader) Block() (render.Block, error) {
@@ -101,45 +103,72 @@ func (sub subscriptionHeader) Block() (render.Block, error) {
 var (
 	// Personal
 	userSubscriptionSupporter = &subscriptionHeader{
-		Name: "Supporter",
-		Icon: "images/icons/fire",
+		weight: 25,
+		Name:   "Supporter",
+		Icon:   "images/icons/fire",
 		Style: subscriptionPillStyle{
-			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5},
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Height: 32},
 			Icon:      render.Style{Width: 16, Height: 16, BackgroundColor: render.TextSubscriptionPlus, PaddingX: 5},
 			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary, PaddingX: 5},
 		},
 	}
 	userSubscriptionPlus = &subscriptionHeader{
-		Name: "Aftermath+",
-		Icon: "images/icons/star",
+		weight: 50,
+		Name:   "Aftermath+",
+		Icon:   "images/icons/star",
 		Style: subscriptionPillStyle{
-			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5},
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Height: 32},
 			Icon:      render.Style{Width: 24, Height: 24, BackgroundColor: render.TextSubscriptionPlus},
 			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
 		},
 	}
 	userSubscriptionPro = &subscriptionHeader{
-		Name: "Aftermath Pro",
-		Icon: "images/icons/star",
+		weight: 75,
+		Name:   "Aftermath Pro",
+		Icon:   "images/icons/star",
 		Style: subscriptionPillStyle{
-			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5},
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Height: 32},
 			Icon:      render.Style{Width: 24, Height: 24, BackgroundColor: render.TextSubscriptionPremium},
 			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
 		},
 	}
 	// Clans
 	clanSubscriptionVerified = &subscriptionHeader{
-		Icon: "images/icons/verify",
+		weight: 10,
+		Icon:   "images/icons/verify",
 		Style: subscriptionPillStyle{
 			Icon:      render.Style{Width: 28, Height: 28, BackgroundColor: render.TextAlt},
 			Container: render.Style{Direction: render.DirectionHorizontal},
 		},
 	}
 	clanSubscriptionPro = &subscriptionHeader{
-		Icon: "images/icons/star-multiple",
+		weight: 75,
+		Icon:   "images/icons/star-multiple",
 		Style: subscriptionPillStyle{
 			Icon:      render.Style{Width: 28, Height: 28, BackgroundColor: render.TextAlt},
 			Container: render.Style{Direction: render.DirectionHorizontal},
+		},
+	}
+
+	// Community
+	subscriptionServerModerator = &subscriptionHeader{
+		weight: 10000,
+		Name:   "Community Moderator",
+		Icon:   "images/icons/logo-128",
+		Style: subscriptionPillStyle{
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Gap: 5, Height: 32},
+			Icon:      render.Style{Width: 20, Height: 20},
+			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
+		},
+	}
+	subscriptionServerBooster = &subscriptionHeader{
+		Name:   "Booster",
+		weight: 1,
+		Icon:   "images/icons/discord-booster",
+		Style: subscriptionPillStyle{
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Gap: 5, Height: 32},
+			Icon:      render.Style{Width: 20, Height: 20},
+			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
 		},
 	}
 )

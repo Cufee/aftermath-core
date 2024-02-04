@@ -32,8 +32,8 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// User Subscription Badge and promo text
 	switch sub := player.userSubscriptionHeader(); sub {
-	case userSubscriptionSupporter:
-		// Supporters get a badge and a promo text
+	case userSubscriptionSupporter, subscriptionServerBooster:
+		// Supporters and Boosters get a badge and promo text
 		subscriptionBlock, err := sub.Block()
 		if err != nil {
 			return nil, err
@@ -41,7 +41,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		cards = append(cards, subscriptionBlock)
 		fallthrough
 	case nil:
-		// Users without a subscription and supporters get a promo text
+		// Users without a subscription get promo text
 		if options.PromoText != nil {
 			var textBlocks []render.Block
 			for _, text := range options.PromoText {

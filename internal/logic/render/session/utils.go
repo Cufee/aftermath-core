@@ -3,6 +3,7 @@ package session
 import (
 	"image"
 	"image/color"
+	"slices"
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
@@ -12,28 +13,54 @@ import (
 )
 
 func (data *PlayerData) userSubscriptionHeader() *subscriptionHeader {
+	var headers []*subscriptionHeader
+
 	for _, subscription := range data.Subscriptions {
 		switch subscription.Type {
+		case models.SubscriptionTypeServerModerator:
+			headers = append(headers, subscriptionServerModerator)
+
 		case models.SubscriptionTypePro:
-			return userSubscriptionPro
+			headers = append(headers, userSubscriptionPro)
 		case models.SubscriptionTypePlus:
-			return userSubscriptionPlus
+			headers = append(headers, userSubscriptionPlus)
 		case models.SubscriptionTypeSupporter:
-			return userSubscriptionSupporter
+			headers = append(headers, userSubscriptionSupporter)
+
+		case models.SubscriptionTypeServerBooster:
+			headers = append(headers, subscriptionServerBooster)
 		}
 	}
+
+	slices.SortFunc(headers, func(i, j *subscriptionHeader) int {
+		return j.weight - i.weight
+	})
+	if len(headers) > 0 {
+		return headers[0]
+	}
+
 	return nil
 }
 
 func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
+	var headers []*subscriptionHeader
+
 	for _, subscription := range data.Subscriptions {
 		switch subscription.Type {
 		case models.SubscriptionTypeProClan:
-			return clanSubscriptionPro
+			headers = append(headers, clanSubscriptionPro)
 		case models.SubscriptionTypeVerifiedClan:
-			return clanSubscriptionVerified
+			headers = append(headers, clanSubscriptionVerified)
 		}
 	}
+
+	slices.SortFunc(headers, func(i, j *subscriptionHeader) int {
+		return j.weight - i.weight
+	})
+	if len(headers) > 0 {
+		return headers[0]
+	}
+
 	return nil
 }
 
