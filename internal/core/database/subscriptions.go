@@ -2,7 +2,6 @@ package database
 
 import (
 	"errors"
-	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,6 +11,22 @@ import (
 )
 
 var ErrSubscriptionNotFound = errors.New("subscription not found")
+
+func GetSubscriptionByID(id primitive.ObjectID) (*models.UserSubscription, error) {
+	ctx, cancel := DefaultClient.Ctx()
+	defer cancel()
+
+	var subscription models.UserSubscription
+	err := DefaultClient.Collection(CollectionUserSubscriptions).FindOne(ctx, bson.M{"_id": id}).Decode(&subscription)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrSubscriptionNotFound
+		}
+		return nil, err
+	}
+
+	return &subscription, nil
+}
 
 func FindActiveSubscriptionsByUserID(userId string) ([]models.UserSubscription, error) {
 	subscriptions, err := FindSubscriptionsByUserID(userId)
@@ -83,27 +98,37 @@ func FindActiveSubscriptionsByReferenceIDs(referenceIDs ...string) ([]models.Use
 	return activeSubscriptions, nil
 }
 
-func AddNewUserSubscription(userId string, payload models.UserSubscription) error {
+func AddNewUserSubscription(userId string, payload models.UserSubscription) (*models.UserSubscription, error) {
+	payload.ID = primitive.NilObjectID // Ensure ID is empty
+
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
-	_, err := DefaultClient.Collection(CollectionUserSubscriptions).InsertOne(ctx, payload)
+	result, err := DefaultClient.Collection(CollectionUserSubscriptions).InsertOne(ctx, payload)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	id, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return nil, errors.New("invalid inserted id")
+	}
+
+	payload.ID = id
+	return &payload, nil
 }
 
-func UpdateUserSubscription(subscriptionId primitive.ObjectID, expiryDate time.Time) error {
+func UpdateUserSubscription(id primitive.ObjectID, payload models.SubscriptionUpdate) (*models.UserSubscription, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
-	_, err := DefaultClient.Collection(CollectionUserSubscriptions).UpdateOne(ctx, bson.M{"_id": subscriptionId}, bson.M{"$set": bson.M{"expiryDate": expiryDate}})
+	_, err := DefaultClient.Collection(CollectionUserSubscriptions).UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": payload})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return ErrSubscriptionNotFound
+			return nil, ErrSubscriptionNotFound
 		}
-		return err
+		return nil, err
 	}
-	return nil
+
+	return GetSubscriptionByID(id)
 }

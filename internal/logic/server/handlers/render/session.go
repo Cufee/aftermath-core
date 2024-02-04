@@ -127,7 +127,20 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 			return
 		}
 
-		subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID))
+		// Find a user who has a verified connection for this account
+		var referenceIds []string = []string{fmt.Sprint(sessionData.Account.ID), fmt.Sprint(sessionData.Account.ClanID)}
+		connections, err := database.FindConnectionsByReferenceID(fmt.Sprint(sessionData.Account.ID), models.ConnectionTypeWargaming)
+		if err != nil && !errors.Is(err, database.ErrConnectionNotFound) {
+			log.Warn().Err(err).Msg("failed to get connection")
+			// We can continue without connections
+		}
+		for _, connection := range connections {
+			if connection.Metadata["verified"] == true {
+				referenceIds = append([]string{connection.UserID}, referenceIds...)
+			}
+		}
+
+		subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(referenceIds...)
 		if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
 			log.Warn().Err(err).Msg("failed to get subscriptions")
 			// We can continue without subscriptions

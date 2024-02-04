@@ -58,22 +58,34 @@ func CompleteUserVerificationHandler(c *fiber.Ctx) error {
 		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
 	}
 
-	connection := models.UserConnection{
-		UserID:         user.ID,
-		ExternalID:     payload.AccountID,
-		ConnectionType: models.ConnectionTypeWargaming,
-		Metadata:       map[string]interface{}{"verified": true},
-	}
+	var update models.ConnectionUpdate
+	update.Metadata = map[string]interface{}{"verified": true}
+	update.ExternalID = &payload.AccountID
 
-	err = database.UpdateUserConnection(user.ID, connection.ConnectionType, connection, true)
+	connection, err := database.UpdateUserConnection(user.ID, models.ConnectionTypeWargaming, update)
 	if err != nil {
-		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.UpdateUserConnection"))
+		if !errors.Is(err, database.ErrConnectionNotFound) {
+			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.FindUserConnection"))
+		}
+		connection, err = database.AddUserConnection(user.ID, models.ConnectionTypeWargaming, payload.AccountID, map[string]interface{}{"verified": true})
+		if err != nil {
+			return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.AddUserConnection"))
+		}
 	}
 
+	// Update user content reference ID
 	_, err = database.UpdateUserContentReferenceID[string](user.ID, models.UserContentTypePersonalBackground, payload.AccountID)
 	if err != nil && !errors.Is(database.ErrUserContentNotFound, err) {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}
+
+	go func(externalId string) {
+		// Mark all other connections for this account as unverified
+		err := database.UpdateManyConnectionsByReferenceID(externalId, models.ConnectionTypeWargaming, models.ConnectionUpdate{Metadata: map[string]interface{}{"verified": false}})
+		if err != nil {
+			log.Err(err).Msg("failed to find connections by reference ID")
+		}
+	}(connection.ExternalID)
 
 	return c.JSON(server.NewResponse(connection))
 }

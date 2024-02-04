@@ -15,27 +15,46 @@ const (
 	SubscriptionTypePlus         = SubscriptionType("aftermath-plus")
 	SubscriptionTypeSupporter    = SubscriptionType("supporter")
 	SubscriptionTypeVerifiedClan = SubscriptionType("verified-clan")
+
+	SubscriptionTypeServerBooster    = SubscriptionType("server-booster")
+	SubscriptionTypeServerModerator  = SubscriptionType("server-moderator")
+	SubscriptionTypeContentModerator = SubscriptionType("content-moderator")
 )
 
-func ParseSubscriptionType(s string) SubscriptionType {
+func (s SubscriptionType) Valid() bool {
+	switch s {
+	case SubscriptionTypePro, SubscriptionTypeProClan, SubscriptionTypePlus, SubscriptionTypeSupporter, SubscriptionTypeVerifiedClan, SubscriptionTypeServerBooster, SubscriptionTypeServerModerator, SubscriptionTypeContentModerator:
+		return true
+	default:
+		return false
+	}
+}
+
+func ParseSubscriptionType(s string) (SubscriptionType, bool) {
 	switch s {
 	case "aftermath-pro":
-		return SubscriptionTypePro
+		return SubscriptionTypePro, true
 	case "aftermath-pro-clan":
-		return SubscriptionTypeProClan
+		return SubscriptionTypeProClan, true
 	case "aftermath-plus":
-		return SubscriptionTypePlus
+		return SubscriptionTypePlus, true
 	case "supporter":
-		return SubscriptionTypeSupporter
+		return SubscriptionTypeSupporter, true
 	case "verified-clan":
-		return SubscriptionTypeVerifiedClan
+		return SubscriptionTypeVerifiedClan, true
+	case "server-booster":
+		return SubscriptionTypeServerBooster, true
+	case "server-moderator":
+		return SubscriptionTypeServerModerator, true
+	case "content-moderator":
+		return SubscriptionTypeContentModerator, true
 	default:
-		return ""
+		return "", false
 	}
 }
 
 type UserSubscription struct {
-	id          primitive.ObjectID      `bson:"_id,omitempty" json:"-"`
+	ID          primitive.ObjectID      `bson:"_id,omitempty" json:"id"`
 	UserID      string                  `bson:"userID" json:"userID"`
 	ReferenceID string                  `bson:"referenceID" json:"referenceID"`
 	Permissions permissions.Permissions `bson:"permissions" json:"permissions"`
@@ -45,8 +64,13 @@ type UserSubscription struct {
 	CreationDate time.Time        `bson:"creationDate" json:"creationDate"`
 }
 
-func (s *UserSubscription) ID() primitive.ObjectID {
-	return s.id
+type SubscriptionUpdate struct {
+	UserID      *string                  `bson:"userID,omitempty" json:"userID"`
+	ReferenceID *string                  `bson:"referenceID,omitempty" json:"referenceID"`
+	Permissions *permissions.Permissions `bson:"permissions,omitempty" json:"permissions"`
+
+	Type       *SubscriptionType `bson:"subscriptionType,omitempty" json:"subscriptionType"`
+	ExpiryDate *time.Time        `bson:"expiryDate,omitempty" json:"expiryDate"`
 }
 
 func (s *UserSubscription) IsExpired() bool {

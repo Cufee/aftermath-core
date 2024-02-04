@@ -21,3 +21,9 @@ type UserConnection struct {
 
 	Metadata map[string]any `bson:"metadata" json:"metadata"`
 }
+
+type ConnectionUpdate struct {
+	ExternalID  *string                  `bson:"connectionID,omitempty" json:"connectionID"`
+	Permissions *permissions.Permissions `bson:"permissions,omitempty" json:"permissions"`
+	Metadata    map[string]any           `bson:"metadata,omitempty" json:"metadata"`
+}

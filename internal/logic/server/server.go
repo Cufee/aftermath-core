@@ -54,8 +54,14 @@ func Start() {
 
 	moderationV1 := v1.Group("/moderation")
 	moderationV1.Get("/permissions", moderation.GetPermissionsMapHandler)
+
 	moderationV1.Get("/content/rotate", moderation.RotateBackgroundImagesHandler)
 	moderationV1.Post("/content/upload", moderation.UploadBackgroundImageHandler)
+
+	moderationV1.Get("/subscriptions/user/:userId", moderation.GetUserSubscriptionsHandler)
+	moderationV1.Post("/subscriptions", moderation.CreateUserSubscriptionsHandler)
+	moderationV1.Get("/subscriptions/:id", moderation.GetSubscriptionHandler)
+	moderationV1.Patch("/subscriptions/:id", moderation.UpdateSubscriptionHandler)
 
 	panic(app.Listen(":" + os.Getenv("PORT")))
 }
