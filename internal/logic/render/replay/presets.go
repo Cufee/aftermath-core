@@ -20,8 +20,13 @@ func statsBlockToBlock(stats replay.StatsBlock) render.Block {
 	if !ok {
 		width = 75
 	}
-	return render.NewBlocksContent(render.Style{Width: width, JustifyContent: render.JustifyContentCenter}, render.NewTextContent(render.Style{
-		Font:      &render.FontLarge,
-		FontColor: render.TextPrimary,
-	}, stats.Value.String))
+	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Width: width, AlignItems: render.AlignItemsCenter},
+		render.NewTextContent(render.Style{
+			Font:      &render.FontLarge,
+			FontColor: render.TextPrimary,
+		}, stats.Value.String),
+		render.NewTextContent(render.Style{
+			Font:      &render.FontSmall,
+			FontColor: render.TextAlt,
+		}, stats.Label))
 }

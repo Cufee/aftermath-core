@@ -5,8 +5,6 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
-	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/external"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
@@ -17,9 +15,6 @@ import (
 type ReplayData struct {
 	Cards  replay.Cards
 	Replay *external.Replay
-	// Protagonist *wg.Account
-	Glossary map[int]models.Vehicle
-	Averages map[int]*stats.ReducedStatsFrame
 }
 
 func RenderReplayImage(data ReplayData) (image.Image, error) {

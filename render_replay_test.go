@@ -6,8 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cufee/aftermath-core/dataprep"
+	replays "github.com/cufee/aftermath-core/dataprep/replay"
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/external"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -42,13 +43,17 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	data := replay.ReplayData{
-		Replay:   &replayData,
-		Glossary: make(map[int]models.Vehicle),
-		Averages: averages,
+	cards, err := replays.ReplayToCards(replays.ExportInput{
+		GlobalVehicleAverages: averages,
+		Replay:                &replayData,
+	}, replays.ExportOptions{
+		Blocks: []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt},
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	image, err := replay.RenderReplayImage(data)
+	image, err := replay.RenderReplayImage(replay.ReplayData{Cards: cards, Replay: &replayData})
 	if err != nil {
 		t.Fatal(err)
 	}

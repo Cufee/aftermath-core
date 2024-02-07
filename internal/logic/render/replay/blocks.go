@@ -80,7 +80,7 @@ func newPlayerCard(style render.Style, card replay.Card, player external.Player,
 	style.Direction = render.DirectionHorizontal
 	style.AlignItems = render.AlignItemsCenter
 	style.JustifyContent = render.JustifyContentSpaceBetween
-	style.Debug = true
+	// style.Debug = true
 
 	return render.NewBlocksContent(style, append([]render.Block{leftBlock}, rightBlocks...)...)
 }
