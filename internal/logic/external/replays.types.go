@@ -169,6 +169,7 @@ func (data *replayPlayer) Player(winningTeam int) Player {
 	frame.DroppedCapturePoints = data.BaseDefendPoints
 	player.Performance = Performance{
 		DamageBlocked:     data.DamageBlocked,
+		DamageReceived:    data.DamageReceived,
 		DamageAssisted:    data.DamageAssisted,
 		DistanceTraveled:  data.DistanceTravelled,
 		ReducedStatsFrame: frame,
@@ -185,6 +186,7 @@ func (data *replayPlayer) Player(winningTeam int) Player {
 
 type Performance struct {
 	DamageBlocked         int `json:"damage_blocked"`
+	DamageReceived        int `json:"damage_received"`
 	DamageAssisted        int `json:"damage_assisted"`
 	DistanceTraveled      int `json:"distance_traveled"`
 	SupremacyPointsEarned int `json:"supremacy_points_earned"`

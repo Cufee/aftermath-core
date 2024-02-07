@@ -72,7 +72,7 @@ func renderImages(images []image.Image, style Style) (image.Image, error) {
 			case AlignItemsEnd:
 				posX = imageSize.height - imgWidth
 			default: // AlignItemsStart
-				posX = 0
+				posX = style.PaddingX
 			}
 		default: // DirectionHorizontal
 			if i > 0 {
@@ -86,7 +86,7 @@ func renderImages(images []image.Image, style Style) (image.Image, error) {
 			case AlignItemsEnd:
 				posY = imageSize.height - imgHeight
 			default: // AlignItemsStart
-				posY = 0
+				posY = style.PaddingY
 			}
 
 		}

@@ -16,7 +16,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 )
 
-func TestFullRenderPipeline(t *testing.T) {
+func TestFullSessionRenderPipeline(t *testing.T) {
 	file, err := os.ReadFile("render_session_test.json")
 	if err != nil {
 		panic(err)
@@ -64,7 +64,7 @@ func TestFullRenderPipeline(t *testing.T) {
 	img := render.AddBackground(cards, bgImage, render.Style{Blur: 10, BorderRadius: 30})
 	t.Logf("rendered in %s", time.Since(now).String())
 
-	f, err := os.Create("test.png")
+	f, err := os.Create("test-session.png")
 	if err != nil {
 		t.Fatal(err)
 	}

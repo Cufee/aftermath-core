@@ -10,7 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/preview"
 )
 
-func TestPreviewRenderPipeline(t *testing.T) {
+func TestFullPreviewRenderPipeline(t *testing.T) {
 	err := database.Connect(utils.MustGetEnv("DATABASE_URL"))
 	if err != nil {
 		t.Fatal(err)
