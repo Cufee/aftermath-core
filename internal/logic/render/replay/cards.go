@@ -2,73 +2,59 @@ package replay
 
 import (
 	"image"
-	"slices"
 
+	"github.com/cufee/aftermath-core/dataprep"
+	"github.com/cufee/aftermath-core/dataprep/replay"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/external"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	wg "github.com/cufee/aftermath-core/types"
 )
 
 // Tank Name 							// WN8 Winrate Damage Blocker Assisted Kills
 // Player Name [Tag]
 
 type ReplayData struct {
-	Replay      *external.Replay
-	Protagonist *wg.Account
+	Cards  replay.Cards
+	Replay *external.Replay
+	// Protagonist *wg.Account
+	Glossary map[int]models.Vehicle
+	Averages map[int]*stats.ReducedStatsFrame
 }
 
 func RenderReplayImage(data ReplayData) (image.Image, error) {
 	var alliesBlocks, enemiesBlocks []render.Block
 
-	// Overview Column
-	overviewBlocks := []render.Block{newProtagonistBlock(data.Replay)}
-	// Highlight Cards
-	highlightCards := render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Gap: 10}, newHighlightCard(data.Replay), newHighlightCard(data.Replay))
-	// Summary
-	overviewBlocks = append(overviewBlocks, highlightCards, newBattleResultCard(data.Replay))
-
-	presets := []blockPreset{blockPresetDamageDealt, blockPresetDamageAssistedAndBlocked, blockPresetKills}
-	if !data.Replay.GameMode.Special {
-		presets = append([]blockPreset{blockPresetWN8}, presets...)
+	var tags []dataprep.Tag
+	for _, card := range data.Cards.Allies {
+		if card.Meta.Tags != nil {
+			tags = card.Meta.Tags
+			break
+		}
 	}
-	playerStatsCardStyle := playerCardStyle(presets)
 
-	// Title Card
-	titleBlock := newTitleBlock(data.Replay, (playerStatsCardStyle.Width*2)-30)
+	playerStatsCardStyle := playerCardStyle(tags)
+	totalCardsWidth := (playerStatsCardStyle.Width * 2) - 30
 
-	sortTeams(data.Replay.Teams)
 	// Allies
-	for _, player := range data.Replay.Teams.Allies {
-		alliesBlocks = append(alliesBlocks, newPlayerCard(&player, true, presets))
+	for _, card := range data.Cards.Allies {
+		alliesBlocks = append(alliesBlocks, newPlayerCard(playerStatsCardStyle, card, card.Meta.Player, true))
 	}
 	// Enemies
-	for _, player := range data.Replay.Teams.Enemies {
-		enemiesBlocks = append(enemiesBlocks, newPlayerCard(&player, false, presets))
+	for _, card := range data.Cards.Enemies {
+		enemiesBlocks = append(enemiesBlocks, newPlayerCard(playerStatsCardStyle, card, card.Meta.Player, false))
 	}
 
-	var frameBlocks []render.Block
-	frameBlocks = append(frameBlocks, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, Gap: 20}, overviewBlocks...))
+	// Title Card
+	titleBlock := newTitleBlock(data.Replay, totalCardsWidth)
 
+	// Teams
 	var teamsBlocks []render.Block
 	teamsBlocks = append(teamsBlocks, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Gap: 10}, alliesBlocks...))
 	teamsBlocks = append(teamsBlocks, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Gap: 10}, enemiesBlocks...))
 	playersBlock := render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, Gap: 10}, teamsBlocks...)
+	teamsBlock := render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Gap: 10}, playersBlock)
 
-	rightSideBlocks := render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Gap: 10}, titleBlock, playersBlock)
-	frameBlocks = append(frameBlocks, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, Gap: 10}, rightSideBlocks))
-
-	frame := render.NewBlocksContent(frameStyle, frameBlocks...)
-
+	frame := render.NewBlocksContent(frameStyle, titleBlock, teamsBlock)
 	return frame.Render()
-}
-
-func sortTeams(teams external.Teams) {
-	sortPlayers(teams.Allies)
-	sortPlayers(teams.Enemies)
-}
-
-func sortPlayers(players []external.Player) {
-	slices.SortFunc(players, func(j, i external.Player) int {
-		return (i.Performance.DamageDealt + i.Performance.DamageAssisted + i.Performance.DamageBlocked) - (j.Performance.DamageDealt - j.Performance.DamageAssisted - j.Performance.DamageBlocked)
-	})
 }

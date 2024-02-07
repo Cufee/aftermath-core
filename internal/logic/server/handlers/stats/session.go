@@ -9,7 +9,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 
-	"github.com/cufee/aftermath-core/dataprep"
+	dataprep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"

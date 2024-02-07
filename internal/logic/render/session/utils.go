@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/cufee/aftermath-core/dataprep"
+	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -64,7 +65,7 @@ func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
 	return nil
 }
 
-func styleBlocks(blocks []dataprep.StatsBlock, styles ...render.Style) []styledStatsBlock {
+func styleBlocks(blocks []session.StatsBlock, styles ...render.Style) []styledStatsBlock {
 	var lastStyle render.Style
 	var styledBlocks []styledStatsBlock
 	for i, block := range blocks {
@@ -110,7 +111,7 @@ func getWN8Color(r int) color.Color {
 	return color.Transparent
 }
 
-func comparisonIconFromBlock(block dataprep.StatsBlock) render.Block {
+func comparisonIconFromBlock(block session.StatsBlock) render.Block {
 	if !stats.ValueValid(block.Session.Value) || !stats.ValueValid(block.Career.Value) {
 		return blankIconBlock
 	}

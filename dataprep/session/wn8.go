@@ -1,4 +1,4 @@
-package dataprep
+package session
 
 import (
 	"github.com/cufee/aftermath-core/internal/core/stats"
@@ -6,12 +6,12 @@ import (
 )
 
 type SessionStats struct {
-	Realm      string       `json:"realm"`
-	Locale     string       `json:"locale"`
-	LastBattle int          `json:"last_battle"`
-	Clan       wg.Clan      `json:"clan"`
-	Account    wg.Account   `json:"account"`
-	Cards      SessionCards `json:"cards"`
+	Realm      string     `json:"realm"`
+	Locale     string     `json:"locale"`
+	LastBattle int        `json:"last_battle"`
+	Clan       wg.Clan    `json:"clan"`
+	Account    wg.Account `json:"account"`
+	Cards      Cards      `json:"cards"`
 }
 
 func calculateSessionWN8(vehicles map[int]*stats.ReducedVehicleStats, averages map[int]*stats.ReducedStatsFrame) int {

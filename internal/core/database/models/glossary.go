@@ -53,6 +53,10 @@ func (v Vehicle) IsPremium() bool {
 }
 
 func (v Vehicle) Name(lang localization.SupportedLanguage) string {
+	if v.LocalizedNames == nil {
+		return fmt.Sprintf("Secret Tank #%d", v.ID)
+	}
+
 	if name, ok := v.LocalizedNames[lang.WargamingCode]; ok {
 		return name
 	}

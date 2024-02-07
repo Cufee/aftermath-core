@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	"github.com/cufee/aftermath-core/dataprep"
+	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/rs/zerolog/log"
 )
@@ -16,7 +17,7 @@ type convertOptions struct {
 }
 
 type styledStatsBlock struct {
-	dataprep.StatsBlock
+	session.StatsBlock
 	style render.Style
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cufee/aftermath-core/dataprep"
+	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	wg "github.com/cufee/am-wg-proxy-next/types"
@@ -13,7 +14,7 @@ import (
 type PlayerData struct {
 	Clan          *wg.Clan
 	Account       *wg.Account
-	Cards         dataprep.SessionCards
+	Cards         session.Cards
 	Subscriptions []models.UserSubscription
 }
 
@@ -73,7 +74,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 	cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTagBlocks))
 
-	styled := func(blocks []dataprep.StatsBlock) []styledStatsBlock {
+	styled := func(blocks []session.StatsBlock) []styledStatsBlock {
 		return styleBlocks(blocks, HighlightStatsBlockStyle(options.CardStyle.BackgroundColor), DefaultStatsBlockStyle)
 	}
 

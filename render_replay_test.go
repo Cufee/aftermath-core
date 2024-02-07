@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/external"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -31,8 +32,20 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var vehicles []int
+	for _, player := range append(replayData.Teams.Allies, replayData.Teams.Enemies...) {
+		vehicles = append(vehicles, player.VehicleID)
+	}
+
+	averages, err := database.GetVehicleAverages(vehicles...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	data := replay.ReplayData{
-		Replay: &replayData,
+		Replay:   &replayData,
+		Glossary: make(map[int]models.Vehicle),
+		Averages: averages,
 	}
 
 	image, err := replay.RenderReplayImage(data)
@@ -43,7 +56,7 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 	bgImage, _ := assets.GetImage("images/backgrounds/default")
 	img := render.AddBackground(image, bgImage, render.Style{Blur: 10, BorderRadius: 30})
 
-	f, err := os.Create("test-render.png")
+	f, err := os.Create("test-replay.png")
 	if err != nil {
 		t.Fatal(err)
 	}

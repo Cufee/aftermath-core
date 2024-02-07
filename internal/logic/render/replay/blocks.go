@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/cufee/aftermath-core/dataprep/replay"
 	"github.com/cufee/aftermath-core/internal/logic/external"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
@@ -27,7 +28,7 @@ func newTitleBlock(replay *external.Replay, width float64) render.Block {
 		FontColor: render.TextSecondary,
 	}, fmt.Sprintf(" - %s", replay.BattleType.Name)))
 
-	style := defaultCardStyle(width, 50)
+	style := defaultCardStyle(width, 75)
 	style.JustifyContent = render.JustifyContentCenter
 	style.Direction = render.DirectionHorizontal
 	style.AlignItems = render.AlignItemsCenter
@@ -35,21 +36,7 @@ func newTitleBlock(replay *external.Replay, width float64) render.Block {
 	return render.NewBlocksContent(style, titleBlocks...)
 }
 
-func newProtagonistBlock(replay *external.Replay) render.Block {
-	return render.NewBlocksContent(defaultCardStyle(overviewWidth, 200), render.NewTextContent(render.Style{
-		Font:      &render.FontLarge,
-		FontColor: render.TextPrimary,
-	}, "Protagonist Card"))
-}
-
-func newHighlightCard(replay *external.Replay) render.Block {
-	return render.NewBlocksContent(defaultCardStyle(overviewWidth, 100), render.NewTextContent(render.Style{
-		Font:      &render.FontLarge,
-		FontColor: render.TextPrimary,
-	}, "Highlight Card"))
-}
-
-func newPlayerCard(player *external.Player, ally bool, presets []blockPreset) render.Block {
+func newPlayerCard(style render.Style, card replay.Card, player external.Player, ally bool) render.Block {
 	hpBarValue := float64(player.HPLeft) / float64((player.Performance.DamageReceived + player.HPLeft))
 	if hpBarValue > 0 {
 		hpBarValue = math.Max(hpBarValue, 0.2)
@@ -86,22 +73,14 @@ func newPlayerCard(player *external.Player, ally bool, presets []blockPreset) re
 	))
 
 	var rightBlocks []render.Block
-	for _, preset := range presets {
-		rightBlocks = append(rightBlocks, preset.renderPresetBlock(player))
+	for _, block := range card.Blocks {
+		rightBlocks = append(rightBlocks, statsBlockToBlock(block))
 	}
 
-	style := playerCardStyle(presets)
 	style.Direction = render.DirectionHorizontal
 	style.AlignItems = render.AlignItemsCenter
 	style.JustifyContent = render.JustifyContentSpaceBetween
-	// style.Debug = true
+	style.Debug = true
 
 	return render.NewBlocksContent(style, append([]render.Block{leftBlock}, rightBlocks...)...)
-}
-
-func newBattleResultCard(replay *external.Replay) render.Block {
-	return render.NewBlocksContent(render.Style{Width: overviewWidth}, render.NewTextContent(render.Style{
-		Font:      &render.FontLarge,
-		FontColor: render.TextPrimary,
-	}, "Battle Result Card, medals etc."))
 }

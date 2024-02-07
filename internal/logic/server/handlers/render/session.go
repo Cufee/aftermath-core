@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/cufee/aftermath-core/dataprep"
+	dataprep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
@@ -160,7 +160,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
 			GlobalVehicleAverages: averages,
 		}, dataprep.ExportOptions{
-			Blocks: dataprep.DefaultBlockPresets,
+			Blocks: dataprep.DefaultSessionBlocks,
 			Locale: localization.LanguageEN,
 		})
 		if err != nil {

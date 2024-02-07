@@ -1,9 +1,10 @@
-package dataprep
+package session
 
 import (
 	"errors"
 	"fmt"
 
+	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
@@ -23,12 +24,12 @@ type ExportOptions struct {
 	Locale localization.SupportedLanguage
 }
 
-func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, error) {
+func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {
 	if input.SessionStats == nil || input.CareerStats == nil {
 		return nil, errors.New("session or career stats are nil")
 	}
 
-	var cards SessionCards
+	var cards Cards
 	printer := localization.GetPrinter(options.Locale)
 
 	// Rating battles
@@ -46,10 +47,10 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 			}
 			ratingBlocks = append(ratingBlocks, ratingBlock)
 		}
-		cards = append(cards, StatsCard{
+		cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
 			Title:  printer("label_overview_rating"),
 			Blocks: ratingBlocks,
-			Type:   CardTypeOverview,
+			Type:   dataprep.CardTypeOverview,
 		})
 	}
 
@@ -62,9 +63,9 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 				sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
 				if sessionWN8 != core.InvalidValueInt {
 					unratedBlocks = append(unratedBlocks, StatsBlock{
-						Session: statsToValue(sessionWN8),
+						Session: dataprep.StatsToValue(sessionWN8),
 						Label:   printer("label_wn8"),
-						Tag:     TagWN8,
+						Tag:     dataprep.TagWN8,
 					})
 					continue
 				}
@@ -75,10 +76,10 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 			}
 			unratedBlocks = append(unratedBlocks, block)
 		}
-		cards = append(cards, StatsCard{
+		cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
 			Title:  printer("label_overview_unrated"),
 			Blocks: unratedBlocks,
-			Type:   CardTypeOverview,
+			Type:   dataprep.CardTypeOverview,
 		})
 	}
 
@@ -111,10 +112,10 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (SessionCards, 
 
 			glossary := vehiclesGlossary[vehicle.VehicleID]
 			glossary.ID = vehicle.VehicleID
-			cards = append(cards, StatsCard{
+			cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
 				Title:  fmt.Sprintf("%s %s", utils.IntToRoman(glossary.Tier), glossary.Name(options.Locale)),
 				Blocks: vehicleBlocks,
-				Type:   CardTypeVehicle,
+				Type:   dataprep.CardTypeVehicle,
 			})
 		}
 	}

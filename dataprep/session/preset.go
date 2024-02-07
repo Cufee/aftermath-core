@@ -1,12 +1,21 @@
-package dataprep
+package session
 
 import (
 	"errors"
-	"fmt"
 
+	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/stats"
 )
+
+type Cards []dataprep.StatsCard[StatsBlock, string]
+
+type StatsBlock struct {
+	Session dataprep.Value `json:"session"`
+	Career  dataprep.Value `json:"career"`
+	Label   string         `json:"label"`
+	Tag     dataprep.Tag   `json:"tag"`
+}
 
 type statsBlockPreset string
 
@@ -44,12 +53,10 @@ func ParsePresets(presets ...string) ([]statsBlockPreset, error) {
 	}
 
 	if len(parsed) == 0 {
-		return DefaultBlockPresets, nil
+		return nil, errors.New("no valid presets")
 	}
 	return parsed, nil
 }
-
-var DefaultBlockPresets = []statsBlockPreset{BlockPresetBattles, BlockPresetAvgDamage, BlockPresetDamageRatio, BlockPresetWinrate, BlockPresetWN8}
 
 func (p *statsBlockPreset) StatsBlock(session, career, averages *stats.ReducedStatsFrame, printer localization.LocalePrinter) (StatsBlock, error) {
 	if session == nil {
@@ -59,72 +66,50 @@ func (p *statsBlockPreset) StatsBlock(session, career, averages *stats.ReducedSt
 	var block StatsBlock
 	switch *p {
 	case BlockPresetWN8:
-		block.Session = statsToValue(session.WN8(averages))
+		block.Session = dataprep.StatsToValue(session.WN8(averages))
 		block.Label = printer("label_wn8")
-		block.Tag = TagWN8
+		block.Tag = dataprep.TagWN8
 		if career != nil {
-			block.Career = statsToValue(career.WN8(averages))
+			block.Career = dataprep.StatsToValue(career.WN8(averages))
 		}
 	case BlockPresetBattles:
-		block.Session = statsToValue(session.Battles)
+		block.Session = dataprep.StatsToValue(session.Battles)
 		block.Label = printer("label_battles")
-		block.Tag = TagBattles
+		block.Tag = dataprep.TagBattles
 		if career != nil {
-			block.Career = statsToValue(career.Battles)
+			block.Career = dataprep.StatsToValue(career.Battles)
 		}
 	case BlockPresetWinrate:
-		block.Session = statsToValue(session.Winrate())
+		block.Session = dataprep.StatsToValue(session.Winrate())
 		block.Label = printer("label_winrate")
-		block.Tag = TagWinrate
+		block.Tag = dataprep.TagWinrate
 		if career != nil {
-			block.Career = statsToValue(career.Winrate())
+			block.Career = dataprep.StatsToValue(career.Winrate())
 		}
 	case BlockPresetAccuracy:
-		block.Session = statsToValue(session.Accuracy())
+		block.Session = dataprep.StatsToValue(session.Accuracy())
 		block.Label = printer("label_accuracy")
-		block.Tag = TagAccuracy
+		block.Tag = dataprep.TagAccuracy
 		if career != nil {
-			block.Career = statsToValue(career.Accuracy())
+			block.Career = dataprep.StatsToValue(career.Accuracy())
 		}
 	case BlockPresetAvgDamage:
-		block.Session = statsToValue(int(session.AvgDamage()))
+		block.Session = dataprep.StatsToValue(int(session.AvgDamage()))
 		block.Label = printer("label_avg_damage")
-		block.Tag = TagAvgDamage
+		block.Tag = dataprep.TagAvgDamage
 		if career != nil {
-			block.Career = statsToValue(int(career.AvgDamage()))
+			block.Career = dataprep.StatsToValue(int(career.AvgDamage()))
 		}
 	case BlockPresetDamageRatio:
-		block.Session = statsToValue(session.DamageRatio())
+		block.Session = dataprep.StatsToValue(session.DamageRatio())
 		block.Label = printer("label_damage_ratio")
-		block.Tag = TagDamageRatio
+		block.Tag = dataprep.TagDamageRatio
 		if career != nil {
-			block.Career = statsToValue(career.DamageRatio())
+			block.Career = dataprep.StatsToValue(career.DamageRatio())
 		}
 	default:
 		return StatsBlock{}, errors.New("invalid preset")
 	}
 
 	return block, nil
-}
-
-func statsToValue(v any) Value {
-	switch cast := v.(type) {
-	case float32:
-		if cast == stats.InvalidValueFloat32 {
-			return Value{String: "-", Value: stats.InvalidValueFloat64}
-		}
-		return Value{String: fmt.Sprintf("%.2f", cast), Value: float64(cast)}
-	case float64:
-		if cast == stats.InvalidValueFloat64 {
-			return Value{String: "-", Value: stats.InvalidValueFloat64}
-		}
-		return Value{String: fmt.Sprintf("%.2f%%", cast), Value: cast}
-	case int:
-		if cast == stats.InvalidValueInt {
-			return Value{String: "-", Value: stats.InvalidValueFloat64}
-		}
-		return Value{String: fmt.Sprint(cast), Value: float64(cast)}
-	default:
-		return Value{String: "-", Value: stats.InvalidValueFloat64}
-	}
 }

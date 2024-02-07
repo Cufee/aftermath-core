@@ -1,51 +1,27 @@
 package replay
 
 import (
-	"fmt"
-
-	"github.com/cufee/aftermath-core/internal/core/stats"
-	"github.com/cufee/aftermath-core/internal/logic/external"
+	"github.com/cufee/aftermath-core/dataprep"
+	"github.com/cufee/aftermath-core/dataprep/replay"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
 
-type blockPreset struct {
-	id    string
-	width float64
+var blockWidthPresets = map[dataprep.Tag]float64{
+	dataprep.TagWN8:                    75,
+	dataprep.TagDamageDealt:            75,
+	dataprep.TagDamageBlocked:          75,
+	dataprep.TagDamageAssisted:         75,
+	dataprep.TagDamageAssistedCombined: 100,
+	dataprep.TagFrags:                  30,
 }
 
-var (
-	blockPresetWN8                      = blockPreset{"wn8", 75}
-	blockPresetDamageDealt              = blockPreset{"damageDealt", 75}
-	blockPresetDamageBlocked            = blockPreset{"damageBlocked", 75}
-	blockPresetDamageAssisted           = blockPreset{"damageAssisted", 75}
-	blockPresetDamageAssistedAndBlocked = blockPreset{"damageAssistedAndBlocked", 100}
-	blockPresetKills                    = blockPreset{"kills", 30}
-)
-
-func (preset blockPreset) renderPresetBlock(player *external.Player) render.Block {
-	var value int
-	switch preset {
-	case blockPresetWN8:
-		value = player.Performance.WN8(nil)
-	case blockPresetDamageDealt:
-		value = player.Performance.DamageDealt
-	case blockPresetDamageBlocked:
-		value = player.Performance.DamageBlocked
-	case blockPresetDamageAssisted:
-		value = player.Performance.DamageAssisted
-	case blockPresetDamageAssistedAndBlocked:
-		value = player.Performance.DamageAssisted + player.Performance.DamageBlocked
-	case blockPresetKills:
-		value = player.Performance.Frags
+func statsBlockToBlock(stats replay.StatsBlock) render.Block {
+	width, ok := blockWidthPresets[stats.Tag]
+	if !ok {
+		width = 75
 	}
-
-	text := "-"
-	if stats.ValueValid(value) {
-		text = fmt.Sprintf("%d", value)
-	}
-
-	return render.NewBlocksContent(render.Style{Width: preset.width, JustifyContent: render.JustifyContentCenter}, render.NewTextContent(render.Style{
+	return render.NewBlocksContent(render.Style{Width: width, JustifyContent: render.JustifyContentCenter}, render.NewTextContent(render.Style{
 		Font:      &render.FontLarge,
 		FontColor: render.TextPrimary,
-	}, text))
+	}, stats.Value.String))
 }

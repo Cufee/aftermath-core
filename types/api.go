@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/cufee/aftermath-core/dataprep"
+	dataprep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 )

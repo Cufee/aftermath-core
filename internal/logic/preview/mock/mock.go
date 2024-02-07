@@ -4,10 +4,10 @@ import (
 	"embed"
 	"encoding/json"
 
-	"github.com/cufee/aftermath-core/dataprep"
+	session "github.com/cufee/aftermath-core/dataprep/session"
 )
 
-var PreviewStatsCards dataprep.SessionCards
+var PreviewStatsCards session.Cards
 
 //go:embed mock.json
 var mockData embed.FS

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cufee/aftermath-core/dataprep"
+	sessionPrep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -22,7 +22,7 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		panic(err)
 	}
 
-	var statsCards dataprep.SessionCards
+	var statsCards sessionPrep.Cards
 	err = json.Unmarshal(file, &statsCards)
 	if err != nil {
 		t.Fatal(err)
