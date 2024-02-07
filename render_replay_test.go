@@ -31,7 +31,11 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	image, err := replay.RenderReplayImage(&replayData)
+	data := replay.ReplayData{
+		Replay: &replayData,
+	}
+
+	image, err := replay.RenderReplayImage(data)
 	if err != nil {
 		t.Fatal(err)
 	}

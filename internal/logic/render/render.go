@@ -160,12 +160,16 @@ func getDetailedSize(images []image.Image, style Style) imageSize {
 
 	switch style.Direction {
 	case DirectionVertical:
-		imageHeight += totalGap
+		if extraSpacingY < totalGap {
+			imageHeight += totalGap
+		}
 		if style.Width == 0 {
 			imageWidth = maxWidth + (style.PaddingX * 2)
 		}
 	default: // DirectionHorizontal
-		imageWidth += totalGap
+		if extraSpacingX < totalGap {
+			imageWidth += totalGap
+		}
 		if style.Height == 0 {
 			imageHeight = maxHeight + (style.PaddingY)*2
 		}

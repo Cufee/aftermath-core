@@ -14,7 +14,7 @@ const (
 	progressDirectionVertical
 )
 
-const progressBarWidth = 5
+const progressBarWidth = 8
 
 func newProgressBar(size int, progress int, direction progressDirection, fillColor color.Color) render.Block {
 	var width, height int

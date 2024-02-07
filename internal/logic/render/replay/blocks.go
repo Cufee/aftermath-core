@@ -8,16 +8,35 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
 
-func newTitleBlock(replay *external.Replay) render.Block {
-	return render.NewBlocksContent(defaultCardStyle(playerCardWidth*2+10, 75), render.NewTextContent(render.Style{
-		Font:      &render.FontLarge,
-		FontColor: render.TextPrimary,
-	}, "Title Card"))
+func newTitleBlock(replay *external.Replay, width float64) render.Block {
+	var titleBlocks []render.Block
+	if replay.Victory {
+		titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
+			Font:      &render.FontLarge,
+			FontColor: render.TextPrimary,
+		}, "Victory"))
+	} else {
+		titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
+			Font:      &render.FontLarge,
+			FontColor: render.TextPrimary,
+		}, "Defeat"))
+	}
 
+	titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
+		Font:      &render.FontLarge,
+		FontColor: render.TextSecondary,
+	}, fmt.Sprintf(" - %s", replay.BattleType.Name)))
+
+	style := defaultCardStyle(width, 50)
+	style.JustifyContent = render.JustifyContentCenter
+	style.Direction = render.DirectionHorizontal
+	style.AlignItems = render.AlignItemsCenter
+
+	return render.NewBlocksContent(style, titleBlocks...)
 }
 
 func newProtagonistBlock(replay *external.Replay) render.Block {
-	return render.NewBlocksContent(highlightCardStyle(overviewWidth, 200), render.NewTextContent(render.Style{
+	return render.NewBlocksContent(defaultCardStyle(overviewWidth, 200), render.NewTextContent(render.Style{
 		Font:      &render.FontLarge,
 		FontColor: render.TextPrimary,
 	}, "Protagonist Card"))
@@ -30,7 +49,7 @@ func newHighlightCard(replay *external.Replay) render.Block {
 	}, "Highlight Card"))
 }
 
-func newPlayerCard(player *external.Player, ally bool) render.Block {
+func newPlayerCard(player *external.Player, ally bool, presets []blockPreset) render.Block {
 	hpBarValue := float64(player.HPLeft) / float64((player.Performance.DamageReceived + player.HPLeft))
 	if hpBarValue > 0 {
 		hpBarValue = math.Max(hpBarValue, 0.2)
@@ -63,20 +82,26 @@ func newPlayerCard(player *external.Player, ally bool) render.Block {
 		Height: 80,
 	}, hpBar, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical},
 		render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, fmt.Sprint(player.VehicleID)),
-		render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, Gap: 5, AlignItems: render.AlignItemsCenter}, nameBlocks...),
+		render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, Gap: 5, AlignItems: render.AlignItemsCenter, Width: playerCardNameWidth}, nameBlocks...),
 	))
 
-	style := defaultCardStyle(playerCardWidth, 100)
-	if player.HPLeft == 0 {
-		style = deadPlayerCardStyle(style.Width, style.Height)
+	var rightBlocks []render.Block
+	for _, preset := range presets {
+		rightBlocks = append(rightBlocks, preset.renderPresetBlock(player))
 	}
 
-	return render.NewBlocksContent(style, leftBlock)
+	style := playerCardStyle(presets)
+	style.Direction = render.DirectionHorizontal
+	style.AlignItems = render.AlignItemsCenter
+	style.JustifyContent = render.JustifyContentSpaceBetween
+	// style.Debug = true
+
+	return render.NewBlocksContent(style, append([]render.Block{leftBlock}, rightBlocks...)...)
 }
 
 func newBattleResultCard(replay *external.Replay) render.Block {
 	return render.NewBlocksContent(render.Style{Width: overviewWidth}, render.NewTextContent(render.Style{
 		Font:      &render.FontLarge,
 		FontColor: render.TextPrimary,
-	}, "Battle Result Card, medals etc"))
+	}, "Battle Result Card, medals etc."))
 }
