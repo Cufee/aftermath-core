@@ -58,6 +58,12 @@ func CompleteUserVerificationHandler(c *fiber.Ctx) error {
 		return c.Status(404).JSON(server.NewErrorResponseFromError(err, "users.FindUserByID"))
 	}
 
+	// Mark all connections for this account as unverified
+	err = database.UpdateManyConnectionsByReferenceID(payload.AccountID, models.ConnectionTypeWargaming, models.ConnectionUpdate{Metadata: map[string]interface{}{"verified": false}})
+	if err != nil {
+		log.Err(err).Msg("failed to find connections by reference ID")
+	}
+
 	var update models.ConnectionUpdate
 	update.Metadata = map[string]interface{}{"verified": true}
 	update.ExternalID = &payload.AccountID
@@ -78,14 +84,6 @@ func CompleteUserVerificationHandler(c *fiber.Ctx) error {
 	if err != nil && !errors.Is(database.ErrUserContentNotFound, err) {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.UpdateUserContent"))
 	}
-
-	go func(externalId string) {
-		// Mark all other connections for this account as unverified
-		err := database.UpdateManyConnectionsByReferenceID(externalId, models.ConnectionTypeWargaming, models.ConnectionUpdate{Metadata: map[string]interface{}{"verified": false}})
-		if err != nil {
-			log.Err(err).Msg("failed to find connections by reference ID")
-		}
-	}(connection.ExternalID)
 
 	return c.JSON(server.NewResponse(connection))
 }
