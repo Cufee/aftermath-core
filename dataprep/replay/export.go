@@ -9,6 +9,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
+	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/external"
 	"github.com/rs/zerolog/log"
 )
@@ -32,8 +33,8 @@ func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 	printer := localization.GetPrinter(options.Locale)
 
 	var ids []int
-	for _, vehicle := range append(input.Replay.Teams.Allies, input.Replay.Teams.Enemies...) {
-		ids = append(ids, vehicle.ID)
+	for _, player := range append(input.Replay.Teams.Allies, input.Replay.Teams.Enemies...) {
+		ids = append(ids, player.VehicleID)
 	}
 	vehiclesGlossary, err := database.GetGlossaryVehicles(ids...)
 	if err != nil {
@@ -44,11 +45,17 @@ func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 	sortTeams(input.Replay.Teams)
 	// Allies
 	for _, player := range input.Replay.Teams.Allies {
-		cards.Allies = append(cards.Allies, playerToCard(player, vehiclesGlossary[player.VehicleID].Name(options.Locale), input.GlobalVehicleAverages[player.VehicleID], options.Blocks, printer))
+		vehicle := vehiclesGlossary[player.VehicleID]
+		vehicle.ID = player.VehicleID
+		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
+		cards.Allies = append(cards.Allies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, printer))
 	}
 	// Enemies
 	for _, player := range input.Replay.Teams.Enemies {
-		cards.Enemies = append(cards.Enemies, playerToCard(player, vehiclesGlossary[player.VehicleID].Name(options.Locale), input.GlobalVehicleAverages[player.VehicleID], options.Blocks, printer))
+		vehicle := vehiclesGlossary[player.VehicleID]
+		vehicle.ID = player.VehicleID
+		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
+		cards.Enemies = append(cards.Enemies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, printer))
 	}
 
 	return cards, nil

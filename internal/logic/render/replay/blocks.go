@@ -50,6 +50,11 @@ func newPlayerCard(style render.Style, sizes map[dataprep.Tag]float64, card repl
 		hpBar = newProgressBar(60, int(hpBarValue*100), progressDirectionVertical, hpBarColorEnemies)
 	}
 
+	vehicleColor := render.TextPrimary
+	if player.HPLeft == 0 {
+		vehicleColor = render.TextSecondary
+	}
+
 	leftBlock := render.NewBlocksContent(render.Style{
 		Direction:  render.DirectionHorizontal,
 		AlignItems: render.AlignItemsCenter,
@@ -57,7 +62,7 @@ func newPlayerCard(style render.Style, sizes map[dataprep.Tag]float64, card repl
 		Height:     80,
 		// Debug:      true,
 	}, hpBar, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical},
-		render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, fmt.Sprint(player.VehicleID)),
+		render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: vehicleColor}, card.Title),
 		playerNameBlock(player, protagonist),
 	))
 

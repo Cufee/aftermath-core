@@ -45,5 +45,8 @@ func IntToRoman(i int) string {
 			i -= 1
 		}
 	}
+	if roman == "" {
+		return "-"
+	}
 	return roman
 }

@@ -24,12 +24,17 @@ func RenderReplayImage(data ReplayData) (image.Image, error) {
 	var playerNameWidth float64
 	statsSizes := make(map[dataprep.Tag]float64)
 	for _, card := range append(data.Cards.Allies, data.Cards.Enemies...) {
-		// Measure player name and tag
+		// Measure player name and tag or vehicle name
 		name := card.Meta.Player.Nickname
 		if card.Meta.Player.ClanTag != "" {
 			name += fmt.Sprintf(" [%s]", card.Meta.Player.ClanTag)
 		}
-		size := render.MeasureString(name, render.FontLarge)
+		nameSize := render.MeasureString(name, render.FontLarge)
+		tankSize := render.MeasureString(card.Title, render.FontLarge)
+		size := nameSize
+		if tankSize.TotalWidth > nameSize.TotalWidth {
+			size = tankSize
+		}
 		if size.TotalWidth > playerNameWidth {
 			playerNameWidth = size.TotalWidth
 		}
