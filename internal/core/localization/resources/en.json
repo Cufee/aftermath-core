@@ -4,7 +4,13 @@
   "label_damage_ratio": "Damage Ratio",
   "label_winrate": "Winrate",
   "label_wn8": "WN8",
+  "label_frags": "Kills",
   "label_accuracy": "Accuracy",
   "label_overview_unrated": "Regular Battles",
-  "label_overview_rating": "Rating Battles"
+  "label_overview_rating": "Rating Battles",
+  "label_damage_dealt": "Damage",
+  "label_damage_taken": "Damage Received",
+  "label_damage_assisted": "Assisted",
+  "label_damage_blocked": "Blocked",
+  "label_assisted_combined": "Assisted"
 }

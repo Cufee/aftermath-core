@@ -47,7 +47,7 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		GlobalVehicleAverages: averages,
 		Replay:                &replayData,
 	}, replays.ExportOptions{
-		Blocks: []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt},
+		Blocks: []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt, dataprep.TagDamageAssistedCombined, dataprep.TagFrags},
 	})
 	if err != nil {
 		t.Fatal(err)

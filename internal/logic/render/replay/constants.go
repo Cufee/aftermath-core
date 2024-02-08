@@ -3,17 +3,16 @@ package replay
 import (
 	"image/color"
 
-	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
 
 var (
 	frameStyle = render.Style{Direction: render.DirectionVertical, PaddingX: 20, PaddingY: 20, Gap: 20}
 
-	playerCardNameWidth = 300.0
-
 	hpBarColorAllies  = color.RGBA{R: 120, G: 255, B: 120, A: 255}
 	hpBarColorEnemies = color.RGBA{R: 255, G: 120, B: 120, A: 255}
+
+	protagonistColor = color.RGBA{255, 223, 0, 255}
 )
 
 func defaultCardStyle(width, height float64) render.Style {
@@ -25,16 +24,4 @@ func defaultCardStyle(width, height float64) render.Style {
 		PaddingX:        10,
 		BorderRadius:    15,
 	}
-}
-
-func playerCardStyle(presets []dataprep.Tag) render.Style {
-	var blocksWidth float64
-	for _, preset := range presets {
-		w, ok := blockWidthPresets[preset]
-		if !ok {
-			w = 75
-		}
-		blocksWidth += w
-	}
-	return defaultCardStyle(playerCardNameWidth+blocksWidth, 0)
 }

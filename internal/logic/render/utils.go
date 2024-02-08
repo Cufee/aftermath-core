@@ -4,10 +4,12 @@ import (
 	"errors"
 	"image"
 	"image/color"
+	"strings"
 
 	"github.com/EdlinOrg/prominentcolor"
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
+	"golang.org/x/image/font"
 )
 
 func getDebugColor() color.Color {
@@ -58,4 +60,41 @@ func AddBackground(content, background image.Image, style Style) image.Image {
 	frameCtx.DrawImage(content, 0, 0)
 
 	return frameCtx.Image()
+}
+
+type stringSize struct {
+	TotalWidth  float64
+	TotalHeight float64
+	LineOffset  float64
+	LineHeight  float64
+}
+
+func MeasureString(text string, font font.Face) stringSize {
+	if font == nil {
+		return stringSize{}
+	}
+
+	measureCtx := gg.NewContext(1, 1)
+	measureCtx.SetFontFace(font)
+
+	var result stringSize
+	// Account for font descender height
+	result.LineOffset = float64(font.Metrics().Descent>>6) * 2
+
+	for _, line := range strings.Split(text, "\n") {
+		w, h := measureCtx.MeasureString(line)
+		h += result.LineOffset
+		w += 1
+
+		if w > result.TotalWidth {
+			result.TotalWidth = w
+		}
+		if h > result.LineHeight {
+			result.LineHeight = h
+		}
+
+		result.TotalHeight += h
+	}
+
+	return result
 }

@@ -31,7 +31,7 @@ const (
 	// Replay Specific
 	TagDamageDealt            Tag = "damage_dealt"
 	TagDamageTaken            Tag = "damage_taken"
-	TagDamageBlocked          Tag = "spotted"
+	TagDamageBlocked          Tag = "blocked"
 	TagDamageAssisted         Tag = "assisted"
 	TagDamageAssistedCombined Tag = "assisted_combined"
 )

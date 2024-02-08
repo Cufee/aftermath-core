@@ -1,6 +1,7 @@
 package replay
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/cufee/aftermath-core/dataprep"
@@ -20,24 +21,48 @@ type ReplayData struct {
 func RenderReplayImage(data ReplayData) (image.Image, error) {
 	var alliesBlocks, enemiesBlocks []render.Block
 
-	var tags []dataprep.Tag
-	for _, card := range data.Cards.Allies {
-		if card.Meta.Tags != nil {
-			tags = card.Meta.Tags
-			break
+	var playerNameWidth float64
+	statsSizes := make(map[dataprep.Tag]float64)
+	for _, card := range append(data.Cards.Allies, data.Cards.Enemies...) {
+		// Measure player name and tag
+		name := card.Meta.Player.Nickname
+		if card.Meta.Player.ClanTag != "" {
+			name += fmt.Sprintf(" [%s]", card.Meta.Player.ClanTag)
+		}
+		size := render.MeasureString(name, render.FontLarge)
+		if size.TotalWidth > playerNameWidth {
+			playerNameWidth = size.TotalWidth
+		}
+
+		// Measure stats value and label
+		for _, block := range card.Blocks {
+			valueSize := render.MeasureString(block.Value.String, render.FontLarge)
+			labelSize := render.MeasureString(block.Label, render.FontSmall)
+			w := valueSize.TotalWidth
+			if labelSize.TotalWidth > valueSize.TotalWidth {
+				w = labelSize.TotalWidth
+			}
+			if w > statsSizes[block.Tag] {
+				statsSizes[block.Tag] = w
+			}
 		}
 	}
 
-	playerStatsCardStyle := playerCardStyle(tags)
+	var totalStatsWidth float64
+	for _, width := range statsSizes {
+		totalStatsWidth += width
+	}
+
+	playerStatsCardStyle := defaultCardStyle(playerNameWidth+(float64(len(statsSizes)*10))+totalStatsWidth, 0)
 	totalCardsWidth := (playerStatsCardStyle.Width * 2) - 30
 
 	// Allies
 	for _, card := range data.Cards.Allies {
-		alliesBlocks = append(alliesBlocks, newPlayerCard(playerStatsCardStyle, card, card.Meta.Player, true))
+		alliesBlocks = append(alliesBlocks, newPlayerCard(playerStatsCardStyle, statsSizes, card, card.Meta.Player, true, card.Meta.Player.ID == data.Replay.Protagonist.ID))
 	}
 	// Enemies
 	for _, card := range data.Cards.Enemies {
-		enemiesBlocks = append(enemiesBlocks, newPlayerCard(playerStatsCardStyle, card, card.Meta.Player, false))
+		enemiesBlocks = append(enemiesBlocks, newPlayerCard(playerStatsCardStyle, statsSizes, card, card.Meta.Player, false, false))
 	}
 
 	// Title Card

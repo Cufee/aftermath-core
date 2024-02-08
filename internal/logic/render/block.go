@@ -3,7 +3,7 @@ package render
 import (
 	"errors"
 	"image"
-	"math"
+	"strings"
 
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
@@ -56,19 +56,18 @@ func (content contentText) Render(style Style) (image.Image, error) {
 		return nil, errors.New("font not set")
 	}
 
-	measureCtx := gg.NewContext(1, 1)
-	measureCtx.SetFontFace(*style.Font)
-	valueW, valueH := measureCtx.MeasureString(content.value)
-
-	// Account for font descender height
-	descenderOffset := (float64((*style.Font).Metrics().Descent >> 6))
-	ctx := gg.NewContext(int(style.PaddingX*2+math.Ceil(valueW)+1), int(style.PaddingY*2+math.Ceil(valueH+(descenderOffset*2))))
+	size := MeasureString(content.value, *style.Font)
+	ctx := gg.NewContext(int(size.TotalWidth), int(size.TotalHeight))
 
 	// Render text
 	ctx.SetFontFace(*style.Font)
 	ctx.SetColor(style.FontColor)
 
-	ctx.DrawString(content.value, style.PaddingX, valueH+style.PaddingY+1)
+	var lastX, lastY float64 = style.PaddingX, style.PaddingY + 1
+	for _, str := range strings.Split(content.value, "\n") {
+		lastY += size.LineHeight
+		ctx.DrawString(str, lastX, lastY-size.LineOffset)
+	}
 
 	if style.Debug {
 		ctx.SetColor(getDebugColor())
