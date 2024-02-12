@@ -8,9 +8,9 @@ import (
 )
 
 type SubscriptionPayload struct {
-	UserID      string                  `bson:"userID" json:"userID"`
-	ReferenceID string                  `bson:"referenceID" json:"referenceID"`
-	Permissions permissions.Permissions `bson:"permissions" json:"permissions"`
+	UserID      string `bson:"userID" json:"userID"`
+	ReferenceID string `bson:"referenceID" json:"referenceID"`
+	Permissions string `bson:"permissions" json:"permissions"`
 
 	Type       models.SubscriptionType `bson:"subscriptionType" json:"subscriptionType"`
 	ExpiryDate time.Time               `bson:"expiryDate" json:"expiryDate"`

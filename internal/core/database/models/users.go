@@ -11,14 +11,14 @@ const (
 type User struct {
 	ID string `bson:"_id" json:"id"`
 
-	FeatureFlags []featureFlag           `bson:"featureFlags" json:"featureFlags"`
-	Permissions  permissions.Permissions `bson:"permissions" json:"permissions"`
+	FeatureFlags []featureFlag `bson:"featureFlags" json:"featureFlags"`
+	Permissions  string        `bson:"permissions" json:"permissions"`
 }
 
 func NewUser(id string) User {
 	return User{
 		ID:           id,
-		Permissions:  permissions.User,
+		Permissions:  permissions.User.Encode(),
 		FeatureFlags: []featureFlag{},
 	}
 }
@@ -39,7 +39,7 @@ type CompleteUser struct {
 }
 
 func (u CompleteUser) Permissions() permissions.Permissions {
-	perms := u.User.Permissions | permissions.User
+	perms := permissions.Parse(u.User.Permissions) | permissions.User
 	for _, c := range u.Connections {
 		perms = perms.Add(permissions.Parse(c.Permissions))
 	}
