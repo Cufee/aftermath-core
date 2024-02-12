@@ -62,8 +62,8 @@ func UpdateSubscriptionHandler(c *fiber.Ctx) error {
 	if userId == "" {
 		return c.Status(400).JSON(server.NewErrorResponse("user id required", ""))
 	}
-	if !body.Valid() {
-		return c.Status(400).JSON(server.NewErrorResponse("invalid subscription payload", ""))
+	if body.Type != "" && !body.Type.Valid() {
+		return c.Status(400).JSON(server.NewErrorResponse("invalid subscription type", ""))
 	}
 
 	subscription, err := database.UpdateUserSubscription(id, body.ToSubscriptionUpdate())
