@@ -63,13 +63,9 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getSessionStats(realm string, accountId int, presets []string) (*dataprep.SessionStats, error) {
-	blocks := dataprep.DefaultSessionBlocks
-	if len(presets) > 0 {
-		parsed, err := dataprep.ParsePresets(presets...)
-		if err != nil {
-			return nil, err
-		}
-		blocks = parsed
+	blocks, err := dataprep.ParsePresets(presets...)
+	if err != nil {
+		blocks = dataprep.DefaultSessionBlocks
 	}
 
 	now := int(time.Now().Unix())
