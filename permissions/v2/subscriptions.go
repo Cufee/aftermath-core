@@ -1,9 +1,10 @@
 package permissions
 
 const (
-	SubscriptionEarlySupporter = UploadPersonalBackground
+	SubscriptionAftermathPlus = UploadPersonalBackground | UseLiveSessions
+	SubscriptionAftermathPro  = SubscriptionAftermathPlus
 )
 
 func init() {
-	PermissionsMap["subscriptions/earlySupporter"] = SubscriptionEarlySupporter
+	PermissionsMap["subscriptions/aftermathPlus"] = SubscriptionAftermathPlus
 }

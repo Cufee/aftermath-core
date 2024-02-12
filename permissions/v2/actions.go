@@ -1,20 +1,21 @@
 package permissions
 
-// Basic user actions
 const (
-	UseCommands Permissions = BasicUserActions | 1<<(iota)
+	// Basic user actions
+	UseBasicCommands Permissions = 1 << (iota)
+	UseLiveSessions
 
 	// Content
-	SelectPersonalBackgroundPreset Permissions = BasicUserActions | 1<<(5+iota)
+	SelectPersonalBackgroundPreset Permissions = 1 << (5 + iota)
 	UploadPersonalBackground
 
 	// Connections
-	CreatePersonalConnection Permissions = BasicUserActions | 1<<(10+iota)
+	CreatePersonalConnection Permissions = 1 << (10 + iota)
 	UpdatePersonalConnection
 	RemovePersonalConnection
 
 	// Subscriptions
-	RetrievePersonalSubscriptions Permissions = BasicUserActions | 1<<(15+iota)
+	RetrievePersonalSubscriptions Permissions = 1 << (15 + iota)
 	CreatePersonalSubscription
 	ExtendPersonalSubscription
 )
@@ -22,37 +23,38 @@ const (
 // Moderation actions
 const (
 	// Background Presets
-	UploadBackgroundPreset Permissions = ModerationActions | 1<<(20+iota)
+	UploadBackgroundPreset Permissions = 1 << (20 + iota)
 	RemoveBackgroundPreset
 
 	// Manage User Content
-	UpdateUserBackground Permissions = ModerationActions | 1<<(25+iota)
+	UpdateUserBackground Permissions = 1 << (25 + iota)
 	RemoveUserBackground
 
 	// Subscriptions
-	RetrieveUserSubscriptions Permissions = ModerationActions | 1<<(30+iota)
+	RetrieveUserSubscriptions Permissions = 1 << (30 + iota)
 	CreateUserSubscription
 	ExtendUserSubscription
 	TerminateUserSubscription
 
 	// Connections
-	RetrieveUserConnections Permissions = ModerationActions | 1<<(35+iota)
+	RetrieveUserConnections Permissions = 1 << (35 + iota)
 	ManageUserConnectionVerification
 	RemoveUserConnection
 
 	// Restrictions
-	RetrieveUserRestrictions Permissions = ModerationActions | 1<<(40+iota)
+	RetrieveUserRestrictions Permissions = 1 << (40 + iota)
 	CreateUserRestriction
 	RemoveUserRestriction
 )
 
 const (
 	// Admin
-	ManageUserRoles Permissions = AdminActions | 1<<(45+iota)
+	ManageUserRoles Permissions = 1 << (45 + iota)
 )
 
 func init() {
-	PermissionsMap["actions/useCommands"] = UseCommands
+	PermissionsMap["actions/useBasicCommands"] = UseBasicCommands
+	PermissionsMap["actions/useLiveSessions"] = UseLiveSessions
 
 	PermissionsMap["actions/selectPersonalBackgroundPreset"] = SelectPersonalBackgroundPreset
 	PermissionsMap["actions/uploadPersonalBackground"] = UploadPersonalBackground

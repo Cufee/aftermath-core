@@ -3,10 +3,24 @@ package models
 import (
 	"time"
 
+	"github.com/cufee/aftermath-core/permissions/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SubscriptionType string
+
+func (s SubscriptionType) GetPermissions() permissions.Permissions {
+	switch s {
+	case SubscriptionTypePlus:
+		return permissions.SubscriptionAftermathPlus
+	case SubscriptionTypePro:
+		return permissions.SubscriptionAftermathPro
+	case SubscriptionTypeProClan:
+		return permissions.SubscriptionAftermathPro
+	default:
+		return permissions.User
+	}
+}
 
 const (
 	SubscriptionTypePro          = SubscriptionType("aftermath-pro")

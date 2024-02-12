@@ -30,10 +30,6 @@ func Parse(input string) Permissions {
 
 const (
 	Blank Permissions = 0
-
-	BasicUserActions Permissions = 1 << iota
-	ModerationActions
-	AdminActions
 )
 
 func (p Permissions) Has(permission Permissions) bool {

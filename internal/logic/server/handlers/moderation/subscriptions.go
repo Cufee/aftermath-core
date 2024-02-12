@@ -84,11 +84,13 @@ func CreateUserSubscriptionsHandler(c *fiber.Ctx) error {
 	if userId == "" {
 		return c.Status(400).JSON(server.NewErrorResponse("user id required", ""))
 	}
-	if !body.Valid() {
+
+	update, valid := body.ToUserSubscription()
+	if !valid {
 		return c.Status(400).JSON(server.NewErrorResponse("invalid subscription payload", ""))
 	}
 
-	subscription, err := database.AddNewUserSubscription(userId, body.ToUserSubscription())
+	subscription, err := database.AddNewUserSubscription(userId, update)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.FindSubscriptionsByUserID"))
 	}
