@@ -18,7 +18,6 @@ type User struct {
 func NewUser(id string) User {
 	return User{
 		ID:           id,
-		Permissions:  permissions.User.Encode(),
 		FeatureFlags: []featureFlag{},
 	}
 }
