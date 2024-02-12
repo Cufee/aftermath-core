@@ -67,6 +67,9 @@ func getSessionStats(realm string, accountId int, presets []string) (*dataprep.S
 	if err != nil {
 		return nil, err
 	}
+	if len(blocks) == 0 {
+		blocks = dataprep.DefaultSessionBlocks
+	}
 
 	now := int(time.Now().Unix())
 	opts := database.SessionGetOptions{LastBattleBefore: &now}
