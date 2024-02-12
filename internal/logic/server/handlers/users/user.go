@@ -3,7 +3,7 @@ package users
 import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/server"
-	"github.com/cufee/aftermath-core/permissions/v1"
+	"github.com/cufee/aftermath-core/permissions/v2"
 	"github.com/cufee/aftermath-core/types"
 
 	"github.com/gofiber/fiber/v2"

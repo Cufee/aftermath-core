@@ -2,19 +2,19 @@ package permissions
 
 // Basic user actions
 const (
-	UseCommands Permissions = BasicUserActions | 1<<(10+iota)
+	UseCommands Permissions = BasicUserActions | 1<<(iota)
 
 	// Content
-	SelectPersonalBackgroundPreset Permissions = BasicUserActions | 1<<(11+iota)
+	SelectPersonalBackgroundPreset Permissions = BasicUserActions | 1<<(5+iota)
 	UploadPersonalBackground
 
 	// Connections
-	CreatePersonalConnection Permissions = BasicUserActions | 1<<(12+iota)
+	CreatePersonalConnection Permissions = BasicUserActions | 1<<(10+iota)
 	UpdatePersonalConnection
 	RemovePersonalConnection
 
 	// Subscriptions
-	RetrievePersonalSubscriptions Permissions = BasicUserActions | 1<<(13+iota)
+	RetrievePersonalSubscriptions Permissions = BasicUserActions | 1<<(15+iota)
 	CreatePersonalSubscription
 	ExtendPersonalSubscription
 )
@@ -26,29 +26,29 @@ const (
 	RemoveBackgroundPreset
 
 	// Manage User Content
-	UpdateUserBackground Permissions = ModerationActions | 1<<(21+iota)
+	UpdateUserBackground Permissions = ModerationActions | 1<<(25+iota)
 	RemoveUserBackground
 
 	// Subscriptions
-	RetrieveUserSubscriptions Permissions = ModerationActions | 1<<(22+iota)
+	RetrieveUserSubscriptions Permissions = ModerationActions | 1<<(30+iota)
 	CreateUserSubscription
 	ExtendUserSubscription
 	TerminateUserSubscription
 
 	// Connections
-	RetrieveUserConnections Permissions = ModerationActions | 1<<(23+iota)
+	RetrieveUserConnections Permissions = ModerationActions | 1<<(35+iota)
 	ManageUserConnectionVerification
 	RemoveUserConnection
 
 	// Restrictions
-	RetrieveUserRestrictions Permissions = ModerationActions | 1<<(24+iota)
+	RetrieveUserRestrictions Permissions = ModerationActions | 1<<(40+iota)
 	CreateUserRestriction
 	RemoveUserRestriction
 )
 
 const (
 	// Admin
-	ManageUserRoles Permissions = AdminActions | 1<<(30+iota)
+	ManageUserRoles Permissions = AdminActions | 1<<(45+iota)
 )
 
 func init() {

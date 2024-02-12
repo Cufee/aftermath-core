@@ -1,6 +1,8 @@
 package moderation
 
 import (
+	"errors"
+
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/types"
@@ -15,7 +17,7 @@ func GetUserSubscriptionsHandler(c *fiber.Ctx) error {
 	}
 
 	subs, err := database.FindSubscriptionsByUserID(userId)
-	if err != nil {
+	if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.FindSubscriptionsByUserID"))
 	}
 

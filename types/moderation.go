@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/permissions/v1"
+	"github.com/cufee/aftermath-core/permissions/v2"
 )
 
 type SubscriptionPayload struct {
@@ -24,7 +24,7 @@ func (s SubscriptionPayload) ToUserSubscription() models.UserSubscription {
 	return models.UserSubscription{
 		UserID:       s.UserID,
 		ReferenceID:  s.ReferenceID,
-		Permissions:  s.Permissions,
+		Permissions:  s.Permissions.Encode(),
 		Type:         s.Type,
 		ExpiryDate:   s.ExpiryDate,
 		CreationDate: time.Now(),
@@ -40,7 +40,8 @@ func (s *SubscriptionPayload) ToSubscriptionUpdate() models.SubscriptionUpdate {
 		sub.ReferenceID = &s.ReferenceID
 	}
 	if s.Permissions != permissions.Blank {
-		sub.Permissions = &s.Permissions
+		p := s.Permissions.Encode()
+		sub.Permissions = &p
 	}
 	if s.Type != "" {
 		sub.Type = &s.Type

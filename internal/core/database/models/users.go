@@ -1,6 +1,6 @@
 package models
 
-import "github.com/cufee/aftermath-core/permissions/v1"
+import "github.com/cufee/aftermath-core/permissions/v2"
 
 type featureFlag string
 
@@ -41,10 +41,10 @@ type CompleteUser struct {
 func (u CompleteUser) Permissions() permissions.Permissions {
 	perms := u.User.Permissions | permissions.User
 	for _, c := range u.Connections {
-		perms = perms.Add(c.Permissions)
+		perms = perms.Add(permissions.Parse(c.Permissions))
 	}
 	for _, s := range u.Subscriptions {
-		perms = perms.Add(s.Permissions)
+		perms = perms.Add(permissions.Parse(s.Permissions))
 	}
 	return perms
 }

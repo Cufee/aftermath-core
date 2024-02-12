@@ -1,8 +1,32 @@
 package permissions
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
-type Permissions int64
+const version = "v2"
+
+type Permissions uint64
+
+func (p Permissions) Encode() string {
+	return fmt.Sprintf("%s/%d", version, p)
+}
+
+func Parse(input string) Permissions {
+	split := strings.Split(input, "/")
+	if !strings.HasPrefix(input, version+"/") || len(split) != 2 {
+		return Blank
+	}
+
+	perms, err := strconv.ParseInt(split[1], 10, 64)
+	if err != nil {
+		return Blank
+	}
+
+	return Permissions(perms)
+}
 
 const (
 	Blank Permissions = 0
