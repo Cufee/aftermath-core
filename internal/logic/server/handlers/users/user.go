@@ -19,8 +19,8 @@ func GetUserHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "users.CreateUser"))
 	}
-	if user.User.Permissions == permissions.Blank {
-		user.User.Permissions = permissions.User
+	if user.User.Permissions == "" {
+		user.User.Permissions = permissions.User.Encode()
 	}
 
 	var extended types.User
