@@ -44,7 +44,6 @@ func LoadRemoteImage(remoteImage string) (image.Image, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	remoteUrl.RawQuery = ""
 
 	res, err := http.DefaultClient.Get(remoteUrl.String())
 	if err != nil {
