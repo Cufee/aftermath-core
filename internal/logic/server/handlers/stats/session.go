@@ -48,7 +48,15 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{Presets: strings.Split(c.Query("blocks"), ",")})
+	var reference *string
+	if r := c.Query("referenceId"); r != "" {
+		reference = &r
+	}
+
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{
+		Presets:     strings.Split(c.Query("blocks"), ","),
+		ReferenceID: reference,
+	})
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -75,7 +83,15 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{Presets: strings.Split(c.Query("blocks"), ",")})
+	var reference *string
+	if r := c.Query("referenceId"); r != "" {
+		reference = &r
+	}
+
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{
+		Presets:     strings.Split(c.Query("blocks"), ","),
+		ReferenceID: reference,
+	})
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getSessionStats"))
 	}
@@ -90,7 +106,7 @@ func getSessionStats(realm string, accountId int, opts types.RenderRequestPayloa
 	}
 
 	now := int(time.Now().Unix())
-	playerSession, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{LastBattleBefore: &now})
+	playerSession, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{LastBattleBefore: &now, ReferenceID: opts.ReferenceID})
 	if err != nil {
 		return nil, err
 	}

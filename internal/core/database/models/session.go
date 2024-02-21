@@ -24,9 +24,10 @@ func ParseSessionType(input string) SessionType {
 }
 
 type Snapshot struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Type      SessionType        `bson:"type"`
-	CreatedAt time.Time          `bson:"createdAt"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	Type        SessionType        `bson:"type"`
+	CreatedAt   time.Time          `bson:"createdAt"`
+	ReferenceID string             `bson:"referenceId"`
 
 	Session *stats.SessionSnapshot `bson:",inline"`
 }

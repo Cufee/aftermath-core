@@ -17,7 +17,8 @@ var (
 
 type SessionGetOptions struct {
 	LastBattleBefore *int
-	Before           time.Time
+	ReferenceID      *string
+	After            *time.Time
 	Type             models.SessionType
 }
 
@@ -34,12 +35,15 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Sn
 	findOptions.SetSort(bson.M{"createdAt": -1})
 
 	query := bson.M{"accountId": accountID}
-	if !opts.Before.IsZero() {
-		query["createdAt"] = bson.M{"$gt": opts.Before}
+	if opts.After != nil {
+		query["createdAt"] = bson.M{"$gt": opts.After}
 		findOptions.SetSort(bson.M{"createdAt": 1})
 	}
 	if opts.Type != "" {
 		query["type"] = opts.Type
+	}
+	if opts.ReferenceID != nil {
+		query["referenceId"] = opts.ReferenceID
 	}
 	if opts.LastBattleBefore != nil {
 		query["lastBattleTime"] = bson.M{"$lt": *opts.LastBattleBefore}

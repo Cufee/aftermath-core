@@ -86,7 +86,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 		blocks = session.DefaultSessionBlocks
 	}
 
-	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type()})
+	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type(), ReferenceID: options.ReferenceID, After: options.BattlesAfter})
 	if err != nil {
 		return "", err
 	}

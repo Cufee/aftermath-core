@@ -1,16 +1,20 @@
 package types
 
 import (
+	"time"
+
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 )
 
 type RenderRequestPayload struct {
-	TankLimit int      `json:"tank_limit"`
-	Presets   []string `json:"presets"`
-	SortBy    string   `json:"sort_by"`
-	// Days      int    `json:"days"`
+	ReferenceID *string `json:"referenceId"`
 
-	TypeStr string `json:"type"`
+	BattlesAfter *time.Time `json:"battles_after"`
+	TankLimit    int        `json:"tank_limit"`
+	SortBy       string     `json:"sort_by"`
+
+	Presets []string `json:"presets"`
+	TypeStr string   `json:"type"`
 }
 
 func (p RenderRequestPayload) Type() models.SessionType {
