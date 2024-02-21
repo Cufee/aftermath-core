@@ -6,10 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/types"
 
-	dataprep "github.com/cufee/aftermath-core/dataprep/session"
+	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
@@ -20,6 +22,25 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func RecordPlayerSession(c *fiber.Ctx) error {
+	account := c.Params("account")
+	accountId, err := strconv.Atoi(account)
+	if err != nil {
+		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
+	}
+
+	sessionType := models.ParseSessionType(c.Query("type"))
+	accountErrs, err := cache.RefreshSessionsAndAccounts(sessionType, utils.RealmFromAccountID(accountId), accountId)
+	if err != nil {
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "cache.RefreshSessionsAndAccounts"))
+	}
+	if accountErrs[accountId] != nil {
+		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "cache.RefreshSessionsAndAccounts"))
+	}
+
+	return c.JSON(server.NewResponse(err))
+}
+
 func SessionFromIDHandler(c *fiber.Ctx) error {
 	account := c.Params("account")
 	accountId, err := strconv.Atoi(account)
@@ -27,7 +48,7 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, strings.Split(c.Query("blocks"), ","))
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{Presets: strings.Split(c.Query("blocks"), ",")})
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -54,7 +75,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, strings.Split(c.Query("blocks"), ","))
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{Presets: strings.Split(c.Query("blocks"), ",")})
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getSessionStats"))
 	}
@@ -62,28 +83,27 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(stats))
 }
 
-func getSessionStats(realm string, accountId int, presets []string) (*dataprep.SessionStats, error) {
-	blocks, err := dataprep.ParsePresets(presets...)
+func getSessionStats(realm string, accountId int, opts types.RenderRequestPayload) (*session.SessionStats, error) {
+	blocks, err := dataprep.ParseTags(opts.Presets...)
 	if err != nil {
-		blocks = dataprep.DefaultSessionBlocks
+		blocks = session.DefaultSessionBlocks
 	}
 
 	now := int(time.Now().Unix())
-	opts := database.SessionGetOptions{LastBattleBefore: &now}
-	session, err := stats.GetCurrentPlayerSession(realm, accountId, opts)
+	playerSession, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{LastBattleBefore: &now})
 	if err != nil {
 		return nil, err
 	}
 
-	if session.Account.ClanID != 0 {
+	if playerSession.Account.ClanID != 0 {
 		go func() {
-			err := cache.CacheAllNewClanMembers(realm, session.Account.ClanID)
+			err := cache.CacheAllNewClanMembers(realm, playerSession.Account.ClanID)
 			if err != nil {
 				log.Err(err).Msg("failed to cache new clan members")
 			}
 		}()
 	}
-	averages, err := stats.GetVehicleAverages(session.Diff.Vehicles)
+	averages, err := stats.GetVehicleAverages(playerSession.Diff.Vehicles)
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +112,12 @@ func getSessionStats(realm string, accountId int, presets []string) (*dataprep.S
 		By:    stats.SortByLastBattle,
 		Limit: 5,
 	}
-	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-		SessionStats:          session.Diff,
-		CareerStats:           session.Selected,
-		SessionVehicles:       stats.SortVehicles(session.Diff.Vehicles, averages, sortOptions),
+	statsCards, err := session.SnapshotToSession(session.ExportInput{
+		SessionStats:          playerSession.Diff,
+		CareerStats:           playerSession.Selected,
+		SessionVehicles:       stats.SortVehicles(playerSession.Diff.Vehicles, averages, sortOptions),
 		GlobalVehicleAverages: averages,
-	}, dataprep.ExportOptions{
+	}, session.ExportOptions{
 		Locale: localization.LanguageEN,
 		Blocks: blocks,
 	})
@@ -105,12 +125,12 @@ func getSessionStats(realm string, accountId int, presets []string) (*dataprep.S
 		return nil, err
 	}
 
-	return &dataprep.SessionStats{
+	return &session.SessionStats{
 		Realm:      realm,
 		Locale:     localization.LanguageEN.WargamingCode,
-		LastBattle: session.Account.LastBattleTime,
-		Clan:       session.Account.ClanMember.Clan,
-		Account:    session.Account.Account,
+		LastBattle: playerSession.Account.LastBattleTime,
+		Clan:       playerSession.Account.ClanMember.Clan,
+		Account:    playerSession.Account.Account,
 		Cards:      statsCards,
 	}, nil
 }

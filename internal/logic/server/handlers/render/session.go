@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"sync"
 
-	dataprep "github.com/cufee/aftermath-core/dataprep/session"
+	"github.com/cufee/aftermath-core/dataprep"
+	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
@@ -15,9 +16,9 @@ import (
 	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/content"
-	"github.com/cufee/aftermath-core/internal/logic/render"
+	renderCore "github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
-	"github.com/cufee/aftermath-core/internal/logic/render/session"
+	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/types"
 	"github.com/cufee/aftermath-core/utils"
@@ -32,7 +33,13 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{TankLimit: 5})
+	var opts types.RenderRequestPayload
+	err = c.BodyParser(&opts)
+	if err != nil {
+		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
+	}
+
+	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -44,6 +51,12 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	user := c.Params("id")
 	if user == "" {
 		return c.Status(400).JSON(server.NewErrorResponse("id path parameter is required", "c.Param"))
+	}
+
+	var opts types.RenderRequestPayload
+	err := c.BodyParser(&opts)
+	if err != nil {
+		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
 	connection, err := database.FindUserConnection(user, models.ConnectionTypeWargaming)
@@ -59,7 +72,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{TankLimit: 5})
+	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -68,7 +81,12 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getEncodedSessionImage(realm string, accountId int, options types.RenderRequestPayload) (string, error) {
-	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId)
+	blocks, err := dataprep.ParseTags(options.Presets...)
+	if err != nil {
+		blocks = session.DefaultSessionBlocks
+	}
+
+	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type()})
 	if err != nil {
 		return "", err
 	}
@@ -154,33 +172,33 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 			sortOptions.Limit = 5
 		}
 
-		statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+		statsCards, err := session.SnapshotToSession(session.ExportInput{
 			SessionStats:          sessionData.Diff,
 			CareerStats:           sessionData.Selected,
 			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
 			GlobalVehicleAverages: averages,
-		}, dataprep.ExportOptions{
-			Blocks: dataprep.DefaultSessionBlocks,
+		}, session.ExportOptions{
 			Locale: localization.LanguageEN,
+			Blocks: blocks,
 		})
 		if err != nil {
 			cardsChan <- core.DataWithError[image.Image]{Err: err}
 			return
 		}
 
-		player := session.PlayerData{
+		player := render.PlayerData{
 			Clan:          &sessionData.Account.Clan,
 			Account:       &sessionData.Account.Account,
 			Subscriptions: subscriptions,
 			Cards:         statsCards,
 		}
 
-		renderOptions := session.RenderOptions{
+		renderOptions := render.RenderOptions{
 			PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-			CardStyle: session.DefaultCardStyle(nil),
+			CardStyle: render.DefaultCardStyle(nil),
 		}
 
-		cards, err := session.RenderStatsImage(player, renderOptions)
+		cards, err := render.RenderStatsImage(player, renderOptions)
 		cardsChan <- core.DataWithError[image.Image]{Data: cards, Err: err}
 	}()
 
@@ -194,6 +212,6 @@ func getEncodedSessionImage(realm string, accountId int, options types.RenderReq
 	}
 
 	bgImage := <-backgroundChan
-	img := render.AddBackground(cards.Data, bgImage, render.Style{Blur: 10, BorderRadius: 30})
+	img := renderCore.AddBackground(cards.Data, bgImage, renderCore.Style{Blur: 10, BorderRadius: 30})
 	return core.EncodeImage(img)
 }

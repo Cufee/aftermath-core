@@ -1,3 +1,5 @@
 package session
 
-var DefaultSessionBlocks = []statsBlockPreset{BlockPresetBattles, BlockPresetAvgDamage, BlockPresetDamageRatio, BlockPresetWinrate, BlockPresetWN8}
+import "github.com/cufee/aftermath-core/dataprep"
+
+var DefaultSessionBlocks = []dataprep.Tag{dataprep.TagBattles, dataprep.TagAvgDamage, dataprep.TagDamageRatio, dataprep.TagWinrate, dataprep.TagWN8}

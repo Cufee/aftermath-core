@@ -11,7 +11,17 @@ type SessionType string
 
 const (
 	SessionTypeDaily = SessionType("daily")
+	SessionTypeLive  = SessionType("live")
 )
+
+func ParseSessionType(input string) SessionType {
+	switch input {
+	case "live":
+		return SessionTypeLive
+	default:
+		return SessionTypeDaily
+	}
+}
 
 type Snapshot struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`

@@ -24,19 +24,20 @@ func Start() {
 	app.Use(fiberzerolog.New())
 	app.Use(recover.New())
 
-	app.Get("/ping", func(c *fiber.Ctx) error {
+	app.Get("/healthy", func(c *fiber.Ctx) error {
 		return c.SendStatus(200)
 	})
 
 	v1 := app.Group("/v1")
 
 	renderV1 := v1.Group("/render")
-	renderV1.Get("/session/user/:id", render.SessionFromUserHandler)
-	renderV1.Get("/session/account/:account", render.SessionFromIDHandler)
+	renderV1.Post("/session/user/:id", render.SessionFromUserHandler)
+	renderV1.Post("/session/account/:account", render.SessionFromIDHandler)
 
 	statsV1 := v1.Group("/stats")
 	statsV1.Get("/session/user/:id", stats.SessionFromUserHandler)
 	statsV1.Get("/session/account/:account", stats.SessionFromIDHandler)
+	statsV1.Post("/session/account/:account/reset", stats.RecordPlayerSession)
 
 	accountsV1 := v1.Group("/accounts")
 	accountsV1.Get("/search", accounts.SearchAccountsHandler)

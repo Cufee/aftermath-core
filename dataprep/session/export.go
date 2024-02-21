@@ -20,7 +20,7 @@ type ExportInput struct {
 }
 
 type ExportOptions struct {
-	Blocks []statsBlockPreset
+	Blocks []dataprep.Tag
 	Locale localization.SupportedLanguage
 }
 
@@ -36,12 +36,11 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 	if input.SessionStats.Rating.Battles > 0 {
 		var ratingBlocks []StatsBlock
 		for _, preset := range options.Blocks {
-			p := preset
-			if preset == BlockPresetWN8 {
+			if preset == dataprep.TagWN8 {
 				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
-				p = BlockPresetAccuracy
+				preset = dataprep.TagAccuracy
 			}
-			ratingBlock, err := p.StatsBlock(input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
+			ratingBlock, err := presetToBlock(preset, input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
 			}
@@ -58,19 +57,19 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 	if input.SessionStats.Rating.Battles == 0 || input.SessionStats.Global.Battles > 0 {
 		var unratedBlocks []StatsBlock
 		for _, preset := range options.Blocks {
-			if preset == BlockPresetWN8 {
+			if preset == dataprep.TagWN8 {
 				// WN8 is a special case that needs to be calculated from vehicles
 				sessionWN8 := calculateSessionWN8(input.SessionStats.Vehicles, input.GlobalVehicleAverages)
 				if sessionWN8 != core.InvalidValueInt {
 					unratedBlocks = append(unratedBlocks, StatsBlock{
 						Session: dataprep.StatsToValue(sessionWN8),
-						Label:   printer("label_wn8"),
+						Label:   printer("label_" + string(dataprep.TagWN8)),
 						Tag:     dataprep.TagWN8,
 					})
 					continue
 				}
 			}
-			block, err := preset.StatsBlock(input.SessionStats.Global, input.CareerStats.Global, nil, printer)
+			block, err := presetToBlock(preset, input.SessionStats.Global, input.CareerStats.Global, nil, printer)
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
 			}
@@ -103,7 +102,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 				if input.CareerStats.Vehicles[vehicle.VehicleID] != nil {
 					career = input.CareerStats.Vehicles[vehicle.VehicleID].ReducedStatsFrame
 				}
-				block, err := preset.StatsBlock(vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID], printer)
+				block, err := presetToBlock(preset, vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID], printer)
 				if err != nil {
 					return nil, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
 				}
