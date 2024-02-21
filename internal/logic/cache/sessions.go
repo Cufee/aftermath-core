@@ -45,11 +45,12 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, realm string, ac
 			log.Debug().Msgf("%d played 0 battles since last session, skipping update", session.Data.Account.ID)
 			continue
 		}
+
 		snapshots = append(snapshots, session.Data.Session)
 	}
 	if len(snapshots) == 0 {
 		return updateErrors, nil
 	}
 
-	return updateErrors, database.InsertSession(models.SessionTypeDaily, snapshots...)
+	return updateErrors, database.InsertSession(sessionType, snapshots...)
 }
