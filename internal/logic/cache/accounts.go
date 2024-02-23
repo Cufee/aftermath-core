@@ -19,7 +19,7 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 		return err
 	}
 
-	lastBattles, err := database.GetLastBattleTimes(models.SessionTypeDaily, clan.MembersIDS...)
+	lastBattles, err := database.GetLastBattleTimes(models.SessionTypeDaily, nil, clan.MembersIDS...)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 		return nil
 	}
 
-	_, err = RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, newAccounts...)
+	_, err = RefreshSessionsAndAccounts(models.SessionTypeDaily, nil, realm, newAccounts...)
 	if err != nil {
 		return err
 	}

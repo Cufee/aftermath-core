@@ -21,7 +21,7 @@ func init() {
 				return "invalid realm", errors.New("invalid realm")
 			}
 
-			accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, task.Targets...)
+			accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, nil, realm, task.Targets...)
 			if err != nil {
 				return "failed to refresh sessions on all account", err
 			}

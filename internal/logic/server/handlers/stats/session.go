@@ -3,7 +3,6 @@ package stats
 import (
 	"errors"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/cufee/aftermath-core/dataprep/session"
@@ -29,8 +28,13 @@ func RecordPlayerSession(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	sessionType := models.ParseSessionType(c.Query("type"))
-	accountErrs, err := cache.RefreshSessionsAndAccounts(sessionType, utils.RealmFromAccountID(accountId), accountId)
+	var opts types.SessionRequestPayload
+	err = c.BodyParser(&opts)
+	if err != nil {
+		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
+	}
+
+	accountErrs, err := cache.RefreshSessionsAndAccounts(opts.Type(), opts.ReferenceID, utils.RealmFromAccountID(accountId), accountId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "cache.RefreshSessionsAndAccounts"))
 	}
@@ -48,15 +52,13 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	var reference *string
-	if r := c.Query("referenceId"); r != "" {
-		reference = &r
+	var opts types.SessionRequestPayload
+	err = c.BodyParser(&opts)
+	if err != nil {
+		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{
-		Presets:     strings.Split(c.Query("blocks"), ","),
-		ReferenceID: reference,
-	})
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -68,6 +70,12 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	user := c.Params("id")
 	if user == "" {
 		return c.Status(400).JSON(server.NewErrorResponse("id path parameter is required", "c.Param"))
+	}
+
+	var opts types.SessionRequestPayload
+	err := c.BodyParser(&opts)
+	if err != nil {
+		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
 	connection, err := database.FindUserConnection(user, models.ConnectionTypeWargaming)
@@ -83,15 +91,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	var reference *string
-	if r := c.Query("referenceId"); r != "" {
-		reference = &r
-	}
-
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, types.RenderRequestPayload{
-		Presets:     strings.Split(c.Query("blocks"), ","),
-		ReferenceID: reference,
-	})
+	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getSessionStats"))
 	}
@@ -99,7 +99,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(stats))
 }
 
-func getSessionStats(realm string, accountId int, opts types.RenderRequestPayload) (*session.SessionStats, error) {
+func getSessionStats(realm string, accountId int, opts types.SessionRequestPayload) (*session.SessionStats, error) {
 	blocks, err := dataprep.ParseTags(opts.Presets...)
 	if err != nil {
 		blocks = session.DefaultSessionBlocks

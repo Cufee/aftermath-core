@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/database/models"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
@@ -58,7 +57,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 	if errors.Is(err, database.ErrNoSessionCache) {
 		// Refresh the session cache in the background
 		go func(realm string, accountId int) {
-			accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, realm, accountId)
+			accountErrs, err := cache.RefreshSessionsAndAccounts(opts.Type, opts.ReferenceID, realm, accountId)
 			if err != nil || len(accountErrs) > 0 {
 				log.Err(err).Msg("failed to refresh session cache")
 			}

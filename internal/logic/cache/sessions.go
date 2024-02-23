@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func RefreshSessionsAndAccounts(sessionType models.SessionType, realm string, accountIDs ...int) (map[int]error, error) {
+func RefreshSessionsAndAccounts(sessionType models.SessionType, referenceId *string, realm string, accountIDs ...int) (map[int]error, error) {
 	sessions, err := sessions.GetSessionsWithClient(wargaming.Clients.Cache, realm, accountIDs...)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, realm string, ac
 		return nil, err
 	}
 
-	lastBattle, err := database.GetLastBattleTimes(sessionType, accountIDs...)
+	lastBattle, err := database.GetLastBattleTimes(sessionType, referenceId, accountIDs...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,5 +52,5 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, realm string, ac
 		return updateErrors, nil
 	}
 
-	return updateErrors, database.InsertSession(sessionType, snapshots...)
+	return updateErrors, database.InsertSession(sessionType, referenceId, snapshots...)
 }

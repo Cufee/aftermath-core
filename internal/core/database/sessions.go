@@ -17,8 +17,8 @@ var (
 
 type SessionGetOptions struct {
 	LastBattleBefore *int
+	LastBattleAfter  *int
 	ReferenceID      *string
-	After            *time.Time
 	Type             models.SessionType
 }
 
@@ -35,10 +35,6 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Sn
 	findOptions.SetSort(bson.M{"createdAt": -1})
 
 	query := bson.M{"accountId": accountID}
-	if opts.After != nil {
-		query["createdAt"] = bson.M{"$gt": opts.After}
-		findOptions.SetSort(bson.M{"createdAt": 1})
-	}
 	if opts.Type != "" {
 		query["type"] = opts.Type
 	}
@@ -47,6 +43,9 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Sn
 	}
 	if opts.LastBattleBefore != nil {
 		query["lastBattleTime"] = bson.M{"$lt": *opts.LastBattleBefore}
+	}
+	if opts.LastBattleAfter != nil {
+		query["lastBattleTime"] = bson.M{"$gt": *opts.LastBattleAfter}
 	}
 
 	var snapshot models.Snapshot
@@ -61,7 +60,7 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Sn
 	return &snapshot, nil
 }
 
-func GetLastBattleTimes(sessionType models.SessionType, accountIDs ...int) (map[int]int, error) {
+func GetLastBattleTimes(sessionType models.SessionType, referenceId *string, accountIDs ...int) (map[int]int, error) {
 	if len(accountIDs) == 0 {
 		return make(map[int]int), nil
 	}
@@ -69,9 +68,13 @@ func GetLastBattleTimes(sessionType models.SessionType, accountIDs ...int) (map[
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
+	filter := bson.M{"accountId": bson.M{"$in": accountIDs}, "type": sessionType}
+	if referenceId != nil {
+		filter["referenceId"] = *referenceId
+	}
 	var lastBattles map[int]int = make(map[int]int)
 	var pipeline mongo.Pipeline
-	pipeline = append(pipeline, bson.D{{Key: "$match", Value: bson.M{"accountId": bson.M{"$in": accountIDs}, "type": sessionType}}})
+	pipeline = append(pipeline, bson.D{{Key: "$match", Value: filter}})
 	pipeline = append(pipeline, bson.D{{Key: "$group", Value: bson.M{"_id": "$accountId", "lastBattleTime": bson.M{"$max": "$lastBattleTime"}}}})
 	pipeline = append(pipeline, bson.D{{Key: "$project", Value: bson.M{"_id": 0, "accountId": "$_id", "lastBattleTime": 1}}})
 	cur, err := DefaultClient.Collection(CollectionSessions).Aggregate(ctx, pipeline)
@@ -97,15 +100,19 @@ func GetLastBattleTimes(sessionType models.SessionType, accountIDs ...int) (map[
 	return lastBattles, nil
 }
 
-func InsertSession(sessionType models.SessionType, sessions ...*stats.SessionSnapshot) error {
+func InsertSession(sessionType models.SessionType, referenceId *string, sessions ...*stats.SessionSnapshot) error {
 	var sessionInserts []mongo.WriteModel
 	for _, session := range sessions {
 		model := mongo.NewInsertOneModel()
-		model.SetDocument(models.Snapshot{
+		snapshot := models.Snapshot{
 			Type:      sessionType,
 			CreatedAt: time.Now(),
 			Session:   session,
-		})
+		}
+		if referenceId != nil {
+			snapshot.ReferenceID = *referenceId
+		}
+		model.SetDocument(snapshot)
 		sessionInserts = append(sessionInserts, model)
 	}
 	if len(sessionInserts) == 0 {

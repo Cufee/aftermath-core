@@ -35,8 +35,8 @@ func Start() {
 	renderV1.Post("/session/account/:account", render.SessionFromIDHandler)
 
 	statsV1 := v1.Group("/stats")
-	statsV1.Get("/session/user/:id", stats.SessionFromUserHandler)
-	statsV1.Get("/session/account/:account", stats.SessionFromIDHandler)
+	statsV1.Post("/session/user/:id", stats.SessionFromUserHandler)
+	statsV1.Post("/session/account/:account", stats.SessionFromIDHandler)
 	statsV1.Post("/session/account/:account/reset", stats.RecordPlayerSession)
 
 	accountsV1 := v1.Group("/accounts")

@@ -33,7 +33,7 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "strconv.Atoi"))
 	}
 
-	var opts types.RenderRequestPayload
+	var opts types.SessionRequestPayload
 	err = c.BodyParser(&opts)
 	if err != nil {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
@@ -53,7 +53,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponse("id path parameter is required", "c.Param"))
 	}
 
-	var opts types.RenderRequestPayload
+	var opts types.SessionRequestPayload
 	err := c.BodyParser(&opts)
 	if err != nil {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
@@ -80,13 +80,13 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(imageData))
 }
 
-func getEncodedSessionImage(realm string, accountId int, options types.RenderRequestPayload) (string, error) {
+func getEncodedSessionImage(realm string, accountId int, options types.SessionRequestPayload) (string, error) {
 	blocks, err := dataprep.ParseTags(options.Presets...)
 	if err != nil {
 		blocks = session.DefaultSessionBlocks
 	}
 
-	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type(), After: options.BattlesAfter})
+	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type(), ReferenceID: options.ReferenceID})
 	if err != nil {
 		return "", err
 	}
