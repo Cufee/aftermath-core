@@ -1,6 +1,7 @@
 package models
 
 import (
+	"slices"
 	"time"
 
 	"github.com/cufee/aftermath-core/permissions/v2"
@@ -22,33 +23,39 @@ func (s SubscriptionType) GetPermissions() permissions.Permissions {
 	}
 }
 
-const (
-	// Paid
-	SubscriptionTypePro     = SubscriptionType("aftermath-pro")
-	SubscriptionTypeProClan = SubscriptionType("aftermath-pro-clan")
-	SubscriptionTypePlus    = SubscriptionType("aftermath-plus")
+// Paid
+const SubscriptionTypePro = SubscriptionType("aftermath-pro")
+const SubscriptionTypeProClan = SubscriptionType("aftermath-pro-clan")
+const SubscriptionTypePlus = SubscriptionType("aftermath-plus")
 
-	// Misc
-	SubscriptionTypeSupporter    = SubscriptionType("supporter")
-	SubscriptionTypeVerifiedClan = SubscriptionType("verified-clan")
+// Misc
+const SubscriptionTypeSupporter = SubscriptionType("supporter")
+const SubscriptionTypeVerifiedClan = SubscriptionType("verified-clan")
 
-	// Moderators
-	SubscriptionTypeServerModerator  = SubscriptionType("server-moderator")
-	SubscriptionTypeContentModerator = SubscriptionType("content-moderator")
+// Moderators
+const SubscriptionTypeServerModerator = SubscriptionType("server-moderator")
+const SubscriptionTypeContentModerator = SubscriptionType("content-moderator")
 
-	// Special
-	SubscriptionTypeDeveloper         = SubscriptionType("developer")
-	SubscriptionTypeServerBooster     = SubscriptionType("server-booster")
-	SubscriptionTypeContentTranslator = SubscriptionType("content-translator")
-)
+// Special
+const SubscriptionTypeDeveloper = SubscriptionType("developer")
+const SubscriptionTypeServerBooster = SubscriptionType("server-booster")
+const SubscriptionTypeContentTranslator = SubscriptionType("content-translator")
+
+var AllSubscriptionTypes = []SubscriptionType{
+	SubscriptionTypePro,
+	SubscriptionTypeProClan,
+	SubscriptionTypePlus,
+	SubscriptionTypeSupporter,
+	SubscriptionTypeVerifiedClan,
+	SubscriptionTypeServerModerator,
+	SubscriptionTypeContentModerator,
+	SubscriptionTypeDeveloper,
+	SubscriptionTypeServerBooster,
+	SubscriptionTypeContentTranslator,
+}
 
 func (s SubscriptionType) Valid() bool {
-	switch s {
-	case SubscriptionTypePro, SubscriptionTypeProClan, SubscriptionTypePlus, SubscriptionTypeSupporter, SubscriptionTypeVerifiedClan, SubscriptionTypeServerBooster, SubscriptionTypeServerModerator, SubscriptionTypeContentModerator:
-		return true
-	default:
-		return false
-	}
+	return slices.Contains(AllSubscriptionTypes, s)
 }
 
 func ParseSubscriptionType(s string) (SubscriptionType, bool) {
