@@ -190,6 +190,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 			Clan:          &sessionData.Account.Clan,
 			Account:       &sessionData.Account.Account,
 			Subscriptions: subscriptions,
+			Session:       sessionData,
 			Cards:         statsCards,
 		}
 

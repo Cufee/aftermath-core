@@ -122,9 +122,9 @@ var (
 		Name: "Supporter",
 		Icon: "images/icons/fire",
 		Style: subscriptionPillStyle{
-			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Height: 32},
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Height: 32, Gap: 5},
 			Icon:      render.Style{Width: 16, Height: 16, BackgroundColor: render.TextSubscriptionPlus, PaddingX: 5},
-			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary, PaddingX: 5},
+			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
 		},
 	}
 	userSubscriptionPlus = &subscriptionHeader{

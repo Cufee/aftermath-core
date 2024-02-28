@@ -41,10 +41,11 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 
 	// session.Account.Nickname = "WWWWWWWWWWWWWWWWWWWWW"
 	player := session.PlayerData{
-		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
-		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeVerifiedClan}},
-		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
-		Account:       &sessionData.Account.Account,
+		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypePlus}},
+		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeSupporter}, {Type: models.SubscriptionTypeVerifiedClan}},
+		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
+		Account: &sessionData.Account.Account,
+		Session: sessionData,
 		// Clan:    &session.Account.Clan,
 		Cards: statsCards,
 	}

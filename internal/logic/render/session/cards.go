@@ -2,11 +2,15 @@ package session
 
 import (
 	"errors"
+	"strings"
+	"time"
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
+	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/cufee/aftermath-core/utils"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
@@ -14,6 +18,7 @@ import (
 type PlayerData struct {
 	Clan          *wg.Clan
 	Account       *wg.Account
+	Session       *stats.Snapshot
 	Cards         session.Cards
 	Subscriptions []models.UserSubscription
 }
@@ -27,6 +32,14 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	if player.Account == nil {
 		log.Error().Msg("player account is nil, this should not happen")
 		return nil, errors.New("player account is nil")
+	}
+	if player.Session == nil {
+		log.Error().Msg("player session is nil, this should not happen")
+		return nil, errors.New("session is nil")
+	}
+	if len(player.Cards) == 0 {
+		log.Error().Msg("player cards slice is 0 length, this should not happen")
+		return nil, errors.New("no cards provided")
 	}
 
 	var cards []render.Block
@@ -48,17 +61,18 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		))
 	}
 
-	if addPromoText {
+	if addPromoText && options.PromoText != nil {
 		// Users without a subscription get promo text
-		if options.PromoText != nil {
-			var textBlocks []render.Block
-			for _, text := range options.PromoText {
-				textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, text))
-			}
-			cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter},
-				textBlocks...,
-			))
+		var textBlocks []render.Block
+		for _, text := range options.PromoText {
+			textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}, text))
 		}
+		cards = append(cards, render.NewBlocksContent(render.Style{
+			Direction:  render.DirectionVertical,
+			AlignItems: render.AlignItemsCenter,
+		},
+			textBlocks...,
+		))
 	}
 
 	// Title Card
@@ -100,5 +114,21 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		}
 		cards = append(cards, newCardBlock(options.CardStyle, newTextLabel(card.Title), blocks))
 	}
+
+	var footer []string
+	switch strings.ToLower(utils.RealmFromAccountID(player.Account.ID)) {
+	case "na":
+		footer = append(footer, "North America")
+	case "eu":
+		footer = append(footer, "Europe")
+	case "as":
+		footer = append(footer, "Asia")
+	}
+	if player.Session.Selected.LastBattleTime > 0 {
+		start := time.Unix(int64(player.Session.Selected.LastBattleTime), 0)
+		footer = append(footer, start.Format("January 2"))
+	}
+	cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
+
 	return cards, nil
 }
