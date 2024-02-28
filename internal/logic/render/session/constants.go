@@ -180,6 +180,15 @@ var (
 			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
 		},
 	}
+	subscriptionContentModerator = &subscriptionHeader{
+		Name: "Moderator",
+		Icon: "images/icons/logo-128",
+		Style: subscriptionPillStyle{
+			Container: render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, BackgroundColor: DefaultCardStyle(nil).BackgroundColor, BorderRadius: 15, PaddingX: 10, PaddingY: 5, Gap: 5, Height: 32},
+			Icon:      render.Style{Width: 20, Height: 20},
+			Text:      render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
+		},
+	}
 	subscriptionServerBooster = &subscriptionHeader{
 		Name: "Booster",
 		Icon: "images/icons/discord-booster",

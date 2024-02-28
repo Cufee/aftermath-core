@@ -26,8 +26,8 @@ func (data *PlayerData) userBadges() ([]render.Block, error) {
 			header = subscriptionDeveloper
 		case models.SubscriptionTypeServerModerator:
 			header = subscriptionServerModerator
-		case models.SubscriptionTypeContentTranslator:
-			header = subscriptionTranslator
+		case models.SubscriptionTypeContentModerator:
+			header = subscriptionContentModerator
 		}
 
 		if header != nil {
@@ -44,8 +44,6 @@ func (data *PlayerData) userBadges() ([]render.Block, error) {
 		switch subscription.Type {
 		case models.SubscriptionTypeContentTranslator:
 			header = subscriptionTranslator
-		case models.SubscriptionTypeSupporter:
-			header = userSubscriptionSupporter
 		}
 
 		if header != nil {
@@ -64,10 +62,10 @@ func (data *PlayerData) userBadges() ([]render.Block, error) {
 			header = userSubscriptionPro
 		case models.SubscriptionTypePlus:
 			header = userSubscriptionPlus
-		case models.SubscriptionTypeSupporter:
-			header = userSubscriptionSupporter
 		case models.SubscriptionTypeServerBooster:
 			header = subscriptionServerBooster
+		case models.SubscriptionTypeSupporter:
+			header = userSubscriptionSupporter
 		}
 
 		if header != nil {
