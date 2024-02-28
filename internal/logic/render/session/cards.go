@@ -34,7 +34,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	var addPromoText = true
 	for _, sub := range player.Subscriptions {
 		switch sub.Type {
-		case models.SubscriptionTypePro, models.SubscriptionTypePlus:
+		case models.SubscriptionTypePro, models.SubscriptionTypePlus, models.SubscriptionTypeDeveloper:
 			addPromoText = false
 		}
 		if !addPromoText {
