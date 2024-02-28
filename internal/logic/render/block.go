@@ -57,7 +57,7 @@ func (content contentText) Render(style Style) (image.Image, error) {
 	}
 
 	size := MeasureString(content.value, *style.Font)
-	ctx := gg.NewContext(int(size.TotalWidth), int(size.TotalHeight))
+	ctx := gg.NewContext(int(size.TotalWidth+(style.PaddingX*2)), int(size.TotalHeight+(style.PaddingY*2)))
 
 	// Render text
 	ctx.SetFontFace(*style.Font)
