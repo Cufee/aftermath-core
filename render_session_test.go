@@ -9,6 +9,7 @@ import (
 
 	sessionPrep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
@@ -42,13 +43,13 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 	player := session.PlayerData{
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypePlus}},
 		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeVerifiedClan}},
-		// Subscriptions: []users.UserSubscription{{Type: users.SubscriptionTypeSupporter}, {Type: users.SubscriptionTypeProClan}},
-		Account: &sessionData.Account.Account,
+		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeDeveloper}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
+		Account:       &sessionData.Account.Account,
 		// Clan:    &session.Account.Clan,
 		Cards: statsCards,
 	}
 
-	bgImage, _ := assets.GetImage("images/backgrounds/default")
+	bgImage, _ := assets.GetImage("images/backgrounds/light")
 	options := session.RenderOptions{
 		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
 		CardStyle: session.DefaultCardStyle(nil),

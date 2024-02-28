@@ -13,34 +13,74 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 )
 
-func (data *PlayerData) userSubscriptionHeader() *subscriptionHeader {
-	var headers []*subscriptionHeader
+func (data *PlayerData) userBadges() ([]render.Block, error) {
+	slices.SortFunc(data.Subscriptions, func(i, j models.UserSubscription) int {
+		return subscriptionWeight[j.Type] - subscriptionWeight[i.Type]
+	})
 
+	var badges []render.Block
 	for _, subscription := range data.Subscriptions {
+		var header *subscriptionHeader
 		switch subscription.Type {
+		case models.SubscriptionTypeDeveloper:
+			header = subscriptionDeveloper
 		case models.SubscriptionTypeServerModerator:
-			headers = append(headers, subscriptionServerModerator)
+			header = subscriptionServerModerator
+		case models.SubscriptionTypeContentTranslator:
+			header = subscriptionTranslator
+		}
 
-		case models.SubscriptionTypePro:
-			headers = append(headers, userSubscriptionPro)
-		case models.SubscriptionTypePlus:
-			headers = append(headers, userSubscriptionPlus)
+		if header != nil {
+			block, err := header.Block()
+			if err != nil {
+				return nil, err
+			}
+			badges = append(badges, block)
+			break
+		}
+	}
+	for _, subscription := range data.Subscriptions {
+		var header *subscriptionHeader
+		switch subscription.Type {
+		case models.SubscriptionTypeContentTranslator:
+			header = subscriptionTranslator
 		case models.SubscriptionTypeSupporter:
-			headers = append(headers, userSubscriptionSupporter)
+			header = userSubscriptionSupporter
+		}
 
+		if header != nil {
+			block, err := header.Block()
+			if err != nil {
+				return nil, err
+			}
+			badges = append(badges, block)
+			break
+		}
+	}
+	for _, subscription := range data.Subscriptions {
+		var header *subscriptionHeader
+		switch subscription.Type {
+		case models.SubscriptionTypePro:
+			header = userSubscriptionPro
+		case models.SubscriptionTypePlus:
+			header = userSubscriptionPlus
+		case models.SubscriptionTypeSupporter:
+			header = userSubscriptionSupporter
 		case models.SubscriptionTypeServerBooster:
-			headers = append(headers, subscriptionServerBooster)
+			header = subscriptionServerBooster
+		}
+
+		if header != nil {
+			block, err := header.Block()
+			if err != nil {
+				return nil, err
+			}
+			badges = append(badges, block)
+			break
 		}
 	}
 
-	slices.SortFunc(headers, func(i, j *subscriptionHeader) int {
-		return j.weight - i.weight
-	})
-	if len(headers) > 0 {
-		return headers[0]
-	}
-
-	return nil
+	return badges, nil
 }
 
 func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
@@ -55,9 +95,6 @@ func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
 		}
 	}
 
-	slices.SortFunc(headers, func(i, j *subscriptionHeader) int {
-		return j.weight - i.weight
-	})
 	if len(headers) > 0 {
 		return headers[0]
 	}

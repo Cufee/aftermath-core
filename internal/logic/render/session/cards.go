@@ -31,17 +31,24 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	var cards []render.Block
 
-	// User Subscription Badge and promo text
-	switch sub := player.userSubscriptionHeader(); sub {
-	case userSubscriptionSupporter, subscriptionServerBooster:
-		// Supporters and Boosters get a badge and promo text
-		subscriptionBlock, err := sub.Block()
-		if err != nil {
-			return nil, err
+	var addPromoText = true
+	for _, sub := range player.Subscriptions {
+		switch sub.Type {
+		case models.SubscriptionTypePro, models.SubscriptionTypePlus:
+			addPromoText = false
 		}
-		cards = append(cards, subscriptionBlock)
-		fallthrough
-	case nil:
+		if !addPromoText {
+			break
+		}
+	}
+	// User Subscription Badge and promo text
+	if badges, _ := player.userBadges(); len(badges) > 0 {
+		cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, Gap: 10},
+			badges...,
+		))
+	}
+
+	if addPromoText {
 		// Users without a subscription get promo text
 		if options.PromoText != nil {
 			var textBlocks []render.Block
@@ -52,13 +59,6 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 				textBlocks...,
 			))
 		}
-	default:
-		// All other subscriptions get a badge
-		subscriptionBlock, err := sub.Block()
-		if err != nil {
-			return nil, err
-		}
-		cards = append(cards, subscriptionBlock)
 	}
 
 	// Title Card

@@ -23,15 +23,23 @@ func (s SubscriptionType) GetPermissions() permissions.Permissions {
 }
 
 const (
-	SubscriptionTypePro          = SubscriptionType("aftermath-pro")
-	SubscriptionTypeProClan      = SubscriptionType("aftermath-pro-clan")
-	SubscriptionTypePlus         = SubscriptionType("aftermath-plus")
+	// Paid
+	SubscriptionTypePro     = SubscriptionType("aftermath-pro")
+	SubscriptionTypeProClan = SubscriptionType("aftermath-pro-clan")
+	SubscriptionTypePlus    = SubscriptionType("aftermath-plus")
+
+	// Misc
 	SubscriptionTypeSupporter    = SubscriptionType("supporter")
 	SubscriptionTypeVerifiedClan = SubscriptionType("verified-clan")
 
-	SubscriptionTypeServerBooster    = SubscriptionType("server-booster")
+	// Moderators
 	SubscriptionTypeServerModerator  = SubscriptionType("server-moderator")
 	SubscriptionTypeContentModerator = SubscriptionType("content-moderator")
+
+	// Special
+	SubscriptionTypeDeveloper         = SubscriptionType("developer")
+	SubscriptionTypeServerBooster     = SubscriptionType("server-booster")
+	SubscriptionTypeContentTranslator = SubscriptionType("content-translator")
 )
 
 func (s SubscriptionType) Valid() bool {
