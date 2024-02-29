@@ -8,7 +8,6 @@ import (
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/sessions"
-	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
 
@@ -16,13 +15,8 @@ var (
 	ErrBadLiveSession = errors.New("bad live session")
 )
 
-type SnapshotAccount struct {
-	wg.ExtendedAccount
-	wg.ClanMember
-}
-
 type Snapshot struct {
-	Account  SnapshotAccount
+	Account  AccountWithClan
 	Selected *core.SessionSnapshot // The session that was selected from the database
 	Live     *core.SessionSnapshot // The live session
 	Diff     *core.SessionSnapshot // The difference between the selected and live sessions
@@ -66,7 +60,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 		// There is no session cache, so the live session is the same as the last session and there is no diff
 		return &Snapshot{
 			Selected: liveSession.Data.Session,
-			Account: SnapshotAccount{
+			Account: AccountWithClan{
 				ExtendedAccount: *liveSession.Data.Account,
 				ClanMember:      *liveSession.Data.Clan,
 			},
@@ -95,7 +89,7 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 
 	return &Snapshot{
 		Selected: lastSession.Session,
-		Account: SnapshotAccount{
+		Account: AccountWithClan{
 			ExtendedAccount: *liveSession.Data.Account,
 			ClanMember:      *liveSession.Data.Clan,
 		},

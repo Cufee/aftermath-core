@@ -1,4 +1,4 @@
-package external
+package wotinspector
 
 import (
 	"encoding/json"
@@ -8,15 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/cufee/aftermath-core/internal/core/utils"
 )
-
-var replayUploadUrl string
-
-func init() {
-	replayUploadUrl = utils.MustGetEnv("WOT_INSPECTOR_REPLAYS_URL")
-}
 
 func GetReplayData(replayUrl string) (*Replay, error) {
 	link := url.Values{}

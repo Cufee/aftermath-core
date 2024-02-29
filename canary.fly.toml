@@ -7,7 +7,7 @@ app = 'aftermath-core-canary'
 primary_region = 'lhr'
 
 [env]
-BLITZ_STARS_AVERAGES_URL = 'https://www.blitzstars.com/api/tankaverages.json'
+BLITZ_STARS_API_URL = "https://www.blitzstars.com/api"
 CACHE_WG_PROXY_URL = 'http://aftermath-wg-proxy-cache.internal:9090/v1'
 FRONTEND_URL = 'https://canary.amth.one'
 LIVE_WG_PROXY_URL = 'http://aftermath-wg-proxy-live.internal:9090/v1'

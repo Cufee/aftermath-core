@@ -9,9 +9,9 @@ primary_region = 'lhr'
 [env]
 WOT_INSPECTOR_TANK_DB_URL = 'https://armor.wotinspector.com/static/armorinspector/tank_db_blitz.js'
 WOT_INSPECTOR_REPLAYS_URL = 'https://api.wotinspector.com/v2/blitz/replays/'
-BLITZ_STARS_AVERAGES_URL = 'https://www.blitzstars.com/api/tankaverages.json'
 CACHE_WG_PROXY_URL = 'http://aftermath-wg-proxy-cache.internal:9090/v1'
 LIVE_WG_PROXY_URL = 'http://aftermath-wg-proxy-live.internal:9090/v1'
+BLITZ_STARS_API_URL = "https://www.blitzstars.com/api"
 FRONTEND_URL = 'https://amth.one'
 SCHEDULER_ENABLED = 'true'
 LOG_LEVEL = 'info'

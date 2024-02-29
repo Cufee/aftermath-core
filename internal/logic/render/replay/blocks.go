@@ -6,11 +6,12 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
-	"github.com/cufee/aftermath-core/internal/logic/external"
+
+	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
 
-func newTitleBlock(replay *external.Replay, width float64) render.Block {
+func newTitleBlock(replay *wotinspector.Replay, width float64) render.Block {
 	var titleBlocks []render.Block
 	if replay.Victory {
 		titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
@@ -37,7 +38,7 @@ func newTitleBlock(replay *external.Replay, width float64) render.Block {
 	return render.NewBlocksContent(style, titleBlocks...)
 }
 
-func newPlayerCard(style render.Style, sizes map[dataprep.Tag]float64, card replay.Card, player external.Player, ally, protagonist bool) render.Block {
+func newPlayerCard(style render.Style, sizes map[dataprep.Tag]float64, card replay.Card, player wotinspector.Player, ally, protagonist bool) render.Block {
 	hpBarValue := float64(player.HPLeft) / float64((player.Performance.DamageReceived + player.HPLeft))
 	if hpBarValue > 0 {
 		hpBarValue = math.Max(hpBarValue, 0.2)
@@ -85,7 +86,7 @@ func newPlayerCard(style render.Style, sizes map[dataprep.Tag]float64, card repl
 	return render.NewBlocksContent(style, leftBlock, rightBlock)
 }
 
-func playerNameBlock(player external.Player, protagonist bool) render.Block {
+func playerNameBlock(player wotinspector.Player, protagonist bool) render.Block {
 	nameColor := render.TextSecondary
 	if protagonist {
 		nameColor = protagonistColor

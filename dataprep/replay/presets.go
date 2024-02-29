@@ -2,7 +2,7 @@ package replay
 
 import (
 	"github.com/cufee/aftermath-core/dataprep"
-	"github.com/cufee/aftermath-core/internal/logic/external"
+	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
 )
 
 type Cards struct {
@@ -13,8 +13,8 @@ type Cards struct {
 type Card dataprep.StatsCard[StatsBlock, CardMeta]
 
 type CardMeta struct {
-	Player external.Player `json:"player"`
-	Tags   []dataprep.Tag  `json:"tags"`
+	Player wotinspector.Player `json:"player"`
+	Tags   []dataprep.Tag      `json:"tags"`
 }
 
 type StatsBlock struct {

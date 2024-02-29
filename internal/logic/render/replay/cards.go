@@ -6,7 +6,8 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
-	"github.com/cufee/aftermath-core/internal/logic/external"
+
+	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 )
 
@@ -15,7 +16,7 @@ import (
 
 type ReplayData struct {
 	Cards  replay.Cards
-	Replay *external.Replay
+	Replay *wotinspector.Replay
 }
 
 func RenderReplayImage(data ReplayData) (image.Image, error) {

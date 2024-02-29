@@ -1,4 +1,4 @@
-package external
+package blitzstars
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/cufee/aftermath-core/internal/core/stats"
-	"github.com/cufee/aftermath-core/internal/core/utils"
 )
 
 // Response from https://www.blitzstars.com/ average stats endpoint
@@ -33,18 +32,15 @@ type VehicleAverages struct {
 	} `json:"special,omitempty"`
 }
 
-var starsStatsAveragesURL string
-
-func init() {
-	starsStatsAveragesURL = utils.MustGetEnv("BLITZ_STARS_AVERAGES_URL")
-}
-
 func GetTankAverages() (map[int]stats.ReducedStatsFrame, error) {
-	res, err := insecureClient.Get(starsStatsAveragesURL)
-	if err != nil || res == nil || res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code: %+v. error: %s", res, err)
+	res, err := insecureClient.Get(starsStatsApiURL + "/tankaverages.json")
+	if err != nil {
+		return nil, err
 	}
 	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad status code: %d", res.StatusCode)
+	}
 
 	var averages []VehicleAverages
 	err = json.NewDecoder(res.Body).Decode(&averages)

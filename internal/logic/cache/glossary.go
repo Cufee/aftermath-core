@@ -3,11 +3,11 @@ package cache
 import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/logic/external"
+	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
 )
 
 func UpdateGlossaryCache() error {
-	vehiclesMap, err := external.GetCompleteVehicleGlossary()
+	vehiclesMap, err := wotinspector.GetCompleteVehicleGlossary()
 	if err != nil {
 		return err
 	}

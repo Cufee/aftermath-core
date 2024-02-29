@@ -11,6 +11,7 @@ require (
 	github.com/gofiber/contrib/fiberzerolog v0.2.3
 	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75
 	github.com/joho/godotenv v1.5.1
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/rs/zerolog v1.31.0

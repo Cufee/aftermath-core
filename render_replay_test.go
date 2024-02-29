@@ -10,7 +10,8 @@ import (
 	replays "github.com/cufee/aftermath-core/dataprep/replay"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/utils"
-	"github.com/cufee/aftermath-core/internal/logic/external"
+
+	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/render/replay"
@@ -22,7 +23,7 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		panic(err)
 	}
 
-	var replayData external.Replay
+	var replayData wotinspector.Replay
 	err = json.Unmarshal(file, &replayData)
 	if err != nil {
 		t.Fatal(err)

@@ -125,8 +125,13 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		footer = append(footer, "Asia")
 	}
 	if player.Session.Selected.LastBattleTime > 0 {
-		start := time.Unix(int64(player.Session.Selected.LastBattleTime), 0)
-		footer = append(footer, start.Format("January 2"))
+		sessionTo := time.Unix(int64(player.Session.Live.LastBattleTime), 0).Format("January 2")
+		sessionFrom := time.Unix(int64(player.Session.Selected.LastBattleTime), 0).Format("January 2")
+		if sessionFrom == sessionTo {
+			footer = append(footer, sessionTo)
+		} else {
+			footer = append(footer, sessionFrom+" - "+sessionTo)
+		}
 	}
 	cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
 
