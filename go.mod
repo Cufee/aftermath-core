@@ -1,6 +1,6 @@
 module github.com/cufee/aftermath-core
 
-go 1.21.5
+go 1.22.0
 
 require (
 	github.com/EdlinOrg/prominentcolor v1.0.0

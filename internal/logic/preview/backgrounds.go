@@ -3,6 +3,7 @@ package preview
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"sync"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
@@ -51,7 +52,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 		}
 	}
 
-	statsImage, err := renderCardsPreview(player, nil)
+	statsImage, err := renderCardsPreview(player)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +110,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 	return frameCtx.Image(), nil
 }
 
-func renderCardsPreview(player session.PlayerData, background image.Image) (image.Image, error) {
+func renderCardsPreview(player session.PlayerData) (image.Image, error) {
 	renderOptions := session.RenderOptions{
 		CardStyle: session.DefaultCardStyle(nil),
 	}
@@ -123,14 +124,13 @@ func renderCardsPreview(player session.PlayerData, background image.Image) (imag
 
 func statsWithNumber(statsImage image.Image, number int) (image.Image, error) {
 	textBlock := render.NewBlocksContent(render.Style{
-		BackgroundColor: render.DefaultCardColor,
+		BackgroundColor: color.RGBA{30, 106, 195, 180},
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
-		PaddingX:        20,
-		PaddingY:        20,
 		BorderRadius:    20,
 		Width:           float64(numberBlockWidth - 20),
-	}, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, fmt.Sprintf("#%d", number)))
+		Height:          float64(numberBlockWidth - 20),
+	}, render.NewTextContent(render.Style{Font: &render.FontExtraLarge, FontColor: render.TextPrimary}, fmt.Sprintf("%d", number)))
 	statsBlock := render.NewImageContent(render.Style{Width: float64(statsImage.Bounds().Dx()), Height: float64(statsImage.Bounds().Dy())}, statsImage)
 	containerStyle := render.Style{
 		JustifyContent: render.JustifyContentStart,

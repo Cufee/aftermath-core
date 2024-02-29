@@ -45,22 +45,6 @@ type TankHistoryEntry struct {
 	Stats           wg.StatsFrame `json:"all"`
 }
 
-func (a *TankHistoryEntry) Add(b TankHistoryEntry) {
-	if a.TankID != b.TankID {
-		return
-	}
-	if b.LastBattleTime > a.LastBattleTime {
-		a.LastBattleTime = b.LastBattleTime
-	}
-	if b.BattlesLifeTime > a.BattlesLifeTime {
-		a.BattlesLifeTime = b.BattlesLifeTime
-	}
-	if b.MarkOfMastery > a.MarkOfMastery {
-		a.MarkOfMastery = b.MarkOfMastery
-	}
-	a.Stats.Add(&b.Stats)
-}
-
 func GetPlayerTankHistories(accountId int) (map[int][]TankHistoryEntry, error) {
 	res, err := insecureClient.Get(fmt.Sprintf("%s/tankhistories/for/%d", starsStatsApiURL, accountId))
 	if err != nil {

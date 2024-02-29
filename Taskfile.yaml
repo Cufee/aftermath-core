@@ -24,7 +24,7 @@ tasks:
     sources:
       - '**/*.go'
     cmds:
-      - go test -timeout 30s --count=1 -run TestFullRenderPipeline github.com/cufee/aftermath-core -v
+      - go test -timeout 30s --count=1 -run TestFullPreviewRenderPipeline github.com/cufee/aftermath-core -v
   dev-replay:
     desc: Run the complete rendering pipeline test file, this is useful when making UI changes
     watch: true
@@ -32,6 +32,13 @@ tasks:
       - '**/*.go'
     cmds:
       - go test -timeout 30s --count=1 -run TestFullReplayRenderPipeline github.com/cufee/aftermath-core -v
+  dev-period:
+    desc: Run the complete rendering pipeline test file, this is useful when making UI changes
+    watch: true
+    sources:
+      - '**/*.go'
+    cmds:
+      - go test -timeout 30s --count=1 -run TestFullPeriodRenderPipeline github.com/cufee/aftermath-core -v
 
   test:
     desc: Run tests

@@ -1,4 +1,4 @@
-package stats
+package period
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func GetAccountInfo(client *client.Client, realm string, accountID int) (*stats.
 	waitGroup.Add(1)
 	go func() {
 		defer waitGroup.Done()
-		accounts, err := client.BulkGetAccountsByID([]string{accountStr}, realm)
+		accounts, err := client.BulkGetAccountsByID([]string{accountStr}, realm, "nickname", "last_battle_time", "account_id", "created_at")
 		if err != nil {
 			log.Err(err).Msg("failed to get accounts")
 		}
@@ -32,7 +32,7 @@ func GetAccountInfo(client *client.Client, realm string, accountID int) (*stats.
 	waitGroup.Add(1)
 	go func() {
 		defer waitGroup.Done()
-		clans, err := client.BulkGetAccountsClans([]string{accountStr}, realm)
+		clans, err := client.BulkGetAccountsClans([]string{accountStr}, realm, "clan")
 		if err != nil {
 			// This is not a critical error, so we don't return it
 			log.Err(err).Msg("failed to get accounts clans")

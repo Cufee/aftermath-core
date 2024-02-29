@@ -1,4 +1,4 @@
-package sessions
+package stats
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 	wg "github.com/cufee/am-wg-proxy-next/types"
 )
 
-type SessionWithRawData struct {
+type CompleteStats struct {
 	Session  *stats.SessionSnapshot
 	Account  *wg.ExtendedAccount
 	Clan     *wg.ClanMember
@@ -27,10 +27,11 @@ type vehiclesWithAccount struct {
 }
 
 var (
+	ErrBlankResponse     = errors.New("blank response from wargaming")
 	ErrTooManyAccountIDs = errors.New("too many account IDs")
 )
 
-func GetLiveLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error) {
+func GetLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error) {
 	if len(accountIDs) == 0 {
 		return make(map[int]int), nil
 	}
@@ -56,11 +57,7 @@ func GetLiveLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error
 	return lastBattleTimes, nil
 }
 
-func GetLiveSessions(realm string, accountIDs ...int) (map[int]utils.DataWithError[*SessionWithRawData], error) {
-	return GetSessionsWithClient(wargaming.Clients.Live, realm, accountIDs...)
-}
-
-func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*SessionWithRawData], error) {
+func GetCompleteStatsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*CompleteStats], error) {
 	if len(accountIDs) > 100 {
 		return nil, ErrTooManyAccountIDs
 	}
@@ -139,26 +136,26 @@ func GetSessionsWithClient(client *client.Client, realm string, accountIDs ...in
 		return nil, accountClans.Err
 	}
 
-	sessions := make(map[int]utils.DataWithError[*SessionWithRawData], len(accountIDs))
+	sessions := make(map[int]utils.DataWithError[*CompleteStats], len(accountIDs))
 	for vehicle := range vehiclesChan {
 		if vehicle.Err != nil {
-			sessions[vehicle.Data.accountID] = utils.DataWithError[*SessionWithRawData]{Err: vehicle.Err}
+			sessions[vehicle.Data.accountID] = utils.DataWithError[*CompleteStats]{Err: vehicle.Err}
 			continue
 		}
 
 		account, ok := accounts.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
 		if !ok || account.ID == 0 {
-			sessions[vehicle.Data.accountID] = utils.DataWithError[*SessionWithRawData]{
+			sessions[vehicle.Data.accountID] = utils.DataWithError[*CompleteStats]{
 				Err: fmt.Errorf("account %d not found", vehicle.Data.accountID),
 			}
 			continue
 		}
 
 		clan := accountClans.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
-		session := AccountStatsToSession(account, vehicle.Data.vehicles)
+		session := CompleteStatsFromWargaming(account, vehicle.Data.vehicles)
 
-		sessions[vehicle.Data.accountID] = utils.DataWithError[*SessionWithRawData]{
-			Data: &SessionWithRawData{
+		sessions[vehicle.Data.accountID] = utils.DataWithError[*CompleteStats]{
+			Data: &CompleteStats{
 				Clan:     &clan,
 				Session:  session,
 				Account:  &account,

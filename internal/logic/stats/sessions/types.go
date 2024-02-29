@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	ErrBadLiveSession  = errors.New("bad live session")
 	ErrNoSessionCached = errors.New("no session cached")
 )
 

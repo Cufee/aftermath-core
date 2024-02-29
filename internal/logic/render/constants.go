@@ -10,9 +10,10 @@ import (
 var DiscordBackgroundColor = color.RGBA{49, 51, 56, 255}
 
 var (
-	FontLarge  font.Face
-	FontMedium font.Face
-	FontSmall  font.Face
+	FontExtraLarge font.Face
+	FontLarge      font.Face
+	FontMedium     font.Face
+	FontSmall      font.Face
 
 	TextPrimary   = color.RGBA{255, 255, 255, 255}
 	TextSecondary = color.RGBA{204, 204, 204, 255}
@@ -25,10 +26,11 @@ var (
 )
 
 func init() {
-	fontFaces, ok := assets.GetFontFaces("default", 24, 18, 14)
+	fontFaces, ok := assets.GetFontFaces("default", 36, 24, 18, 14)
 	if !ok {
 		panic("default font not found")
 	}
+	FontExtraLarge = fontFaces[36]
 	FontLarge = fontFaces[24]
 	FontMedium = fontFaces[18]
 	FontSmall = fontFaces[14]

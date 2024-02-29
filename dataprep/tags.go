@@ -16,6 +16,9 @@ const (
 	TagAvgDamage   Tag = "avg_damage"
 	TagDamageRatio Tag = "damage_ratio"
 
+	// Period Specific
+	TagAvgTier Tag = "avg_tier"
+
 	// Replay Specific
 	TagDamageDealt            Tag = "damage_dealt"
 	TagDamageTaken            Tag = "damage_taken"

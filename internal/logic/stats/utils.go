@@ -21,3 +21,23 @@ func FrameToReducedStatsFrame(frame types.StatsFrame) *stats.ReducedStatsFrame {
 		DroppedCapturePoints: frame.DroppedCapturePoints,
 	}
 }
+
+func CompleteStatsFromWargaming(account types.ExtendedAccount, accountVehicles []types.VehicleStatsFrame) *stats.SessionSnapshot {
+	session := &stats.SessionSnapshot{
+		AccountID:      account.ID,
+		LastBattleTime: account.LastBattleTime,
+		Global:         FrameToReducedStatsFrame(account.Statistics.All),
+		Rating:         FrameToReducedStatsFrame(account.Statistics.Rating),
+		Vehicles:       make(map[int]*stats.ReducedVehicleStats),
+	}
+
+	for _, vehicle := range accountVehicles {
+		session.Vehicles[vehicle.TankID] = &stats.ReducedVehicleStats{
+			VehicleID:         vehicle.TankID,
+			ReducedStatsFrame: FrameToReducedStatsFrame(vehicle.Stats),
+			MarkOfMastery:     vehicle.MarkOfMastery,
+			LastBattleTime:    vehicle.LastBattleTime,
+		}
+	}
+	return session
+}

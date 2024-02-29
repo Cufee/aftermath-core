@@ -3,16 +3,16 @@ package cache
 import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/stats"
+	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
-	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
+	"github.com/cufee/aftermath-core/internal/logic/stats"
 
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
 
 func RefreshSessionsAndAccounts(sessionType models.SessionType, referenceId *string, realm string, accountIDs ...int) (map[int]error, error) {
-	sessions, err := sessions.GetSessionsWithClient(wargaming.Clients.Cache, realm, accountIDs...)
+	sessions, err := stats.GetCompleteStatsWithClient(wargaming.Clients.Cache, realm, accountIDs...)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, referenceId *str
 	}
 
 	updateErrors := make(map[int]error)
-	var snapshots []*stats.SessionSnapshot
+	var snapshots []*core.SessionSnapshot
 	for accountId, session := range sessions {
 		if session.Err != nil {
 			updateErrors[accountId] = session.Err
