@@ -5,14 +5,8 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/localization"
-	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/stats/period"
 )
-
-type ExportInput struct {
-	Stats                 *period.PeriodStats
-	GlobalVehicleAverages map[int]*core.ReducedStatsFrame
-}
 
 type ExportOptions struct {
 	Locale     localization.SupportedLanguage
@@ -28,14 +22,23 @@ type Cards struct {
 type OverviewCard dataprep.StatsCard[[]StatsBlock, string]
 type VehicleCard dataprep.StatsCard[[]StatsBlock, string]
 
+type BlockFlavor string
+
+const (
+	BlockFlavorDefault   = "default"
+	BlockFlavorSpecial   = "special"
+	BlockFlavorSecondary = "secondary"
+)
+
 type StatsBlock struct {
-	Label string         `json:"label"`
-	Data  dataprep.Value `json:"data"`
-	Tag   dataprep.Tag   `json:"tag"`
+	Label  string         `json:"label"`
+	Data   dataprep.Value `json:"data"`
+	Tag    dataprep.Tag   `json:"tag"`
+	Flavor BlockFlavor    `json:"flavor"`
 }
 
-func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {
-	if input.Stats == nil {
+func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards, error) {
+	if stats == nil {
 		return Cards{}, errors.New("period stats are nil")
 	}
 
@@ -46,12 +49,25 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 	for _, row := range options.Blocks {
 		var rowBlocks []StatsBlock
 		for _, preset := range row {
-			block, err := presetToBlock(preset, &input.Stats.Stats, nil, printer)
+			if preset == dataprep.TagAvgTier {
+				value := calculateAvgTier(stats.Vehicles)
+				rowBlocks = append(rowBlocks, StatsBlock{
+					Label:  printer("label_" + string(preset)),
+					Data:   dataprep.StatsToValue(value),
+					Flavor: BlockFlavorSecondary,
+					Tag:    preset,
+				})
+				continue
+			}
+			block, err := presetToBlock(preset, &stats.Stats, printer)
 			if err != nil {
 				return cards, err
 			}
 			rowBlocks = append(rowBlocks, block)
+
 		}
+
+		cards.Overview.Type = dataprep.CardTypeOverview
 		cards.Overview.Blocks = append(cards.Overview.Blocks, rowBlocks)
 	}
 

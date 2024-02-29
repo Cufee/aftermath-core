@@ -67,6 +67,9 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 				VehicleID:         vehicle.TankID,
 			}
 		}
+
+		// TODO: Get calculated career WN8
+
 		periodStats.Start = time.Unix(int64(accountStats.Data.Account.CreatedAt), 0)
 		periodStats.Stats = *accountStats.Data.Session.Global
 		return &periodStats, nil

@@ -9,6 +9,7 @@ import (
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
+	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/utils"
 	wg "github.com/cufee/am-wg-proxy-next/types"
@@ -52,7 +53,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		}
 	}
 	// User Subscription Badge and promo text
-	if badges, _ := player.userBadges(); len(badges) > 0 {
+	if badges, _ := badges.SubscriptionsBadges(player.Subscriptions); len(badges) > 0 {
 		cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, Gap: 10},
 			badges...,
 		))
@@ -76,7 +77,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	var clanTagBlocks []render.Block
 	if player.Clan != nil && player.Clan.Tag != "" {
 		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, player.Clan.Tag))
-		if sub := player.clanSubscriptionHeader(); sub != nil {
+		if sub := badges.ClanSubscriptionsBadges(player.Subscriptions); sub != nil {
 			iconBlock, err := sub.Block()
 			if err == nil {
 				clanTagBlocks = append(clanTagBlocks, iconBlock)

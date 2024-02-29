@@ -130,7 +130,7 @@ func statsWithNumber(statsImage image.Image, number int) (image.Image, error) {
 		BorderRadius:    20,
 		Width:           float64(numberBlockWidth - 20),
 		Height:          float64(numberBlockWidth - 20),
-	}, render.NewTextContent(render.Style{Font: &render.FontExtraLarge, FontColor: render.TextPrimary}, fmt.Sprintf("%d", number)))
+	}, render.NewTextContent(render.Style{Font: &render.Font2XL, FontColor: render.TextPrimary}, fmt.Sprintf("%d", number)))
 	statsBlock := render.NewImageContent(render.Style{Width: float64(statsImage.Bounds().Dx()), Height: float64(statsImage.Bounds().Dy())}, statsImage)
 	containerStyle := render.Style{
 		JustifyContent: render.JustifyContentStart,

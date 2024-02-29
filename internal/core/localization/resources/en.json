@@ -12,5 +12,8 @@
   "label_damage_taken": "Damage Received",
   "label_damage_assisted": "Assisted",
   "label_damage_blocked": "Blocked",
-  "label_assisted_combined": "Assisted"
+  "label_assisted_combined": "Assisted",
+  "label_avg_tier": "Tier",
+  "label_survival_ratio": "Survival",
+  "label_survival_percent": "Survived"
 }

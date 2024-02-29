@@ -4,13 +4,15 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
+	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 
 	"github.com/cufee/aftermath-core/utils"
 	"github.com/rs/zerolog/log"
 )
 
-func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
+func generateCards(player PlayerData, options RenderOptions) ([]render.Block, error) {
 	if len(player.Cards.Overview.Blocks) == 0 && len(player.Cards.Highlights) == 0 {
 		log.Error().Msg("player cards slice is 0 length, this should not happen")
 		return nil, errors.New("no cards provided")
@@ -66,16 +68,54 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	// 	return styleBlocks(blocks, HighlightStatsBlockStyle(options.CardStyle.BackgroundColor), DefaultStatsBlockStyle)
 	// }
 
-	var overviewCardBlocks []render.Block
-	for _, row := range player.Cards.Overview.Blocks {
-		rowBlock, err := statsBlocksToRowBlock(row)
-		if err != nil {
-			return nil, err
-		}
-		overviewCardBlocks = append(overviewCardBlocks, rowBlock)
-	}
-	cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical}, overviewCardBlocks...))
+	// Title
+	cards = append(cards, newHeaderCards(player, options)...)
 
+	// Overview Card
+	{
+		var rowLengthMax float64
+		var blockWidthMax float64
+		for _, row := range player.Cards.Overview.Blocks {
+			if float64(len(row)) > rowLengthMax {
+				rowLengthMax = float64(len(row))
+			}
+
+			rowStyle := getOverviewStyle(blockWidthMax)
+			for _, block := range row {
+				valueStyle, labelStyle := rowStyle.block(block.Flavor)
+
+				// label
+				labelSize := render.MeasureString(block.Label, *valueStyle.Font)
+				if labelSize.TotalWidth > blockWidthMax {
+					blockWidthMax = labelSize.TotalWidth
+				}
+				// value
+				valueSize := render.MeasureString(block.Data.String, *labelStyle.Font)
+				if valueSize.TotalWidth > blockWidthMax {
+					blockWidthMax = valueSize.TotalWidth
+				}
+			}
+		}
+
+		blockRowWidth := blockWidthMax * float64(rowLengthMax)
+		overviewCardWidth := blockRowWidth + DefaultCardStyle(0).PaddingX*2
+		var overviewCardBlocks []render.Block
+		for _, row := range player.Cards.Overview.Blocks {
+			rowBlock, err := statsBlocksToRowBlock(getOverviewStyle(blockRowWidth), row)
+			if err != nil {
+				return nil, err
+			}
+			overviewCardBlocks = append(overviewCardBlocks, rowBlock)
+		}
+		cards = append(cards, render.NewBlocksContent(DefaultCardStyle(overviewCardWidth), overviewCardBlocks...))
+	}
+
+	// Highlights
+	{
+		// cards = append(cards, render.NewBlocksContent(DefaultCardStyle(overviewCardWidth), overviewCardBlocks...))
+	}
+
+	// Footer
 	var footer []string
 	switch strings.ToLower(utils.RealmFromAccountID(player.Stats.Account.ID)) {
 	case "na":
@@ -86,8 +126,8 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		footer = append(footer, "Asia")
 	}
 
-	sessionTo := player.Stats.End.Format("January 2")
-	sessionFrom := player.Stats.Start.Format("January 2")
+	sessionTo := player.Stats.End.Format("January 2, 2006")
+	sessionFrom := player.Stats.Start.Format("January 2, 2006")
 	if sessionFrom == sessionTo {
 		footer = append(footer, sessionTo)
 	} else {
@@ -97,4 +137,42 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
 
 	return cards, nil
+}
+
+func newHeaderCards(player PlayerData, options RenderOptions) []render.Block {
+	var cards []render.Block
+
+	var addPromoText = true
+	for _, sub := range player.Subscriptions {
+		switch sub.Type {
+		case models.SubscriptionTypePro, models.SubscriptionTypePlus, models.SubscriptionTypeDeveloper:
+			addPromoText = false
+		}
+		if !addPromoText {
+			break
+		}
+	}
+
+	if addPromoText && options.PromoText != nil {
+		// Users without a subscription get promo text
+		var textBlocks []render.Block
+		for _, text := range options.PromoText {
+			textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}, text))
+		}
+		cards = append(cards, render.NewBlocksContent(render.Style{
+			Direction:  render.DirectionVertical,
+			AlignItems: render.AlignItemsCenter,
+		},
+			textBlocks...,
+		))
+	}
+
+	// User Subscription Badge and promo text
+	if badges, _ := badges.SubscriptionsBadges(player.Subscriptions); len(badges) > 0 {
+		cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, Gap: 10},
+			badges...,
+		))
+	}
+
+	return cards
 }

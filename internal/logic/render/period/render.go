@@ -22,7 +22,7 @@ type RenderOptions struct {
 }
 
 func RenderImage(player PlayerData, options RenderOptions) (image.Image, error) {
-	cards, err := snapshotToCardsBlocks(player, options)
+	cards, err := generateCards(player, options)
 	if err != nil {
 		return nil, err
 	}

@@ -17,7 +17,9 @@ const (
 	TagDamageRatio Tag = "damage_ratio"
 
 	// Period Specific
-	TagAvgTier Tag = "avg_tier"
+	TagAvgTier         Tag = "avg_tier"
+	TagSurvivalRatio   Tag = "survival_ratio"
+	TagSurvivalPercent Tag = "survival_percent"
 
 	// Replay Specific
 	TagDamageDealt            Tag = "damage_dealt"

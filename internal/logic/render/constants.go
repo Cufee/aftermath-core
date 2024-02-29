@@ -10,10 +10,11 @@ import (
 var DiscordBackgroundColor = color.RGBA{49, 51, 56, 255}
 
 var (
-	FontExtraLarge font.Face
-	FontLarge      font.Face
-	FontMedium     font.Face
-	FontSmall      font.Face
+	FontXL     font.Face
+	Font2XL    font.Face
+	FontLarge  font.Face
+	FontMedium font.Face
+	FontSmall  font.Face
 
 	TextPrimary   = color.RGBA{255, 255, 255, 255}
 	TextSecondary = color.RGBA{204, 204, 204, 255}
@@ -25,13 +26,33 @@ var (
 	DefaultCardColor = color.RGBA{10, 10, 10, 180}
 )
 
+var fontCache map[float64]font.Face
+
 func init() {
-	fontFaces, ok := assets.GetFontFaces("default", 36, 24, 18, 14)
+	var ok bool
+	fontCache, ok = assets.GetFontFaces("default", 36, 32, 24, 18, 14)
 	if !ok {
 		panic("default font not found")
 	}
-	FontExtraLarge = fontFaces[36]
-	FontLarge = fontFaces[24]
-	FontMedium = fontFaces[18]
-	FontSmall = fontFaces[14]
+	FontXL = fontCache[32]
+	Font2XL = fontCache[36]
+	FontLarge = fontCache[24]
+	FontMedium = fontCache[18]
+	FontSmall = fontCache[14]
+}
+
+func GetCustomFont(size float64) (font.Face, bool) {
+	if f, ok := fontCache[size]; ok {
+		return f, true
+	}
+
+	newCache, ok := assets.GetFontFaces("default", size)
+	if !ok {
+		return nil, false
+	}
+	for size, font := range newCache {
+		fontCache[size] = font
+	}
+
+	return newCache[size], true
 }

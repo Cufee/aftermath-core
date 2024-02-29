@@ -3,102 +3,13 @@ package session
 import (
 	"image"
 	"image/color"
-	"slices"
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/session"
-	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 )
-
-func (data *PlayerData) userBadges() ([]render.Block, error) {
-	slices.SortFunc(data.Subscriptions, func(i, j models.UserSubscription) int {
-		return subscriptionWeight[j.Type] - subscriptionWeight[i.Type]
-	})
-
-	var badges []render.Block
-	for _, subscription := range data.Subscriptions {
-		var header *subscriptionHeader
-		switch subscription.Type {
-		case models.SubscriptionTypeDeveloper:
-			header = subscriptionDeveloper
-		case models.SubscriptionTypeServerModerator:
-			header = subscriptionServerModerator
-		case models.SubscriptionTypeContentModerator:
-			header = subscriptionContentModerator
-		}
-
-		if header != nil {
-			block, err := header.Block()
-			if err != nil {
-				return nil, err
-			}
-			badges = append(badges, block)
-			break
-		}
-	}
-	for _, subscription := range data.Subscriptions {
-		var header *subscriptionHeader
-		switch subscription.Type {
-		case models.SubscriptionTypeContentTranslator:
-			header = subscriptionTranslator
-		}
-
-		if header != nil {
-			block, err := header.Block()
-			if err != nil {
-				return nil, err
-			}
-			badges = append(badges, block)
-			break
-		}
-	}
-	for _, subscription := range data.Subscriptions {
-		var header *subscriptionHeader
-		switch subscription.Type {
-		case models.SubscriptionTypePro:
-			header = userSubscriptionPro
-		case models.SubscriptionTypePlus:
-			header = userSubscriptionPlus
-		case models.SubscriptionTypeServerBooster:
-			header = subscriptionServerBooster
-		case models.SubscriptionTypeSupporter:
-			header = userSubscriptionSupporter
-		}
-
-		if header != nil {
-			block, err := header.Block()
-			if err != nil {
-				return nil, err
-			}
-			badges = append(badges, block)
-			break
-		}
-	}
-
-	return badges, nil
-}
-
-func (data *PlayerData) clanSubscriptionHeader() *subscriptionHeader {
-	var headers []*subscriptionHeader
-
-	for _, subscription := range data.Subscriptions {
-		switch subscription.Type {
-		case models.SubscriptionTypeProClan:
-			headers = append(headers, clanSubscriptionPro)
-		case models.SubscriptionTypeVerifiedClan:
-			headers = append(headers, clanSubscriptionVerified)
-		}
-	}
-
-	if len(headers) > 0 {
-		return headers[0]
-	}
-
-	return nil
-}
 
 func styleBlocks(blocks []session.StatsBlock, styles ...render.Style) []styledStatsBlock {
 	var lastStyle render.Style

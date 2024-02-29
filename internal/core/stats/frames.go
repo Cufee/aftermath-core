@@ -26,11 +26,13 @@ type ReducedStatsFrame struct {
 	CapturePoints        int `json:"capturePoints" bson:"capturePoints"`
 	DroppedCapturePoints int `json:"droppedCapturePoints" bson:"droppedCapturePoints"`
 
-	wn8         int     `json:"-" bson:"-"`
-	winrate     float64 `json:"-" bson:"-"`
-	accuracy    float64 `json:"-" bson:"-"`
-	avgDamage   float64 `json:"-" bson:"-"` // float64 will be rendered as a percentage with 2 decimal places
-	damageRatio float32 `json:"-" bson:"-"` // float32 will be rendered with 2 decimal places
+	wn8             int     `json:"-" bson:"-"`
+	winrate         float64 `json:"-" bson:"-"`
+	accuracy        float64 `json:"-" bson:"-"`
+	avgDamage       float64 `json:"-" bson:"-"` // float64 will be rendered as a percentage with 2 decimal places
+	survivalPercent float64 `json:"-" bson:"-"`
+	damageRatio     float32 `json:"-" bson:"-"` // float32 will be rendered with 2 decimal places
+	survivalRatio   float32 `json:"-" bson:"-"`
 }
 
 func (r *ReducedStatsFrame) Valid(value interface{}) bool {
@@ -70,6 +72,26 @@ func (r *ReducedStatsFrame) DamageRatio() float32 {
 	return r.damageRatio
 }
 
+func (r *ReducedStatsFrame) SurvivalRatio() float32 {
+	if r.Battles == 0 {
+		return InvalidValueFloat32
+	}
+	if r.survivalRatio == 0 {
+		r.survivalRatio = float32(r.BattlesSurvived) / float32(r.Battles)
+	}
+	return r.survivalRatio
+}
+
+func (r *ReducedStatsFrame) SurvivalPercent() float64 {
+	if r.Battles == 0 {
+		return InvalidValueFloat64
+	}
+	if r.survivalPercent == 0 {
+		r.survivalPercent = float64(r.BattlesSurvived) / float64(r.Battles) * 100
+	}
+	return r.survivalPercent
+}
+
 func (r *ReducedStatsFrame) Winrate() float64 {
 	if r.Battles == 0 {
 		return InvalidValueFloat64
@@ -88,6 +110,10 @@ func (r *ReducedStatsFrame) Accuracy() float64 {
 		r.accuracy = float64(r.ShotsHit) / float64(r.ShotsFired) * 100
 	}
 	return r.accuracy
+}
+
+func (r *ReducedStatsFrame) SetWN8(wn8 int) {
+	r.wn8 = wn8
 }
 
 /*
