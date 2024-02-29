@@ -43,7 +43,22 @@ type TankHistoryEntry struct {
 	BattlesLifeTime int           `json:"battle_life_time"`
 	MarkOfMastery   int           `json:"mark_of_mastery"`
 	Stats           wg.StatsFrame `json:"all"`
-	WN8             float32       `json:"wn8"`
+}
+
+func (a *TankHistoryEntry) Add(b TankHistoryEntry) {
+	if a.TankID != b.TankID {
+		return
+	}
+	if b.LastBattleTime > a.LastBattleTime {
+		a.LastBattleTime = b.LastBattleTime
+	}
+	if b.BattlesLifeTime > a.BattlesLifeTime {
+		a.BattlesLifeTime = b.BattlesLifeTime
+	}
+	if b.MarkOfMastery > a.MarkOfMastery {
+		a.MarkOfMastery = b.MarkOfMastery
+	}
+	a.Stats.Add(&b.Stats)
 }
 
 func GetPlayerTankHistories(accountId int) (map[int][]TankHistoryEntry, error) {

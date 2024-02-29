@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"image/png"
 	"os"
 	"testing"
@@ -14,7 +15,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/render/session"
-	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 )
 
 func TestFullSessionRenderPipeline(t *testing.T) {
@@ -34,18 +35,17 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sessionData, err := stats.GetCurrentPlayerSession("eu", 581650793) // 1013072123 1032698345
-	if err != nil {
+	sessionData, err := sessions.GetCurrentPlayerSession("eu", 581650793) // 1013072123 1032698345
+	if err != nil && !errors.Is(err, sessions.ErrNoSessionCached) {
 		t.Fatal(err)
 	}
 
-	// session.Account.Nickname = "WWWWWWWWWWWWWWWWWWWWW"
 	player := session.PlayerData{
 		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}},
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeSupporter}, {Type: models.SubscriptionTypeVerifiedClan}},
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
 		Account: &sessionData.Account.Account,
-		Session: sessionData,
+		Session: &sessionData,
 		// Clan:    &session.Account.Clan,
 		Cards: statsCards,
 	}

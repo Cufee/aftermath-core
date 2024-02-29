@@ -9,18 +9,19 @@ import (
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/utils"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
 
 type PlayerData struct {
-	Clan          *wg.Clan
-	Account       *wg.Account
-	Session       *stats.Snapshot
-	Cards         session.Cards
+	Clan    *wg.Clan
+	Account *wg.Account
+	Session *sessions.Snapshot
+
 	Subscriptions []models.UserSubscription
+	Cards         session.Cards
 }
 
 type RenderOptions struct {
@@ -32,10 +33,6 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	if player.Account == nil {
 		log.Error().Msg("player account is nil, this should not happen")
 		return nil, errors.New("player account is nil")
-	}
-	if player.Session == nil {
-		log.Error().Msg("player session is nil, this should not happen")
-		return nil, errors.New("session is nil")
 	}
 	if len(player.Cards) == 0 {
 		log.Error().Msg("player cards slice is 0 length, this should not happen")
@@ -124,7 +121,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	case "as":
 		footer = append(footer, "Asia")
 	}
-	if player.Session.Selected.LastBattleTime > 0 {
+	if player.Session != nil && player.Session.Selected.LastBattleTime > 0 {
 		sessionTo := time.Unix(int64(player.Session.Live.LastBattleTime), 0).Format("January 2")
 		sessionFrom := time.Unix(int64(player.Session.Selected.LastBattleTime), 0).Format("January 2")
 		if sessionFrom == sessionTo {
@@ -133,7 +130,10 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			footer = append(footer, sessionFrom+" - "+sessionTo)
 		}
 	}
-	cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
+
+	if len(footer) > 0 {
+		cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
+	}
 
 	return cards, nil
 }

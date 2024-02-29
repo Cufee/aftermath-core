@@ -20,6 +20,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/types"
 	"github.com/cufee/aftermath-core/utils"
 	"github.com/gofiber/fiber/v2"
@@ -86,9 +87,18 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 		blocks = session.DefaultSessionBlocks
 	}
 
-	sessionData, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type(), ReferenceID: options.ReferenceID})
+	sessionData, err := sessions.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type(), ReferenceID: options.ReferenceID})
 	if err != nil {
-		return "", err
+		if !errors.Is(err, sessions.ErrNoSessionCached) {
+			return "", err
+		}
+		// Refresh the session cache in the background
+		go func(realm string, accountId int) {
+			accountErrs, err := cache.RefreshSessionsAndAccounts(options.Type(), options.ReferenceID, realm, accountId)
+			if err != nil || len(accountErrs) > 0 {
+				log.Err(err).Msg("failed to refresh session cache")
+			}
+		}(realm, accountId)
 	}
 
 	if sessionData.Account.ClanID != 0 {
@@ -190,7 +200,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 			Clan:          &sessionData.Account.Clan,
 			Account:       &sessionData.Account.Account,
 			Subscriptions: subscriptions,
-			Session:       sessionData,
+			Session:       &sessionData,
 			Cards:         statsCards,
 		}
 

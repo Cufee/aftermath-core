@@ -5,7 +5,8 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
-	"github.com/cufee/aftermath-core/internal/logic/sessions"
+	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
+
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )

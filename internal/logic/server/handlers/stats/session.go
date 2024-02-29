@@ -15,6 +15,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
+	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -106,9 +107,18 @@ func getSessionStats(realm string, accountId int, opts types.SessionRequestPaylo
 	}
 
 	now := int(time.Now().Unix())
-	playerSession, err := stats.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{LastBattleBefore: &now, ReferenceID: opts.ReferenceID})
+	playerSession, err := sessions.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{LastBattleBefore: &now, ReferenceID: opts.ReferenceID})
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, sessions.ErrNoSessionCached) {
+			return nil, err
+		}
+		// Refresh the session cache in the background
+		go func(realm string, accountId int) {
+			accountErrs, err := cache.RefreshSessionsAndAccounts(models.SessionTypeDaily, opts.ReferenceID, realm, accountId)
+			if err != nil || len(accountErrs) > 0 {
+				log.Err(err).Msg("failed to refresh session cache")
+			}
+		}(realm, accountId)
 	}
 
 	if playerSession.Account.ClanID != 0 {
