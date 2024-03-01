@@ -91,8 +91,17 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 	}
 
 	// Vehicle Highlights
+	var minimumBattles int = 5
+	periodDays := stats.End.Sub(stats.Start).Hours() / 24
+	if periodDays > 90 {
+		minimumBattles = 100
+	} else if periodDays > 60 {
+		minimumBattles = 75
+	} else if periodDays > 30 {
+		minimumBattles = 50
+	}
 
-	highlightedVehicles := getHighlightedVehicles(options.Highlights, stats.Vehicles)
+	highlightedVehicles := getHighlightedVehicles(options.Highlights, stats.Vehicles, minimumBattles)
 	for _, data := range highlightedVehicles {
 		var vehicleBlocks []StatsBlock
 

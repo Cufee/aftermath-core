@@ -21,7 +21,7 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	stats, err := period.GetPlayerStats(1013072123, 0)
+	stats, err := period.GetPlayerStats(563962273, 30)
 	if err != nil {
 		t.Fatal(err)
 	}

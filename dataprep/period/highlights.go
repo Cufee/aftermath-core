@@ -13,9 +13,9 @@ type highlight struct {
 }
 
 var (
-	HighlightAvgDamage = highlight{dataprep.TagAvgDamage, []dataprep.Tag{dataprep.TagBattles, dataprep.TagAvgDamage}, "label_highlight_avg_damage"}
-	HighlightBattles   = highlight{dataprep.TagBattles, []dataprep.Tag{dataprep.TagBattles}, "label_highlight_battles"}
-	HighlightWN8       = highlight{dataprep.TagWN8, []dataprep.Tag{dataprep.TagBattles, dataprep.TagWN8}, "label_highlight_wn8"}
+	HighlightAvgDamage = highlight{dataprep.TagAvgDamage, []dataprep.Tag{dataprep.TagBattles, dataprep.TagAvgDamage, dataprep.TagWN8}, "label_highlight_avg_damage"}
+	HighlightBattles   = highlight{dataprep.TagBattles, []dataprep.Tag{dataprep.TagBattles, dataprep.TagAvgDamage, dataprep.TagWN8}, "label_highlight_battles"}
+	HighlightWN8       = highlight{dataprep.TagWN8, []dataprep.Tag{dataprep.TagBattles, dataprep.TagAvgDamage, dataprep.TagWN8}, "label_highlight_wn8"}
 )
 
 type highlightedVehicle struct {
@@ -24,10 +24,10 @@ type highlightedVehicle struct {
 	value     float64
 }
 
-func getHighlightedVehicles(highlights []highlight, vehicles map[int]*stats.ReducedVehicleStats) []highlightedVehicle {
+func getHighlightedVehicles(highlights []highlight, vehicles map[int]*stats.ReducedVehicleStats, minBattles int) []highlightedVehicle {
 	leadersMap := make(map[string]highlightedVehicle)
 	for _, vehicle := range vehicles {
-		if vehicle.Battles < 5 {
+		if vehicle.Battles < minBattles {
 			continue
 		}
 
