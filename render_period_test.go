@@ -7,7 +7,6 @@ import (
 
 	dataprep "github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	core "github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
@@ -21,7 +20,7 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	stats, err := period.GetPlayerStats(563962273, 30)
+	stats, err := period.GetPlayerStats(1013072123, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +34,7 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		Stats: stats,
 		Cards: cards,
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
-		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypeContentTranslator}},
+		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypeContentTranslator}},
 	}, render.RenderOptions{
 		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
 	})

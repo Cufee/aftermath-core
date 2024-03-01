@@ -33,6 +33,7 @@ func titleCardStyle(containerStyle render.Style) shared.TitleCardStyle {
 	container := containerStyle
 	container.AlignItems = render.AlignItemsCenter
 	container.Direction = render.DirectionHorizontal
+	container.PaddingX = 20
 
 	return shared.TitleCardStyle{
 		Container: container,
@@ -55,7 +56,6 @@ func defaultCardStyle(width float64) render.Style {
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
 		Direction:       render.DirectionVertical,
-		PaddingX:        20,
 		PaddingY:        10,
 		Gap:             20,
 		BackgroundColor: render.DefaultCardColor,
@@ -75,7 +75,8 @@ func overviewCardStyle(width float64) render.Style {
 
 func highlightCardStyle(containerStyle render.Style) highlightStyle {
 	container := containerStyle
-	container.Gap = 10
+	container.Gap = 5
+	container.PaddingX = 15
 	container.Direction = render.DirectionHorizontal
 	container.JustifyContent = render.JustifyContentSpaceBetween
 
