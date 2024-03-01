@@ -178,7 +178,7 @@ func newHeaderCard(player PlayerData, options RenderOptions) (render.Block, bool
 		return render.Block{}, false
 	}
 
-	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical}, cards...), true
+	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter, JustifyContent: render.JustifyContentCenter, Gap: 10}, cards...), true
 }
 
 func newHighlightCard(style highlightStyle, card period.VehicleCard) render.Block {

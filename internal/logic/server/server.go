@@ -31,6 +31,8 @@ func Start() {
 	v1 := app.Group("/v1")
 
 	renderV1 := v1.Group("/render")
+	renderV1.Post("/period/user/:id", render.PeriodFromUserHandler)
+	renderV1.Post("/period/account/:account", render.PeriodFromIDHandler)
 	renderV1.Post("/session/user/:id", render.SessionFromUserHandler)
 	renderV1.Post("/session/account/:account", render.SessionFromIDHandler)
 

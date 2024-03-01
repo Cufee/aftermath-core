@@ -4,6 +4,12 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 )
 
+type PeriodRequestPayload struct {
+	Days       int        `json:"days"`
+	Presets    [][]string `json:"presets"`
+	Highlights []string   `json:"highlights"`
+}
+
 type SessionRequestPayload struct {
 	ReferenceID *string `json:"referenceId"`
 
