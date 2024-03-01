@@ -15,7 +15,6 @@ func calculateAvgTier(vehicles map[int]*stats.ReducedVehicleStats, glossary map[
 			weightedTierTotal += float32(vehicle.Battles * data.Tier)
 		}
 	}
-
 	if battlesTotal == 0 {
 		return stats.InvalidValueFloat32
 	}
