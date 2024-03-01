@@ -23,7 +23,7 @@ func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer 
 
 	case dataprep.TagBattles:
 		block.Data = dataprep.StatsToValue(stats.Battles)
-		block.Flavor = BlockFlavorDefault
+		block.Flavor = BlockFlavorSpecial
 
 	case dataprep.TagWinrate:
 		block.Data = dataprep.StatsToValue(stats.Winrate())
@@ -43,7 +43,7 @@ func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer 
 
 	case dataprep.TagAvgDamage:
 		block.Data = dataprep.StatsToValue(int(stats.AvgDamage()))
-		block.Flavor = BlockFlavorSpecial
+		block.Flavor = BlockFlavorDefault
 
 	case dataprep.TagDamageRatio:
 		block.Data = dataprep.StatsToValue(stats.DamageRatio())
