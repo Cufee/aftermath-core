@@ -70,11 +70,15 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 
 		periodStats.Start = time.Unix(int64(accountStats.Data.Account.CreatedAt), 0)
 		periodStats.Stats = *accountStats.Data.Session.Global
+
 		return &periodStats, nil
 
 	default:
 		// Get time specific stats
 		periodStats.Start = daysToRealmTime(realm, days)
+		if periodStats.End.Before(periodStats.Start) {
+			periodStats.End = time.Now()
+		}
 	}
 
 	tankHistory, err := blitzstars.GetPlayerTankHistories(accountId)
