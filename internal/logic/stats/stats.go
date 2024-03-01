@@ -16,8 +16,8 @@ import (
 
 type CompleteStats struct {
 	Session  *stats.SessionSnapshot
-	Account  *wg.ExtendedAccount
-	Clan     *wg.ClanMember
+	Account  wg.ExtendedAccount
+	Clan     wg.ClanMember
 	Vehicles []wg.VehicleStatsFrame
 }
 
@@ -156,9 +156,9 @@ func GetCompleteStatsWithClient(client *client.Client, realm string, accountIDs 
 
 		sessions[vehicle.Data.accountID] = utils.DataWithError[*CompleteStats]{
 			Data: &CompleteStats{
-				Clan:     &clan,
+				Clan:     clan,
 				Session:  session,
-				Account:  &account,
+				Account:  account,
 				Vehicles: vehicle.Data.vehicles,
 			},
 		}

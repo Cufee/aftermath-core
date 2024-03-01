@@ -15,5 +15,8 @@
   "label_assisted_combined": "Assisted",
   "label_avg_tier": "Tier",
   "label_survival_ratio": "Survival",
-  "label_survival_percent": "Survived"
+  "label_survival_percent": "Survived",
+  "label_highlight_avg_damage": "Best Performance",
+  "label_highlight_battles": "Favorite Tank",
+  "label_highlight_wn8": "Biggest Impact"
 }

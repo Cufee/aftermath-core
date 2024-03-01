@@ -16,6 +16,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/rs/zerolog v1.31.0
 	go.mongodb.org/mongo-driver v1.13.1
+	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/image v0.15.0
 	golang.org/x/text v0.14.0
 )
@@ -23,7 +24,6 @@ require (
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.5.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect

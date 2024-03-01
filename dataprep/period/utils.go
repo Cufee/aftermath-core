@@ -1,14 +1,19 @@
 package period
 
-import "github.com/cufee/aftermath-core/internal/core/stats"
+import (
+	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/stats"
+)
 
-func calculateAvgTier(vehicles map[int]*stats.ReducedVehicleStats) float32 {
+func calculateAvgTier(vehicles map[int]*stats.ReducedVehicleStats, glossary map[int]models.Vehicle) float32 {
 	var battlesTotal int
 	var weightedTierTotal float32
 
 	for _, vehicle := range vehicles {
-		battlesTotal += vehicle.Battles
-		weightedTierTotal += float32(vehicle.Battles) * 10.0
+		if data, ok := glossary[vehicle.VehicleID]; ok && data.Tier > 0 {
+			battlesTotal += vehicle.Battles
+			weightedTierTotal += float32(vehicle.Battles * data.Tier)
+		}
 	}
 
 	return weightedTierTotal / float32(battlesTotal)

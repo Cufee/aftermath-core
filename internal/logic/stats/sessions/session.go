@@ -36,8 +36,8 @@ func GetCurrentPlayerSession(realm string, accountId int, options ...database.Se
 
 	snapshot.Live = liveSession.Data.Session
 	snapshot.Account = stats.AccountWithClan{
-		ExtendedAccount: *liveSession.Data.Account,
-		ClanMember:      *liveSession.Data.Clan,
+		ExtendedAccount: liveSession.Data.Account,
+		ClanMember:      liveSession.Data.Clan,
 	}
 
 	if opts.LastBattleBefore == nil && liveSession.Data.Account.LastBattleTime > 0 {

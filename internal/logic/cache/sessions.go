@@ -17,7 +17,7 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, referenceId *str
 		return nil, err
 	}
 
-	var accounts []*wg.ExtendedAccount
+	var accounts []wg.ExtendedAccount
 	for _, session := range sessions {
 		if session.Err != nil {
 			continue

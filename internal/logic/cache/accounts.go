@@ -41,13 +41,13 @@ func CacheAllNewClanMembers(realm string, clanId int) error {
 	return nil
 }
 
-func UpdatePlayerAccountsFromWG(realm string, accounts ...*wg.ExtendedAccount) error {
+func UpdatePlayerAccountsFromWG(realm string, accounts ...wg.ExtendedAccount) error {
 	var converted []models.Account
 	for _, account := range accounts {
-		if account == nil {
+		if account.ID == 0 {
 			continue
 		}
-		converted = append(converted, *accountToDatabaseAccount(realm, *account))
+		converted = append(converted, *accountToDatabaseAccount(realm, account))
 	}
 	return database.UpdatePlayerAccounts(converted...)
 }

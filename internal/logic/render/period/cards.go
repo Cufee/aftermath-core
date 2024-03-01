@@ -4,10 +4,13 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
+	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 
+	helpers "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/utils"
 	"github.com/rs/zerolog/log"
 )
@@ -18,128 +21,125 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 		return nil, errors.New("no cards provided")
 	}
 
+	// Calculate minimal card width to fit all the content
+	var cardWidth float64
+	{
+		{
+			titleStyle := titleCardStyle(defaultCardStyle(cardWidth))
+			clanSize := render.MeasureString(player.Stats.Clan.Tag, *titleStyle.ClanTag.Font)
+			nameSize := render.MeasureString(player.Stats.Account.Nickname, *titleStyle.Nickname.Font)
+			cardWidth = helpers.Max(cardWidth, titleStyle.Container.PaddingX*2+titleStyle.Container.Gap*2+nameSize.TotalWidth+clanSize.TotalWidth*2)
+		}
+		{
+			var rowLengthMax float64
+			var blockWidthMax float64
+			for _, row := range player.Cards.Overview.Blocks {
+				rowLengthMax = helpers.Max(rowLengthMax, float64(len(row)))
+
+				rowStyle := getOverviewStyle(blockWidthMax)
+				for _, block := range row {
+					valueStyle, labelStyle := rowStyle.block(block.Flavor)
+
+					labelSize := render.MeasureString(block.Label, *valueStyle.Font)
+					valueSize := render.MeasureString(block.Data.String, *labelStyle.Font)
+					blockWidthMax = helpers.Max(blockWidthMax, labelSize.TotalWidth, valueSize.TotalWidth)
+				}
+			}
+			cardWidth = helpers.Max(cardWidth, blockWidthMax*float64(rowLengthMax))
+		}
+
+		{
+			highlightStyle := highlightCardStyle(defaultCardStyle(0))
+			var highlightBlocksMaxCount, highlightTitleMaxWidth, highlightBlockMaxSize float64
+			for _, highlight := range player.Cards.Highlights {
+				// Title and tank name
+				metaSize := render.MeasureString(highlight.Meta, *highlightStyle.cardTitle.Font)
+				titleSize := render.MeasureString(highlight.Title, *highlightStyle.tankName.Font)
+				highlightTitleMaxWidth = helpers.Max(highlightTitleMaxWidth, metaSize.TotalWidth, titleSize.TotalWidth)
+
+				// Blocks
+				highlightBlocksMaxCount = helpers.Max(highlightBlocksMaxCount, float64(len(highlight.Blocks)))
+				for _, block := range highlight.Blocks {
+					labelSize := render.MeasureString(block.Label, *highlightStyle.blockLabel.Font)
+					valueSize := render.MeasureString(block.Data.String, *highlightStyle.blockValue.Font)
+					highlightBlockMaxSize = helpers.Max(highlightBlockMaxSize, valueSize.TotalWidth, labelSize.TotalWidth)
+				}
+			}
+
+			highlightCardWidthMax := (highlightStyle.container.PaddingX * 2) + (highlightStyle.container.Gap * highlightBlocksMaxCount) + highlightTitleMaxWidth
+			cardWidth = helpers.Max(cardWidth, highlightCardWidthMax)
+		}
+	}
+
 	var cards []render.Block
 
-	// var addPromoText = true
-	// for _, sub := range player.Subscriptions {
-	// 	switch sub.Type {
-	// 	case models.SubscriptionTypePro, models.SubscriptionTypePlus, models.SubscriptionTypeDeveloper:
-	// 		addPromoText = false
-	// 	}
-	// 	if !addPromoText {
-	// 		break
-	// 	}
-	// }
-	// // User Subscription Badge and promo text
-	// if badges, _ := player.userBadges(); len(badges) > 0 {
-	// 	cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, Gap: 10},
-	// 		badges...,
-	// 	))
-	// }
+	// We first footer in order to calculate the minimum required width
+	// Footer Card
+	var footerCard render.Block
+	{
+		var footer []string
+		switch strings.ToLower(utils.RealmFromAccountID(player.Stats.Account.ID)) {
+		case "na":
+			footer = append(footer, "North America")
+		case "eu":
+			footer = append(footer, "Europe")
+		case "as":
+			footer = append(footer, "Asia")
+		}
 
-	// if addPromoText && options.PromoText != nil {
-	// 	// Users without a subscription get promo text
-	// 	var textBlocks []render.Block
-	// 	for _, text := range options.PromoText {
-	// 		textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}, text))
-	// 	}
-	// 	cards = append(cards, render.NewBlocksContent(render.Style{
-	// 		Direction:  render.DirectionVertical,
-	// 		AlignItems: render.AlignItemsCenter,
-	// 	},
-	// 		textBlocks...,
-	// 	))
-	// }
+		sessionTo := player.Stats.End.Format("January 2, 2006")
+		sessionFrom := player.Stats.Start.Format("January 2, 2006")
+		if sessionFrom == sessionTo {
+			footer = append(footer, sessionTo)
+		} else {
+			footer = append(footer, sessionFrom+" - "+sessionTo)
+		}
+		footerBlock := render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • "))
+		footerImage, err := footerBlock.Render()
+		if err != nil {
+			return cards, err
+		}
+		cardWidth = helpers.Max(cardWidth, float64(footerImage.Bounds().Dx()))
+		footerCard = render.NewImageContent(render.Style{Width: cardWidth, Height: float64(footerImage.Bounds().Dy())}, footerImage)
+	}
 
-	// Title Card
-	// var clanTagBlocks []render.Block
-	// if player.Clan != nil && player.Clan.Tag != "" {
-	// 	clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, player.Clan.Tag))
-	// 	if sub := player.clanSubscriptionHeader(); sub != nil {
-	// 		iconBlock, err := sub.Block()
-	// 		if err == nil {
-	// 			clanTagBlocks = append(clanTagBlocks, iconBlock)
-	// 		}
-	// 	}
-	// }
-	// cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTagBlocks))
+	// Header card
+	if headerCard, headerCardExists := newHeaderCard(player, options); headerCardExists {
+		headerImage, err := headerCard.Render()
+		if err != nil {
+			return cards, err
+		}
+		cardWidth = helpers.Max(cardWidth, float64(headerImage.Bounds().Dx()))
+		cards = append(cards, render.NewImageContent(render.Style{Width: cardWidth, Height: float64(headerImage.Bounds().Dy())}, headerImage))
+	}
 
-	// styled := func(blocks []session.StatsBlock) []styledStatsBlock {
-	// 	return styleBlocks(blocks, HighlightStatsBlockStyle(options.CardStyle.BackgroundColor), DefaultStatsBlockStyle)
-	// }
-
-	// Title
-	cards = append(cards, newHeaderCards(player, options)...)
+	// Player Title card
+	cards = append(cards, shared.NewPlayerTitleCard(titleCardStyle(defaultCardStyle(cardWidth)), player.Stats.Account.Nickname, player.Stats.Clan.Tag, player.Subscriptions))
 
 	// Overview Card
 	{
-		var rowLengthMax float64
-		var blockWidthMax float64
-		for _, row := range player.Cards.Overview.Blocks {
-			if float64(len(row)) > rowLengthMax {
-				rowLengthMax = float64(len(row))
-			}
-
-			rowStyle := getOverviewStyle(blockWidthMax)
-			for _, block := range row {
-				valueStyle, labelStyle := rowStyle.block(block.Flavor)
-
-				// label
-				labelSize := render.MeasureString(block.Label, *valueStyle.Font)
-				if labelSize.TotalWidth > blockWidthMax {
-					blockWidthMax = labelSize.TotalWidth
-				}
-				// value
-				valueSize := render.MeasureString(block.Data.String, *labelStyle.Font)
-				if valueSize.TotalWidth > blockWidthMax {
-					blockWidthMax = valueSize.TotalWidth
-				}
-			}
-		}
-
-		blockRowWidth := blockWidthMax * float64(rowLengthMax)
-		overviewCardWidth := blockRowWidth + DefaultCardStyle(0).PaddingX*2
 		var overviewCardBlocks []render.Block
 		for _, row := range player.Cards.Overview.Blocks {
-			rowBlock, err := statsBlocksToRowBlock(getOverviewStyle(blockRowWidth), row)
+			rowBlock, err := statsBlocksToRowBlock(getOverviewStyle(cardWidth), row)
 			if err != nil {
 				return nil, err
 			}
 			overviewCardBlocks = append(overviewCardBlocks, rowBlock)
 		}
-		cards = append(cards, render.NewBlocksContent(DefaultCardStyle(overviewCardWidth), overviewCardBlocks...))
+		cards = append(cards, render.NewBlocksContent(overviewCardStyle(cardWidth), overviewCardBlocks...))
 	}
 
 	// Highlights
-	{
-		// cards = append(cards, render.NewBlocksContent(DefaultCardStyle(overviewCardWidth), overviewCardBlocks...))
+	for _, card := range player.Cards.Highlights {
+		cards = append(cards, newHighlightCard(highlightCardStyle(defaultCardStyle(cardWidth)), card))
 	}
 
-	// Footer
-	var footer []string
-	switch strings.ToLower(utils.RealmFromAccountID(player.Stats.Account.ID)) {
-	case "na":
-		footer = append(footer, "North America")
-	case "eu":
-		footer = append(footer, "Europe")
-	case "as":
-		footer = append(footer, "Asia")
-	}
-
-	sessionTo := player.Stats.End.Format("January 2, 2006")
-	sessionFrom := player.Stats.Start.Format("January 2, 2006")
-	if sessionFrom == sessionTo {
-		footer = append(footer, sessionTo)
-	} else {
-		footer = append(footer, sessionFrom+" - "+sessionTo)
-	}
-
-	cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
-
+	// Add footer
+	cards = append(cards, footerCard)
 	return cards, nil
 }
 
-func newHeaderCards(player PlayerData, options RenderOptions) []render.Block {
+func newHeaderCard(player PlayerData, options RenderOptions) (render.Block, bool) {
 	var cards []render.Block
 
 	var addPromoText = true
@@ -174,5 +174,31 @@ func newHeaderCards(player PlayerData, options RenderOptions) []render.Block {
 		))
 	}
 
-	return cards
+	if len(cards) < 1 {
+		return render.Block{}, false
+	}
+
+	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical}, cards...), true
+}
+
+func newHighlightCard(style highlightStyle, card period.VehicleCard) render.Block {
+	titleBlock :=
+		render.NewBlocksContent(render.Style{
+			Direction: render.DirectionVertical,
+		},
+			render.NewTextContent(style.cardTitle, card.Meta),
+			render.NewTextContent(style.tankName, card.Title),
+		)
+
+	var contentRow []render.Block
+	for _, block := range card.Blocks {
+		contentRow = append(contentRow, render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter},
+			render.NewTextContent(style.blockValue, block.Data.String),
+			render.NewTextContent(style.blockLabel, block.Label),
+		))
+	}
+
+	return render.NewBlocksContent(style.container, titleBlock, render.NewBlocksContent(render.Style{
+		Gap: style.container.Gap,
+	}, contentRow...))
 }

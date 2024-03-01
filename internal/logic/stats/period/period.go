@@ -46,14 +46,12 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 	}
 
 	var periodStats = PeriodStats{
-		End: time.Unix(int64(accountStats.Data.Account.LastBattleTime), 0),
-
 		Clan:     accountStats.Data.Clan.Clan,
 		Account:  accountStats.Data.Account.Account,
 		Vehicles: make(map[int]*core.ReducedVehicleStats),
+		End:      time.Unix(int64(accountStats.Data.Account.LastBattleTime), 0),
 	}
 
-	var cutoffTime time.Time
 	switch {
 	case days <= 0:
 		fallthrough
@@ -92,12 +90,13 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 		vehiclesMap[vehicle.TankID] = vehicle
 	}
 
-	for id, entries := range tankHistory {
-		vehicle, ok := vehiclesMap[id]
-		if !ok {
+	// var weightedWN8Total, wn8BattlesTotal int
+	for _, vehicle := range accountStats.Data.Vehicles {
+		if vehicle.LastBattleTime < int(periodStats.Start.Unix()) {
 			continue
 		}
 
+		entries := tankHistory[vehicle.TankID]
 		// Sort entries by number of battles in descending order
 		slices.SortFunc(entries, func(i, j blitzstars.TankHistoryEntry) int {
 			return j.Stats.Battles - i.Stats.Battles
@@ -105,7 +104,7 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 
 		var selectedEntry blitzstars.TankHistoryEntry
 		for _, entry := range entries {
-			if entry.LastBattleTime < int(cutoffTime.Unix()) {
+			if entry.LastBattleTime < int(periodStats.Start.Unix()) {
 				selectedEntry = entry
 				break
 			}
@@ -119,9 +118,9 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 			frame := core.ReducedVehicleStats{
 				LastBattleTime:    vehicle.LastBattleTime,
 				ReducedStatsFrame: compareToFrame,
-				VehicleID:         id,
+				VehicleID:         vehicle.TankID,
 			}
-			periodStats.Vehicles[id] = &frame
+			periodStats.Vehicles[vehicle.TankID] = &frame
 			periodStats.Stats.Add(frame.ReducedStatsFrame)
 		}
 	}

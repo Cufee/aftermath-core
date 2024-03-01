@@ -3,10 +3,19 @@ package period
 import (
 	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/logic/render"
+	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 )
 
 type overviewStyle struct {
 	container render.Style
+}
+
+type highlightStyle struct {
+	container  render.Style
+	cardTitle  render.Style
+	tankName   render.Style
+	blockLabel render.Style
+	blockValue render.Style
 }
 
 func (s *overviewStyle) block(flavor period.BlockFlavor) (render.Style, render.Style) {
@@ -20,6 +29,18 @@ func (s *overviewStyle) block(flavor period.BlockFlavor) (render.Style, render.S
 	}
 }
 
+func titleCardStyle(containerStyle render.Style) shared.TitleCardStyle {
+	container := containerStyle
+	container.AlignItems = render.AlignItemsCenter
+	container.Direction = render.DirectionHorizontal
+
+	return shared.TitleCardStyle{
+		Container: container,
+		Nickname:  render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary},
+		ClanTag:   render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary},
+	}
+}
+
 func getOverviewStyle(width float64) overviewStyle {
 	return overviewStyle{render.Style{
 		Width:          width,
@@ -29,13 +50,13 @@ func getOverviewStyle(width float64) overviewStyle {
 	}}
 }
 
-func DefaultCardStyle(width float64) render.Style {
+func defaultCardStyle(width float64) render.Style {
 	style := render.Style{
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
 		Direction:       render.DirectionVertical,
 		PaddingX:        20,
-		PaddingY:        40,
+		PaddingY:        10,
 		Gap:             20,
 		BackgroundColor: render.DefaultCardColor,
 		BorderRadius:    20,
@@ -43,4 +64,26 @@ func DefaultCardStyle(width float64) render.Style {
 		// Debug:           true,
 	}
 	return style
+}
+
+func overviewCardStyle(width float64) render.Style {
+	style := defaultCardStyle(width)
+	style.PaddingY = 20
+	style.PaddingX = 20
+	return style
+}
+
+func highlightCardStyle(containerStyle render.Style) highlightStyle {
+	container := containerStyle
+	container.Gap = 10
+	container.Direction = render.DirectionHorizontal
+	container.JustifyContent = render.JustifyContentSpaceBetween
+
+	return highlightStyle{
+		container:  container,
+		cardTitle:  render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary},
+		tankName:   render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary},
+		blockValue: render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary},
+		blockLabel: render.Style{Font: &render.FontSmall, FontColor: render.TextAlt},
+	}
 }
