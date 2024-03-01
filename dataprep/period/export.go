@@ -99,6 +99,10 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 		minimumBattles = 75
 	} else if periodDays > 30 {
 		minimumBattles = 50
+	} else if periodDays > 14 {
+		minimumBattles = 25
+	} else if periodDays > 7 {
+		minimumBattles = 10
 	}
 
 	highlightedVehicles := getHighlightedVehicles(options.Highlights, stats.Vehicles, minimumBattles)
