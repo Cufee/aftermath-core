@@ -20,7 +20,6 @@ import (
 	render "github.com/cufee/aftermath-core/internal/logic/render/period"
 	"github.com/cufee/aftermath-core/internal/logic/stats/period"
 	"github.com/cufee/aftermath-core/types"
-	"github.com/cufee/aftermath-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
@@ -38,7 +37,7 @@ func PeriodFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
-	imageData, err := getEncodedPeriodImage(utils.RealmFromAccountID(accountId), accountId, opts)
+	imageData, err := getEncodedPeriodImage(accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -71,7 +70,7 @@ func PeriodFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	imageData, err := getEncodedPeriodImage(utils.RealmFromAccountID(accountId), accountId, opts)
+	imageData, err := getEncodedPeriodImage(accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -79,8 +78,7 @@ func PeriodFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(imageData))
 }
 
-func getEncodedPeriodImage(realm string, accountId int, options types.PeriodRequestPayload) (string, error) {
-
+func getEncodedPeriodImage(accountId int, options types.PeriodRequestPayload) (string, error) {
 	stats, err := period.GetPlayerStats(accountId, options.Days)
 	if err != nil {
 		return "", err
