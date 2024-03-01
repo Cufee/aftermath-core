@@ -1,0 +1,14 @@
+{
+  "apiUrl": "https://accent.byvko.dev",
+  "version": {
+    "branchVersionPrefix": "release/"
+  },
+  "files": [
+    {
+      "namePattern": "file",
+      "format": "json",
+      "source": "aftermath-core.json",
+      "target": "internal/core/localization/resources/%slug%.json"
+    }
+  ]
+}
