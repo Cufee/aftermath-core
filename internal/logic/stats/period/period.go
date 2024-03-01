@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cufee/aftermath-core/internal/core/database"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/external/blitzstars"
@@ -21,8 +22,32 @@ type PeriodStats struct {
 	Start time.Time `json:"start"`
 	End   time.Time `json:"end"`
 
-	Stats    core.ReducedStatsFrame            `json:"stats"`
 	Vehicles map[int]*core.ReducedVehicleStats `json:"vehicles"`
+	Stats    core.ReducedStatsFrame            `json:"stats"`
+}
+
+func (stats *PeriodStats) CareerWN8(averages map[int]*core.ReducedStatsFrame) int {
+	if v := stats.Stats.WN8(nil); v != core.InvalidValueInt {
+		return v
+	}
+
+	var weightedWN8Total, wn8BattlesTotal int
+	for id, vehicle := range stats.Vehicles {
+		if vehicle.Battles < 1 {
+			continue
+		}
+		if data, ok := averages[id]; ok {
+			weightedWN8Total += vehicle.Battles * vehicle.WN8(data)
+			wn8BattlesTotal += vehicle.Battles
+		}
+	}
+	if wn8BattlesTotal < 1 {
+		return core.InvalidValueInt
+	}
+
+	v := weightedWN8Total / wn8BattlesTotal
+	stats.Stats.SetWN8(v)
+	return v
 }
 
 const durationDay = time.Hour * 24
@@ -45,6 +70,16 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 		return nil, accountStats.Err
 	}
 
+	var vehicleIDs []int
+	for _, vehicle := range accountStats.Data.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.TankID)
+	}
+
+	tankAverages, err := database.GetVehicleAverages(vehicleIDs...)
+	if err != nil {
+		return nil, err
+	}
+
 	var periodStats = PeriodStats{
 		Clan:     accountStats.Data.Clan.Clan,
 		Account:  accountStats.Data.Account.Account,
@@ -64,6 +99,7 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 				MarkOfMastery:     vehicle.MarkOfMastery,
 				VehicleID:         vehicle.TankID,
 			}
+			periodStats.Vehicles[vehicle.TankID].WN8(tankAverages[vehicle.TankID])
 		}
 
 		// TODO: Get calculated career WN8
@@ -71,6 +107,7 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 		periodStats.Start = time.Unix(int64(accountStats.Data.Account.CreatedAt), 0)
 		periodStats.Stats = *accountStats.Data.Session.Global
 
+		periodStats.CareerWN8(tankAverages)
 		return &periodStats, nil
 
 	default:
@@ -94,7 +131,6 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 		vehiclesMap[vehicle.TankID] = vehicle
 	}
 
-	// var weightedWN8Total, wn8BattlesTotal int
 	for _, vehicle := range accountStats.Data.Vehicles {
 		if vehicle.LastBattleTime < int(periodStats.Start.Unix()) {
 			continue
@@ -120,15 +156,17 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 			compareToFrame.Subtract(selectedFrame)
 
 			frame := core.ReducedVehicleStats{
-				LastBattleTime:    vehicle.LastBattleTime,
 				ReducedStatsFrame: compareToFrame,
+				LastBattleTime:    vehicle.LastBattleTime,
 				VehicleID:         vehicle.TankID,
 			}
 			periodStats.Vehicles[vehicle.TankID] = &frame
 			periodStats.Stats.Add(frame.ReducedStatsFrame)
+			periodStats.Vehicles[vehicle.TankID].WN8(tankAverages[vehicle.TankID])
 		}
 	}
 
+	periodStats.CareerWN8(tankAverages)
 	return &periodStats, nil
 }
 

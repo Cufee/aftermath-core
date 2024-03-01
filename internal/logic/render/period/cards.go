@@ -66,7 +66,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 				}
 			}
 
-			highlightCardWidthMax := (highlightStyle.container.PaddingX * 2) + (highlightStyle.container.Gap * highlightBlocksMaxCount) + highlightTitleMaxWidth
+			highlightCardWidthMax := (highlightStyle.container.PaddingX * 2) + (highlightStyle.container.Gap * highlightBlocksMaxCount) + (highlightBlockMaxSize * highlightBlocksMaxCount) + highlightTitleMaxWidth
 			cardWidth = helpers.Max(cardWidth, highlightCardWidthMax)
 		}
 	}
