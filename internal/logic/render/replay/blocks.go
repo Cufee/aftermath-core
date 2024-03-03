@@ -7,28 +7,29 @@ import (
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
 
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	parse "github.com/cufee/aftermath-core/internal/logic/replay"
 )
 
-func newTitleBlock(replay *parse.Replay, width float64) render.Block {
+func newTitleBlock(replay *parse.Replay, width float64, printer localization.LocalePrinter) render.Block {
 	var titleBlocks []render.Block
 	if replay.Victory {
 		titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
 			Font:      &render.FontLarge,
 			FontColor: render.TextPrimary,
-		}, "Victory"))
+		}, printer("label_victory")))
 	} else {
 		titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
 			Font:      &render.FontLarge,
 			FontColor: render.TextPrimary,
-		}, "Defeat"))
+		}, printer("label_defeat")))
 	}
 
 	titleBlocks = append(titleBlocks, render.NewTextContent(render.Style{
 		Font:      &render.FontLarge,
 		FontColor: render.TextSecondary,
-	}, fmt.Sprintf(" - %s", replay.BattleType.String())))
+	}, fmt.Sprintf(" - %s", printer("label_"+replay.BattleType.String()))))
 
 	style := defaultCardStyle(width, 75)
 	style.JustifyContent = render.JustifyContentCenter

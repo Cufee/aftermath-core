@@ -107,7 +107,7 @@ func getEncodedReplayImage(options types.ReplayRequestPayload) (string, error) {
 			return
 		}
 
-		img, err := render.RenderReplayImage(render.ReplayData{Cards: cards, Replay: replay})
+		img, err := render.RenderReplayImage(render.ReplayData{Cards: cards, Replay: replay}, render.RenderOptions{})
 		cardsChan <- core.DataWithError[image.Image]{Data: img, Err: err}
 	}()
 

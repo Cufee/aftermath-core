@@ -7,6 +7,7 @@ import (
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
 
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	parse "github.com/cufee/aftermath-core/internal/logic/replay"
 )
@@ -19,8 +20,14 @@ type ReplayData struct {
 	Replay *parse.Replay
 }
 
-func RenderReplayImage(data ReplayData) (image.Image, error) {
+type RenderOptions struct {
+	Locale localization.SupportedLanguage
+}
+
+func RenderReplayImage(data ReplayData, opts RenderOptions) (image.Image, error) {
 	var alliesBlocks, enemiesBlocks []render.Block
+
+	printer := localization.GetPrinter(opts.Locale)
 
 	var playerNameWidth float64
 	statsSizes := make(map[dataprep.Tag]float64)
@@ -72,7 +79,7 @@ func RenderReplayImage(data ReplayData) (image.Image, error) {
 	}
 
 	// Title Card
-	titleBlock := newTitleBlock(data.Replay, totalCardsWidth)
+	titleBlock := newTitleBlock(data.Replay, totalCardsWidth, printer)
 
 	// Teams
 	var teamsBlocks []render.Block

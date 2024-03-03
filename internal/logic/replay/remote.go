@@ -2,7 +2,6 @@ package replay
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -16,11 +15,6 @@ func UnpackRemote(link string) (*UnpackedReplay, error) {
 		return nil, ErrInvalidReplayFile
 	}
 	defer resp.Body.Close()
-
-	fmt.Printf("%s\n", link)
-	fmt.Printf("%s\n", resp.Status)
-	fmt.Printf("%d\n", resp.StatusCode)
-	fmt.Printf("%s\n", resp.Header.Get("Content-Length"))
 
 	// Convert 10 MB to bytes
 	const maxFileSize = 10 * 1024 * 1024
