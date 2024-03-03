@@ -10,13 +10,13 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
-	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
+	"github.com/cufee/aftermath-core/internal/logic/replay"
 
 	"github.com/rs/zerolog/log"
 )
 
 type ExportInput struct {
-	Replay                *wotinspector.Replay
+	Replay                *replay.Replay
 	GlobalVehicleAverages map[int]*core.ReducedStatsFrame
 }
 
@@ -62,7 +62,7 @@ func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 	return cards, nil
 }
 
-func playerToCard(player wotinspector.Player, vehicle string, averages *core.ReducedStatsFrame, blocks []dataprep.Tag, printer localization.LocalePrinter) Card {
+func playerToCard(player replay.Player, vehicle string, averages *core.ReducedStatsFrame, blocks []dataprep.Tag, printer localization.LocalePrinter) Card {
 	card := Card{
 		Type:  dataprep.CardTypeVehicle,
 		Meta:  CardMeta{player, blocks},
@@ -84,7 +84,7 @@ func playerToCard(player wotinspector.Player, vehicle string, averages *core.Red
 	return card
 }
 
-func presetToValue(player wotinspector.Player, preset dataprep.Tag) dataprep.Value {
+func presetToValue(player replay.Player, preset dataprep.Tag) dataprep.Value {
 	switch preset {
 	case dataprep.TagDamageDealt:
 		return dataprep.StatsToValue(player.Performance.DamageDealt)
@@ -101,13 +101,13 @@ func presetToValue(player wotinspector.Player, preset dataprep.Tag) dataprep.Val
 	}
 }
 
-func sortTeams(teams wotinspector.Teams) {
+func sortTeams(teams replay.Teams) {
 	sortPlayers(teams.Allies)
 	sortPlayers(teams.Enemies)
 }
 
-func sortPlayers(players []wotinspector.Player) {
-	slices.SortFunc(players, func(j, i wotinspector.Player) int {
+func sortPlayers(players []replay.Player) {
+	slices.SortFunc(players, func(j, i replay.Player) int {
 		return (i.Performance.DamageDealt + i.Performance.DamageAssisted + i.Performance.DamageBlocked) - (j.Performance.DamageDealt - j.Performance.DamageAssisted - j.Performance.DamageBlocked)
 	})
 }

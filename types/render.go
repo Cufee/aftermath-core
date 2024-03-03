@@ -4,6 +4,10 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 )
 
+type ReplayRequestPayload struct {
+	URL string `json:"url"`
+}
+
 type PeriodRequestPayload struct {
 	Days       int        `json:"days"`
 	Presets    [][]string `json:"presets"`

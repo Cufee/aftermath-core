@@ -46,3 +46,20 @@ func (s *SubscriptionPayload) ToSubscriptionUpdate() models.SubscriptionUpdate {
 	}
 	return sub
 }
+
+type ForceUpdateConnectionPayload struct {
+	UserID         string `json:"userId"`
+	ConnectionID   string `json:"connectionId"`
+	ConnectionType string `json:"connectionType"`
+
+	Metadata map[string]any `json:"metadata"`
+}
+
+func (update *ForceUpdateConnectionPayload) Type() (models.ConnectionType, bool) {
+	switch update.ConnectionType {
+	case string(models.ConnectionTypeWargaming):
+		return models.ConnectionTypeWargaming, true
+	default:
+		return "", false
+	}
+}

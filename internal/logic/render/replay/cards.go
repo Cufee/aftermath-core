@@ -7,8 +7,8 @@ import (
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
 
-	"github.com/cufee/aftermath-core/internal/logic/external/wotinspector"
 	"github.com/cufee/aftermath-core/internal/logic/render"
+	parse "github.com/cufee/aftermath-core/internal/logic/replay"
 )
 
 // Tank Name 							// WN8 Winrate Damage Blocker Assisted Kills
@@ -16,7 +16,7 @@ import (
 
 type ReplayData struct {
 	Cards  replay.Cards
-	Replay *wotinspector.Replay
+	Replay *parse.Replay
 }
 
 func RenderReplayImage(data ReplayData) (image.Image, error) {
