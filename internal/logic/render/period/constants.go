@@ -68,7 +68,7 @@ func defaultCardStyle(width float64) render.Style {
 
 func overviewCardStyle(width float64) render.Style {
 	style := defaultCardStyle(width)
-	style.PaddingY = 20
+	style.PaddingY = 25
 	style.PaddingX = 20
 	return style
 }
@@ -76,7 +76,8 @@ func overviewCardStyle(width float64) render.Style {
 func highlightCardStyle(containerStyle render.Style) highlightStyle {
 	container := containerStyle
 	container.Gap = 5
-	container.PaddingX = 15
+	container.PaddingX = 20
+	container.PaddingY = 15
 	container.Direction = render.DirectionHorizontal
 	container.JustifyContent = render.JustifyContentSpaceBetween
 
