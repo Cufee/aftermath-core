@@ -174,7 +174,6 @@ func playerFromData(battle battleResults, info playerInfo, result playerResultsI
 
 	if result.HitpointsLeft != nil {
 		player.HPLeft = int(*result.HitpointsLeft)
-		println(player.HPLeft)
 	}
 	if player.HPLeft > 0 {
 		frame.BattlesSurvived = 1
