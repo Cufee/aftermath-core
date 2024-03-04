@@ -53,7 +53,10 @@ func getHighlightedVehicles(highlights []highlight, vehicles map[int]*stats.Redu
 	var highlightedVehicles []highlightedVehicle
 	for _, highlight := range highlights {
 		leader, leaderExists := leadersMap[highlight.label]
-		if _, nominated := nominateVehicles[leader.vehicle.VehicleID]; nominated || !leaderExists {
+		if !leaderExists {
+			continue
+		}
+		if _, nominated := nominateVehicles[leader.vehicle.VehicleID]; nominated {
 			continue
 		}
 		highlightedVehicles = append(highlightedVehicles, leader)
