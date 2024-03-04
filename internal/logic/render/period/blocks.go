@@ -46,7 +46,7 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	valueStyle, _ := style.block(stats)
 	valueBlock := render.NewTextContent(valueStyle, stats.Data.String)
 
-	ratingColor := render.TextAlt
+	var ratingColor color.Color = render.TextAlt
 	if stats.Data.Value > 0 {
 		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
 	}
@@ -58,7 +58,7 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	return render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock, iconBlockBottom)
 }
 
-func getIconWN8(ratingColor color.RGBA, opts ratingIconOptions) image.Image {
+func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {
 	ctx := gg.NewContext(opts.width(), opts.height())
 	for line := range opts.lines {
 		height := opts.lineStep + opts.lineStep*line
