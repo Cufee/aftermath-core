@@ -70,7 +70,7 @@ func renderImages(images []image.Image, style Style) (image.Image, error) {
 			case AlignItemsCenter:
 				posX = (imageSize.width - imgWidth) / 2
 			case AlignItemsEnd:
-				posX = imageSize.height - imgWidth
+				posX = imageSize.width - imgWidth - style.PaddingX
 			default: // AlignItemsStart
 				posX = style.PaddingX
 			}
@@ -84,7 +84,7 @@ func renderImages(images []image.Image, style Style) (image.Image, error) {
 			case AlignItemsCenter:
 				posY = (imageSize.height - imgHeight) / 2
 			case AlignItemsEnd:
-				posY = imageSize.height - imgHeight
+				posY = imageSize.height - imgHeight - style.PaddingY
 			default: // AlignItemsStart
 				posY = style.PaddingY
 			}

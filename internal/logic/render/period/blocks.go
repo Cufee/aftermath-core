@@ -54,10 +54,8 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	}
 
 	iconTop := getIconWN8(ratingColor, defaultRatingIconOptions(1))
-	iconBottom := getIconWN8(ratingColor, defaultRatingIconOptions(0))
 	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
-	iconBlockBottom := render.NewImageContent(render.Style{Width: float64(iconBottom.Bounds().Dx()), Height: float64(iconBottom.Bounds().Dy())}, iconBottom)
-	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock, iconBlockBottom))
+	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock))
 
 	if stats.Data.Value >= 0 {
 		labelStyle.FontColor = render.TextPrimary
@@ -71,7 +69,7 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 		}, render.NewTextContent(labelStyle, shared.GetWN8TierName(int(stats.Data.Value)))))
 	}
 
-	return render.NewBlocksContent(render.Style{Gap: 10, Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
+	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
 }
 
 func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {

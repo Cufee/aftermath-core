@@ -39,7 +39,7 @@ func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer 
 
 	case dataprep.TagAccuracy:
 		block.Data = dataprep.StatsToValue(stats.Accuracy())
-		block.Flavor = BlockFlavorDefault
+		block.Flavor = BlockFlavorSecondary
 
 	case dataprep.TagAvgDamage:
 		block.Data = dataprep.StatsToValue(int(stats.AvgDamage()))
@@ -47,7 +47,7 @@ func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer 
 
 	case dataprep.TagDamageRatio:
 		block.Data = dataprep.StatsToValue(stats.DamageRatio())
-		block.Flavor = BlockFlavorDefault
+		block.Flavor = BlockFlavorSecondary
 
 	default:
 		return StatsBlock{}, errors.New("invalid preset")
