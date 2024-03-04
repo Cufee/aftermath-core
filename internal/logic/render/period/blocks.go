@@ -43,17 +43,17 @@ func defaultStatsBlock(style overviewStyle, stats period.StatsBlock) render.Bloc
 }
 
 func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
-	style.blockContainer.JustifyContent = render.JustifyContentEnd
 	valueStyle, _ := style.block(stats)
-
 	valueBlock := render.NewTextContent(valueStyle, stats.Data.String)
 
 	var ratingColor color.Color = render.TextAlt
 	if stats.Data.Value > 0 {
 		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
 	}
-	iconBlockTop := render.NewImageContent(render.Style{Width: 100, Height: 100}, getIconWN8(ratingColor, defaultRatingIconOptions(1)))
-	iconBlockBottom := render.NewImageContent(render.Style{Width: 100, Height: 100}, getIconWN8(ratingColor, defaultRatingIconOptions(0)))
+	iconTop := getIconWN8(ratingColor, defaultRatingIconOptions(1))
+	iconBottom := getIconWN8(ratingColor, defaultRatingIconOptions(0))
+	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
+	iconBlockBottom := render.NewImageContent(render.Style{Width: float64(iconBottom.Bounds().Dx()), Height: float64(iconBottom.Bounds().Dy())}, iconBottom)
 
 	return render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock, iconBlockBottom)
 }

@@ -31,9 +31,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 			cardWidth = helpers.Max(cardWidth, titleStyle.Container.PaddingX*2+titleStyle.Container.Gap*2+nameSize.TotalWidth+clanSize.TotalWidth*2)
 		}
 		{
-			var blockWidthMax float64
 			var columnWidth float64 = float64(defaultRatingIconOptions(0).width())
-			// var blockHeightMax float64
 			rowStyle := getOverviewStyle()
 			for _, column := range player.Cards.Overview.Blocks {
 				// overviewBlockHeight = helpers.Max(overviewBlockHeight, labelSize.TotalHeight+valueSize.TotalHeight)
@@ -42,7 +40,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 					valueStyle, labelStyle := rowStyle.block(block)
 					labelSize := render.MeasureString(block.Label, *valueStyle.Font)
 					valueSize := render.MeasureString(block.Data.String, *labelStyle.Font)
-					columnWidth = helpers.Max(blockWidthMax, labelSize.TotalWidth, valueSize.TotalWidth)
+					columnWidth = helpers.Max(columnWidth, labelSize.TotalWidth, valueSize.TotalWidth)
 				}
 			}
 			cardWidth = helpers.Max(cardWidth, columnWidth*float64(len(player.Cards.Overview.Blocks)))
