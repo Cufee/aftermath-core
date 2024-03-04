@@ -64,14 +64,14 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 		labelStyle.BackgroundColor = color.White
 
 		blocks = append(blocks, render.NewBlocksContent(render.Style{
-			PaddingY:        2.5,
+			PaddingY:        5,
 			PaddingX:        10,
-			BorderRadius:    12.5,
+			BorderRadius:    15,
 			BackgroundColor: render.DefaultCardColor,
 		}, render.NewTextContent(labelStyle, shared.GetWN8TierName(int(stats.Data.Value)))))
 	}
 
-	return render.NewBlocksContent(render.Style{Gap: 5, Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
+	return render.NewBlocksContent(render.Style{Gap: 10, Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
 }
 
 func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {
