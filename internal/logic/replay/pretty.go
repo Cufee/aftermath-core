@@ -107,11 +107,14 @@ func Prettify(battle battleResults, meta replayMeta) *Replay {
 		// MasteryBadge: data.MasteryBadge,
 	}
 
+	var allyTeam Team = TeamAlly
 	players := make(map[int]playerInfo)
 	for _, p := range battle.Players {
 		players[int(p.AccountID)] = p.Info
+		if p.AccountID == battle.Author.AccountID {
+			allyTeam = p.Info.Team
+		}
 	}
-
 	for _, result := range battle.PlayerResults {
 		info, ok := players[int(result.Info.AccountID)]
 		if !ok {
@@ -121,7 +124,7 @@ func Prettify(battle battleResults, meta replayMeta) *Replay {
 		if player.ID == int(battle.Author.AccountID) {
 			replay.Protagonist = player
 		}
-		if info.Team == TeamAlly {
+		if info.Team == allyTeam {
 			replay.Teams.Allies = append(replay.Teams.Allies, player)
 		} else {
 			replay.Teams.Enemies = append(replay.Teams.Enemies, player)

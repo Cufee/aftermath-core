@@ -120,6 +120,6 @@ func sortTeams(teams replay.Teams) {
 
 func sortPlayers(players []replay.Player) {
 	slices.SortFunc(players, func(j, i replay.Player) int {
-		return (i.Performance.DamageDealt + i.Performance.DamageAssisted + i.Performance.DamageBlocked) - (j.Performance.DamageDealt - j.Performance.DamageAssisted - j.Performance.DamageBlocked)
+		return (i.Performance.DamageDealt + i.Performance.DamageAssisted + i.Performance.DamageBlocked) - (j.Performance.DamageDealt + j.Performance.DamageAssisted + j.Performance.DamageBlocked)
 	})
 }
