@@ -18,7 +18,7 @@ import (
 )
 
 func TestFullReplayRenderPipeline(t *testing.T) {
-	file, err := os.ReadFile("render_replay_test.wotbreplay")
+	file, err := os.ReadFile("render_replay_test_0.wotbreplay")
 	if err != nil {
 		panic(err)
 	}

@@ -8,17 +8,10 @@ import (
 	"go.dedis.ch/protobuf"
 )
 
-type Team uint32
-
-const (
-	TeamAlly  Team = 1
-	TeamEnemy Team = 2
-)
-
 type battleResults struct {
 	ModeAndMap uint32 `protobuf:"1" json:"modeAndMap"`
 	Timestamp  uint64 `protobuf:"2" json:"timestamp"`
-	WinnerTeam Team   `protobuf:"3,optional" json:"winnerTeam"`
+	WinnerTeam uint32 `protobuf:"3,optional" json:"winnerTeam"`
 	// 4: 1 enemiesKilled
 	TimeAlive uint32 `protobuf:"5" json:"timeAlive"`
 	Author    author `protobuf:"8,required" json:"protagonist"`
@@ -70,7 +63,7 @@ type player struct {
 type playerInfo struct {
 	Nickname  string  `protobuf:"1" json:"nickname"`
 	PlatoonID *uint32 `protobuf:"2,optional" json:"platoon"`
-	Team      Team    `protobuf:"3" json:"team"`
+	Team      uint32  `protobuf:"3" json:"team"`
 	ClanID    *uint32 `protobuf:"4,optional" json:"clanId"`
 	ClanTag   *string `protobuf:"5,optional" json:"clanTag"`
 	// 6: "\000\000"
@@ -85,7 +78,7 @@ type playerResults struct {
 }
 
 type playerResultsInfo struct {
-	HitpointsLeft       *uint32 `protobuf:"1,optional" json:"hitpointsLeft"`
+	HitpointsLeft       *uint64 `protobuf:"1,optional" json:"hitpointsLeft"`
 	CreditsEarned       uint32  `protobuf:"2" json:"creditsEarned"`
 	BaseXP              uint32  `protobuf:"3" json:"baseXp"`
 	ShotsFired          uint32  `protobuf:"4" json:"shotsFired"`
@@ -145,7 +138,7 @@ type author struct {
 	DamageDealt     uint32 `protobuf:"8" json:"damageDealt"`
 
 	AccountID uint32 `protobuf:"101" json:"accountId"`
-	Team      Team   `protobuf:"102" json:"team"`
+	Team      uint32 `protobuf:"102" json:"team"`
 }
 
 type avatar struct {

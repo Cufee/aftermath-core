@@ -107,7 +107,7 @@ func Prettify(battle battleResults, meta replayMeta) *Replay {
 		// MasteryBadge: data.MasteryBadge,
 	}
 
-	var allyTeam Team = TeamAlly
+	var allyTeam uint32
 	players := make(map[int]playerInfo)
 	for _, p := range battle.Players {
 		players[int(p.AccountID)] = p.Info
@@ -131,6 +131,7 @@ func Prettify(battle battleResults, meta replayMeta) *Replay {
 		}
 	}
 
+	replay.Victory = allyTeam == battle.WinnerTeam
 	return &replay
 }
 
@@ -177,6 +178,7 @@ func playerFromData(battle battleResults, info playerInfo, result playerResultsI
 
 	if result.HitpointsLeft != nil {
 		player.HPLeft = int(*result.HitpointsLeft)
+		println(player.HPLeft)
 	}
 	if player.HPLeft > 0 {
 		frame.BattlesSurvived = 1
