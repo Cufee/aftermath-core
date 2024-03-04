@@ -89,12 +89,24 @@ func presetToValue(player replay.Player, preset dataprep.Tag) dataprep.Value {
 	case dataprep.TagDamageDealt:
 		return dataprep.StatsToValue(player.Performance.DamageDealt)
 	case dataprep.TagDamageBlocked:
+		if player.Performance.DamageBlocked < 1 {
+			return dataprep.Value{Value: -1, String: "-"}
+		}
 		return dataprep.StatsToValue(player.Performance.DamageBlocked)
 	case dataprep.TagDamageAssisted:
+		if player.Performance.DamageAssisted < 1 {
+			return dataprep.Value{Value: -1, String: "-"}
+		}
 		return dataprep.StatsToValue(player.Performance.DamageAssisted)
 	case dataprep.TagDamageAssistedCombined:
+		if player.Performance.DamageAssisted+player.Performance.DamageBlocked < 1 {
+			return dataprep.Value{Value: -1, String: "-"}
+		}
 		return dataprep.StatsToValue(player.Performance.DamageAssisted + player.Performance.DamageBlocked)
 	case dataprep.TagFrags:
+		if player.Performance.Frags < 1 {
+			return dataprep.Value{Value: -1, String: "-"}
+		}
 		return dataprep.StatsToValue(player.Performance.Frags)
 	default:
 		return dataprep.Value{Value: -1, String: "-"}

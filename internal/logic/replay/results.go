@@ -85,25 +85,25 @@ type playerResults struct {
 }
 
 type playerResultsInfo struct {
-	HitpointsLeft       *int32 `protobuf:"1,optional" json:"hitpointsLeft"`
-	CreditsEarned       uint32 `protobuf:"2" json:"creditsEarned"`
-	BaseXP              uint32 `protobuf:"3" json:"baseXp"`
-	ShotsFired          uint32 `protobuf:"4" json:"shotsFired"`
-	ShotsHit            uint32 `protobuf:"5" json:"shotsHit"`
-	ShotsPenetrated     uint32 `protobuf:"7" json:"shotsPenetrated"`
-	DamageDealt         uint32 `protobuf:"8" json:"damageDealt"`
-	DamageAssisted      uint32 `protobuf:"9" json:"damageAssisted"`
-	DamageAssistedTrack uint32 `protobuf:"10" json:"damageAssistedTrack"`
-	DamageReceived      uint32 `protobuf:"11" json:"damageReceived"`
-	HitsReceived        uint32 `protobuf:"12" json:"hitsReceived"`
-	HitsBlocked         uint32 `protobuf:"13" json:"hitsBlocked"`
-	HitsPenetrated      uint32 `protobuf:"15" json:"hitsPenetrated"`
-	EnemiesSpotted      uint32 `protobuf:"16" json:"enemiesSpotted"`
-	EnemiesDamaged      uint32 `protobuf:"17" json:"enemiesDamaged"`
-	EnemiesDestroyed    uint32 `protobuf:"18" json:"enemiesDestroyed"`
-	DistanceTraveled    uint32 `protobuf:"23" json:"distanceTraveled"`
-	TimeAlive           uint32 `protobuf:"24" json:"timeAlive"`
-	KilledByAccountID   uint32 `protobuf:"25" json:"killedBy"`
+	HitpointsLeft       *uint32 `protobuf:"1,optional" json:"hitpointsLeft"`
+	CreditsEarned       uint32  `protobuf:"2" json:"creditsEarned"`
+	BaseXP              uint32  `protobuf:"3" json:"baseXp"`
+	ShotsFired          uint32  `protobuf:"4" json:"shotsFired"`
+	ShotsHit            uint32  `protobuf:"5" json:"shotsHit"`
+	ShotsPenetrated     uint32  `protobuf:"7" json:"shotsPenetrated"`
+	DamageDealt         uint32  `protobuf:"8" json:"damageDealt"`
+	DamageAssisted      uint32  `protobuf:"9" json:"damageAssisted"`
+	DamageAssistedTrack uint32  `protobuf:"10" json:"damageAssistedTrack"`
+	DamageReceived      uint32  `protobuf:"11" json:"damageReceived"`
+	HitsReceived        uint32  `protobuf:"12" json:"hitsReceived"`
+	HitsBlocked         uint32  `protobuf:"13" json:"hitsBlocked"`
+	HitsPenetrated      uint32  `protobuf:"15" json:"hitsPenetrated"`
+	EnemiesSpotted      uint32  `protobuf:"16" json:"enemiesSpotted"`
+	EnemiesDamaged      uint32  `protobuf:"17" json:"enemiesDamaged"`
+	EnemiesDestroyed    uint32  `protobuf:"18" json:"enemiesDestroyed"`
+	DistanceTraveled    uint32  `protobuf:"23" json:"distanceTraveled"`
+	TimeAlive           uint32  `protobuf:"24" json:"timeAlive"`
+	KilledByAccountID   uint32  `protobuf:"25" json:"killedBy"`
 	//  26: "\323\003"
 	Achievements          []Achievement `protobuf:"27,repeated" json:"achievements"`
 	AchievementsOther     []Achievement `protobuf:"28,repeated" json:"achievementsOther"`

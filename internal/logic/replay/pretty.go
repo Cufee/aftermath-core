@@ -174,6 +174,7 @@ func playerFromData(battle battleResults, info playerInfo, result playerResultsI
 
 	if result.HitpointsLeft != nil {
 		player.HPLeft = int(*result.HitpointsLeft)
+		println(player.HPLeft)
 	}
 	if player.HPLeft > 0 {
 		frame.BattlesSurvived = 1
@@ -192,7 +193,7 @@ func playerFromData(battle battleResults, info playerInfo, result playerResultsI
 	player.Performance = Performance{
 		DamageBlocked:     int(result.DamageBlocked),
 		DamageReceived:    int(result.DamageReceived),
-		DamageAssisted:    int(result.DamageAssisted),
+		DamageAssisted:    int(result.DamageAssisted + result.DamageAssistedTrack),
 		DistanceTraveled:  int(result.DistanceTraveled),
 		ReducedStatsFrame: frame,
 	}
