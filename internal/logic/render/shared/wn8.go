@@ -35,3 +35,37 @@ func GetWN8Color(r int) color.Color {
 	}
 	return color.Transparent
 }
+
+func GetWN8TierName(r int) string {
+	if r > 0 && r < 301 {
+		return "Very Bad"
+	}
+	if r > 300 && r < 451 {
+		return "Bad"
+	}
+	if r > 450 && r < 651 {
+		return "Below Average"
+	}
+	if r > 650 && r < 901 {
+		return "Average"
+	}
+	if r > 900 && r < 1201 {
+		return "Above Average"
+	}
+	if r > 1200 && r < 1601 {
+		return "Good"
+	}
+	if r > 1600 && r < 2001 {
+		return "Very Good"
+	}
+	if r > 2000 && r < 2451 {
+		return "Great"
+	}
+	if r > 2450 && r < 2901 {
+		return "Unicum"
+	}
+	if r > 2900 {
+		return "Super Unicum"
+	}
+	return ""
+}

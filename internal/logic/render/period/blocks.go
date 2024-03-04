@@ -43,19 +43,35 @@ func defaultStatsBlock(style overviewStyle, stats period.StatsBlock) render.Bloc
 }
 
 func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
-	valueStyle, _ := style.block(stats)
+	var blocks []render.Block
+
+	valueStyle, labelStyle := style.block(stats)
 	valueBlock := render.NewTextContent(valueStyle, stats.Data.String)
 
 	var ratingColor color.Color = render.TextAlt
 	if stats.Data.Value > 0 {
 		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
 	}
+
 	iconTop := getIconWN8(ratingColor, defaultRatingIconOptions(1))
 	iconBottom := getIconWN8(ratingColor, defaultRatingIconOptions(0))
 	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
 	iconBlockBottom := render.NewImageContent(render.Style{Width: float64(iconBottom.Bounds().Dx()), Height: float64(iconBottom.Bounds().Dy())}, iconBottom)
+	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock, iconBlockBottom))
 
-	return render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock, iconBlockBottom)
+	if stats.Data.Value >= 0 {
+		labelStyle.FontColor = render.TextPrimary
+		labelStyle.BackgroundColor = color.White
+
+		blocks = append(blocks, render.NewBlocksContent(render.Style{
+			PaddingY:        2.5,
+			PaddingX:        10,
+			BorderRadius:    12.5,
+			BackgroundColor: render.DefaultCardColor,
+		}, render.NewTextContent(labelStyle, shared.GetWN8TierName(int(stats.Data.Value)))))
+	}
+
+	return render.NewBlocksContent(render.Style{Gap: 5, Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
 }
 
 func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {

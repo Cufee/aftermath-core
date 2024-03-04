@@ -63,10 +63,10 @@ func defaultCardStyle(width float64) render.Style {
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
 		Direction:       render.DirectionVertical,
-		PaddingY:        10,
-		Gap:             20,
 		BackgroundColor: render.DefaultCardColor,
 		BorderRadius:    20,
+		PaddingY:        10,
+		Gap:             20,
 		Width:           width,
 		// Debug:           true,
 	}
@@ -77,7 +77,7 @@ func overviewCardStyle(width float64) render.Style {
 	style := defaultCardStyle(width)
 	style.Direction = render.DirectionHorizontal
 	style.JustifyContent = render.JustifyContentCenter
-	style.PaddingY = 25
+	style.PaddingY = 30
 	style.PaddingX = 25
 	style.Gap = 0
 	// style.Debug = true

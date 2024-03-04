@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -37,13 +38,22 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 				for _, block := range column {
 					valueStyle, labelStyle := rowStyle.block(block)
 
-					labelSize := render.MeasureString(block.Label, *labelStyle.Font)
+					label := block.Label
+					if block.Tag == dataprep.TagWN8 {
+						label = shared.GetWN8TierName(int(block.Data.Value))
+					}
+					labelSize := render.MeasureString(label, *labelStyle.Font)
 					valueSize := render.MeasureString(block.Data.String, *valueStyle.Font)
 
 					overviewColumnWidth = helpers.Max(overviewColumnWidth, labelSize.TotalWidth, valueSize.TotalWidth)
 				}
 			}
-			cardWidth = helpers.Max(cardWidth, overviewColumnWidth*float64(len(player.Cards.Overview.Blocks)))
+
+			cardStyle := overviewCardStyle(cardWidth)
+			paddingAndGaps := (cardStyle.PaddingX+rowStyle.container.PaddingX+rowStyle.blockContainer.PaddingX)*2 + float64(len(player.Cards.Overview.Blocks)-1)*(cardStyle.Gap+rowStyle.container.Gap+rowStyle.blockContainer.Gap)
+
+			overviewCardContentWidth := overviewColumnWidth * float64(len(player.Cards.Overview.Blocks))
+			cardWidth = helpers.Max(cardWidth, overviewCardContentWidth+paddingAndGaps)
 		}
 
 		{
