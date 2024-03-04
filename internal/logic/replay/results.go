@@ -9,13 +9,15 @@ import (
 )
 
 type battleResults struct {
-	ModeAndMap       uint32 `protobuf:"1" json:"modeAndMap"`
-	Timestamp        uint64 `protobuf:"2" json:"timestamp"`
-	WinnerTeam       uint32 `protobuf:"3" json:"winnerTeam"`
+	ModeAndMap uint32 `protobuf:"1" json:"modeAndMap"`
+	Timestamp  uint64 `protobuf:"2" json:"timestamp"`
+	WinnerTeam uint32 `protobuf:"3" json:"winnerTeam"`
+
 	EnemiesDestroyed uint32 `protobuf:"4" json:"enemiesKilled"`
 	TimeAlive        uint32 `protobuf:"5" json:"timeAlive"`
-	Author           author `protobuf:"8,required" json:"protagonist"`
-	RoomType         uint32 `protobuf:"9" json:"roomType"`
+
+	Author   author `protobuf:"8,required" json:"protagonist"`
+	RoomType uint32 `protobuf:"9" json:"roomType"`
 
 	RepairCost uint32 `protobuf:"136" json:"repairCost"`
 	FreeXP     uint32 `protobuf:"137" json:"freeXp"`

@@ -31,21 +31,21 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 			cardWidth = helpers.Max(cardWidth, titleStyle.Container.PaddingX*2+titleStyle.Container.Gap*2+nameSize.TotalWidth+clanSize.TotalWidth*2)
 		}
 		{
-			var rowLengthMax float64
 			var blockWidthMax float64
-			for _, row := range player.Cards.Overview.Blocks {
-				rowLengthMax = helpers.Max(rowLengthMax, float64(len(row)))
+			var columnWidth float64 = float64(defaultRatingIconOptions(0).width())
+			// var blockHeightMax float64
+			rowStyle := getOverviewStyle()
+			for _, column := range player.Cards.Overview.Blocks {
+				// overviewBlockHeight = helpers.Max(overviewBlockHeight, labelSize.TotalHeight+valueSize.TotalHeight)
 
-				rowStyle := getOverviewStyle(blockWidthMax)
-				for _, block := range row {
-					valueStyle, labelStyle := rowStyle.block(block.Flavor)
-
+				for _, block := range column {
+					valueStyle, labelStyle := rowStyle.block(block)
 					labelSize := render.MeasureString(block.Label, *valueStyle.Font)
 					valueSize := render.MeasureString(block.Data.String, *labelStyle.Font)
-					blockWidthMax = helpers.Max(blockWidthMax, labelSize.TotalWidth, valueSize.TotalWidth)
+					columnWidth = helpers.Max(blockWidthMax, labelSize.TotalWidth, valueSize.TotalWidth)
 				}
 			}
-			cardWidth = helpers.Max(cardWidth, blockWidthMax*float64(rowLengthMax))
+			cardWidth = helpers.Max(cardWidth, columnWidth*float64(len(player.Cards.Overview.Blocks)))
 		}
 
 		{
@@ -119,12 +119,12 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	// Overview Card
 	{
 		var overviewCardBlocks []render.Block
-		for _, row := range player.Cards.Overview.Blocks {
-			rowBlock, err := statsBlocksToRowBlock(getOverviewStyle(cardWidth), row)
+		for _, column := range player.Cards.Overview.Blocks {
+			columnBlock, err := statsBlocksToColumnBlock(getOverviewStyle(), column)
 			if err != nil {
 				return nil, err
 			}
-			overviewCardBlocks = append(overviewCardBlocks, rowBlock)
+			overviewCardBlocks = append(overviewCardBlocks, columnBlock)
 		}
 		cards = append(cards, render.NewBlocksContent(overviewCardStyle(cardWidth), overviewCardBlocks...))
 	}

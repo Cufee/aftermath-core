@@ -61,12 +61,12 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 	}
 
 	// Overview Card
-	for _, row := range options.Blocks {
-		var rowBlocks []StatsBlock
-		for _, preset := range row {
+	for _, column := range options.Blocks {
+		var columnBlocks []StatsBlock
+		for _, preset := range column {
 			if preset == dataprep.TagAvgTier {
 				value := calculateAvgTier(stats.Vehicles, vehiclesGlossary)
-				rowBlocks = append(rowBlocks, StatsBlock{
+				columnBlocks = append(columnBlocks, StatsBlock{
 					Label:  printer("label_" + string(preset)),
 					Data:   dataprep.StatsToValue(value),
 					Flavor: BlockFlavorSecondary,
@@ -78,12 +78,12 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 			if err != nil {
 				return cards, err
 			}
-			rowBlocks = append(rowBlocks, block)
+			columnBlocks = append(columnBlocks, block)
 
 		}
 
 		cards.Overview.Type = dataprep.CardTypeOverview
-		cards.Overview.Blocks = append(cards.Overview.Blocks, rowBlocks)
+		cards.Overview.Blocks = append(cards.Overview.Blocks, columnBlocks)
 	}
 
 	if len(stats.Vehicles) < 1 || len(options.Highlights) < 1 {

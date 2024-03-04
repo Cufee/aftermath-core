@@ -7,7 +7,8 @@ import (
 )
 
 type overviewStyle struct {
-	container render.Style
+	container      render.Style
+	blockContainer render.Style
 }
 
 type highlightStyle struct {
@@ -18,8 +19,8 @@ type highlightStyle struct {
 	blockValue render.Style
 }
 
-func (s *overviewStyle) block(flavor period.BlockFlavor) (render.Style, render.Style) {
-	switch flavor {
+func (s *overviewStyle) block(block period.StatsBlock) (render.Style, render.Style) {
+	switch block.Flavor {
 	case period.BlockFlavorSpecial:
 		return render.Style{FontColor: render.TextPrimary, Font: &render.FontXL}, render.Style{FontColor: render.TextAlt, Font: &render.FontSmall}
 	case period.BlockFlavorSecondary:
@@ -42,13 +43,14 @@ func titleCardStyle(containerStyle render.Style) shared.TitleCardStyle {
 	}
 }
 
-func getOverviewStyle(width float64) overviewStyle {
+func getOverviewStyle() overviewStyle {
 	return overviewStyle{render.Style{
-		Width:          width,
+		Direction:      render.DirectionVertical,
 		AlignItems:     render.AlignItemsCenter,
 		JustifyContent: render.JustifyContentCenter,
+		Gap:            10,
 		// Debug:          true,
-	}}
+	}, render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}}
 }
 
 func defaultCardStyle(width float64) render.Style {
@@ -68,8 +70,12 @@ func defaultCardStyle(width float64) render.Style {
 
 func overviewCardStyle(width float64) render.Style {
 	style := defaultCardStyle(width)
+	style.Direction = render.DirectionHorizontal
+	// style.JustifyContent = render.JustifyContentSpaceBetween
 	style.PaddingY = 25
-	style.PaddingX = 20
+	style.PaddingX = 25
+	style.Gap = 20
+	// style.Debug = true
 	return style
 }
 
@@ -87,5 +93,31 @@ func highlightCardStyle(containerStyle render.Style) highlightStyle {
 		tankName:   render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary},
 		blockValue: render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary},
 		blockLabel: render.Style{Font: &render.FontSmall, FontColor: render.TextAlt},
+	}
+}
+
+type ratingIconOptions struct {
+	lines     int
+	direction int
+
+	lineStep  int
+	lineWidth float64
+	gap       float64
+}
+
+func (opts ratingIconOptions) height() int {
+	return ((opts.lines/2 + 1) * opts.lineStep)
+}
+func (opts ratingIconOptions) width() int {
+	return opts.lines * (int(opts.lineWidth + opts.gap))
+}
+
+func defaultRatingIconOptions(direction int) ratingIconOptions {
+	return ratingIconOptions{
+		gap:       4,
+		lines:     5,
+		lineStep:  15,
+		lineWidth: 8,
+		direction: direction,
 	}
 }
