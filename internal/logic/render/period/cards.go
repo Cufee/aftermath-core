@@ -24,7 +24,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 
 	// Calculate minimal card width to fit all the content
 	var cardWidth float64
-	overviewColumnWidth := float64(defaultRatingIconOptions(0).width())
+	overviewColumnWidth := float64(shared.DefaultLogoOptions().Width())
 	{
 		{
 			titleStyle := titleCardStyle(defaultCardStyle(cardWidth))

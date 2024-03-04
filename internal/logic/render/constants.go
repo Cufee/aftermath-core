@@ -24,6 +24,9 @@ var (
 	TextSubscriptionPremium = color.RGBA{255, 223, 0, 255}
 
 	DefaultCardColor = color.RGBA{10, 10, 10, 180}
+
+	ColorAftermathRed  = color.RGBA{255, 0, 120, 255}
+	ColorAftermathBlue = color.RGBA{90, 90, 255, 255}
 )
 
 var fontCache map[float64]font.Face

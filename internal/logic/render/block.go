@@ -119,8 +119,11 @@ func NewImageContent(style Style, image image.Image) Block {
 }
 
 func (content contentImage) Render(style Style) (image.Image, error) {
-	if style.Width == 0 || style.Height == 0 {
-		return nil, errors.New("width or height not set")
+	if style.Width == 0 {
+		style.Width = float64(content.image.Bounds().Dx())
+	}
+	if style.Height == 0 {
+		style.Height = float64(content.image.Bounds().Dy())
 	}
 
 	// Type cast to image.Image for gg

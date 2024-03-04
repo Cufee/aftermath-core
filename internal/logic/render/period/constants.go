@@ -102,31 +102,3 @@ func highlightCardStyle(containerStyle render.Style) highlightStyle {
 		blockLabel: render.Style{Font: &render.FontSmall, FontColor: render.TextAlt},
 	}
 }
-
-type ratingIconOptions struct {
-	lines     int
-	direction int
-
-	lineStep  int
-	lineWidth float64
-	jump      float64
-	gap       float64
-}
-
-func (opts ratingIconOptions) height() int {
-	return ((opts.lines/2+1)*opts.lineStep + (opts.lines/2)*int(opts.jump))
-}
-func (opts ratingIconOptions) width() int {
-	return opts.lines * (int(opts.lineWidth + opts.gap))
-}
-
-func defaultRatingIconOptions(direction int) ratingIconOptions {
-	return ratingIconOptions{
-		gap:       4,
-		jump:      6,
-		lines:     9,
-		lineStep:  10,
-		lineWidth: 6,
-		direction: direction,
-	}
-}

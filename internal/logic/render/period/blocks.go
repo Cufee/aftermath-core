@@ -1,14 +1,12 @@
 package period
 
 import (
-	"image"
 	"image/color"
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
-	"github.com/fogleman/gg"
 )
 
 func statsBlocksToColumnBlock(style overviewStyle, statsBlocks []period.StatsBlock) (render.Block, error) {
@@ -53,7 +51,7 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
 	}
 
-	iconTop := getIconWN8(ratingColor, defaultRatingIconOptions(1))
+	iconTop := shared.AftermathLogo(ratingColor, shared.DefaultLogoOptions())
 	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
 	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock))
 
@@ -70,31 +68,4 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	}
 
 	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
-}
-
-func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {
-	ctx := gg.NewContext(opts.width(), opts.height())
-	for line := range opts.lines {
-		height := opts.lineStep + opts.lineStep*line
-
-		var offset float64
-		jumpOffset := (line * int(opts.jump))
-
-		if line > opts.lines/2 {
-			height = opts.lineStep * (opts.lines - line)
-			jumpOffset = (opts.lines - line - 1) * int(opts.jump)
-		}
-		if opts.direction == 1 {
-			jumpOffset = -jumpOffset
-			offset = float64(opts.height() - height)
-		}
-
-		offset += float64(jumpOffset)
-		ctx.DrawRoundedRectangle((opts.gap/2)+float64(line*(int(opts.lineWidth+opts.gap))), offset, opts.lineWidth, float64(height), 3)
-		ctx.SetColor(ratingColor)
-		ctx.Fill()
-		ctx.ClearPath()
-	}
-
-	return ctx.Image()
 }
