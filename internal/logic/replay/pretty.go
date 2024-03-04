@@ -171,7 +171,11 @@ func playerFromData(battle battleResults, info playerInfo, result playerResultsI
 	if info.Team == battle.WinnerTeam {
 		frame.BattlesWon = 1
 	}
-	if result.HitpointsLeft > 0 {
+
+	if result.HitpointsLeft != nil {
+		player.HPLeft = int(*result.HitpointsLeft)
+	}
+	if player.HPLeft > 0 {
 		frame.BattlesSurvived = 1
 	}
 

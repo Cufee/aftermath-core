@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"image/png"
 	"os"
 	"testing"
@@ -18,16 +18,16 @@ import (
 )
 
 func TestFullReplayRenderPipeline(t *testing.T) {
-	file, err := os.ReadFile("render_replay_test.json")
+	file, err := os.ReadFile("render_replay_test.wotbreplay")
 	if err != nil {
 		panic(err)
 	}
 
-	var replayData parse.Replay
-	err = json.Unmarshal(file, &replayData)
+	unpacked, err := parse.Unpack(bytes.NewReader(file), int64(len(file)))
 	if err != nil {
 		t.Fatal(err)
 	}
+	replayData := parse.Prettify(unpacked.BattleResult, unpacked.Meta)
 
 	err = database.Connect(utils.MustGetEnv("DATABASE_URL"))
 	if err != nil {
@@ -46,7 +46,7 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 
 	cards, err := replays.ReplayToCards(replays.ExportInput{
 		GlobalVehicleAverages: averages,
-		Replay:                &replayData,
+		Replay:                replayData,
 	}, replays.ExportOptions{
 		Blocks: []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt, dataprep.TagDamageAssistedCombined, dataprep.TagFrags},
 	})
@@ -54,7 +54,7 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	image, err := replay.RenderReplayImage(replay.ReplayData{Cards: cards, Replay: &replayData}, replay.RenderOptions{})
+	image, err := replay.RenderReplayImage(replay.ReplayData{Cards: cards, Replay: replayData}, replay.RenderOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

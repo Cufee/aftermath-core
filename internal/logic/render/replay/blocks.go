@@ -53,7 +53,7 @@ func newPlayerCard(style render.Style, sizes map[dataprep.Tag]float64, card repl
 	}
 
 	vehicleColor := render.TextPrimary
-	if player.HPLeft == 0 {
+	if player.HPLeft <= 0 {
 		vehicleColor = render.TextSecondary
 	}
 

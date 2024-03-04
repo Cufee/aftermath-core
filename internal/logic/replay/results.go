@@ -85,7 +85,7 @@ type playerResults struct {
 }
 
 type playerResultsInfo struct {
-	HitpointsLeft       uint32 `protobuf:"1" json:"hitpointsLeft"`
+	HitpointsLeft       *int32 `protobuf:"1,optional" json:"hitpointsLeft"`
 	CreditsEarned       uint32 `protobuf:"2" json:"creditsEarned"`
 	BaseXP              uint32 `protobuf:"3" json:"baseXp"`
 	ShotsFired          uint32 `protobuf:"4" json:"shotsFired"`
