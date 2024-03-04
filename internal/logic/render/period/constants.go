@@ -121,7 +121,7 @@ func defaultRatingIconOptions(direction int) ratingIconOptions {
 	return ratingIconOptions{
 		gap:       4,
 		jump:      6,
-		lines:     7,
+		lines:     9,
 		lineStep:  10,
 		lineWidth: 6,
 		direction: direction,
