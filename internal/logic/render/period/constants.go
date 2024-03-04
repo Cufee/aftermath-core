@@ -78,7 +78,6 @@ func overviewCardStyle(width float64) render.Style {
 	style.Direction = render.DirectionHorizontal
 	style.JustifyContent = render.JustifyContentCenter
 	style.PaddingY = 30
-	style.PaddingX = 25
 	style.Gap = 0
 	// style.Debug = true
 	return style
