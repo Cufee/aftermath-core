@@ -14,7 +14,9 @@ require (
 	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75
 	github.com/joho/godotenv v1.5.1
 	github.com/nicksnyder/go-i18n/v2 v2.3.0
+	github.com/nlpodyssey/gopickle v0.3.0
 	github.com/rs/zerolog v1.31.0
+	go.dedis.ch/protobuf v1.0.11
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/image v0.15.0
