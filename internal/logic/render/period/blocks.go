@@ -92,7 +92,7 @@ func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {
 		}
 
 		offset += float64(jumpOffset)
-		ctx.DrawRoundedRectangle(float64(line*(int(opts.lineWidth+opts.gap))), offset, opts.lineWidth, float64(height), 3)
+		ctx.DrawRoundedRectangle((opts.gap/2)+float64(line*(int(opts.lineWidth+opts.gap))), offset, opts.lineWidth, float64(height), 3)
 		ctx.SetColor(ratingColor)
 		ctx.Fill()
 		ctx.ClearPath()
