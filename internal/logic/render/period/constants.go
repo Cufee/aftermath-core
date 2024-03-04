@@ -43,18 +43,18 @@ func titleCardStyle(containerStyle render.Style) shared.TitleCardStyle {
 	}
 }
 
-func getOverviewStyle() overviewStyle {
+func getOverviewStyle(columnWidth float64) overviewStyle {
 	return overviewStyle{render.Style{
 		Direction:      render.DirectionVertical,
 		AlignItems:     render.AlignItemsCenter,
 		JustifyContent: render.JustifyContentCenter,
 		PaddingX:       10,
 		Gap:            10,
-		// Debug:          true,
+		Width:          columnWidth,
 	}, render.Style{
 		Direction:  render.DirectionVertical,
 		AlignItems: render.AlignItemsCenter,
-		// Debug:          true,
+		// Debug:      true,
 	}}
 }
 

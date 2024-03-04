@@ -24,6 +24,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 
 	// Calculate minimal card width to fit all the content
 	var cardWidth float64
+	overviewColumnWidth := float64(defaultRatingIconOptions(0).width())
 	{
 		{
 			titleStyle := titleCardStyle(defaultCardStyle(cardWidth))
@@ -32,8 +33,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 			cardWidth = helpers.Max(cardWidth, titleStyle.Container.PaddingX*2+titleStyle.Container.Gap*2+nameSize.TotalWidth+clanSize.TotalWidth*2)
 		}
 		{
-			rowStyle := getOverviewStyle()
-			overviewColumnWidth := float64(defaultRatingIconOptions(0).width())
+			rowStyle := getOverviewStyle(cardWidth)
 			for _, column := range player.Cards.Overview.Blocks {
 				for _, block := range column {
 					valueStyle, labelStyle := rowStyle.block(block)
@@ -45,7 +45,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 					labelSize := render.MeasureString(label, *labelStyle.Font)
 					valueSize := render.MeasureString(block.Data.String, *valueStyle.Font)
 
-					overviewColumnWidth = helpers.Max(overviewColumnWidth, labelSize.TotalWidth, valueSize.TotalWidth)
+					overviewColumnWidth = helpers.Max(overviewColumnWidth, helpers.Max(labelSize.TotalWidth, valueSize.TotalWidth)+(rowStyle.container.PaddingX*2))
 				}
 			}
 
@@ -128,7 +128,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	{
 		var overviewCardBlocks []render.Block
 		for _, column := range player.Cards.Overview.Blocks {
-			columnBlock, err := statsBlocksToColumnBlock(getOverviewStyle(), column)
+			columnBlock, err := statsBlocksToColumnBlock(getOverviewStyle(overviewColumnWidth), column)
 			if err != nil {
 				return nil, err
 			}
