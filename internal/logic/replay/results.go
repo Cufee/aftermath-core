@@ -9,13 +9,13 @@ import (
 )
 
 type battleResults struct {
-	ModeAndMap uint32 `protobuf:"1" json:"modeAndMap"`
-	Timestamp  uint64 `protobuf:"2" json:"timestamp"`
-	WinnerTeam uint32 `protobuf:"3,optional" json:"winnerTeam"`
-	// 4: 1 enemiesKilled
-	TimeAlive uint32 `protobuf:"5" json:"timeAlive"`
-	Author    author `protobuf:"8,required" json:"protagonist"`
-	RoomType  uint32 `protobuf:"9" json:"roomType"`
+	ModeAndMap       uint32 `protobuf:"1" json:"modeAndMap"`
+	Timestamp        uint64 `protobuf:"2" json:"timestamp"`
+	WinnerTeam       uint32 `protobuf:"3" json:"winnerTeam"`
+	EnemiesDestroyed uint32 `protobuf:"4" json:"enemiesKilled"`
+	TimeAlive        uint32 `protobuf:"5" json:"timeAlive"`
+	Author           author `protobuf:"8,required" json:"protagonist"`
+	RoomType         uint32 `protobuf:"9" json:"roomType"`
 
 	RepairCost uint32 `protobuf:"136" json:"repairCost"`
 	FreeXP     uint32 `protobuf:"137" json:"freeXp"`
@@ -107,8 +107,8 @@ type playerResultsInfo struct {
 	SupremacyPointsStolen uint32        `protobuf:"33" json:"supremacyPointsStolen"`
 
 	AccountID uint32 `protobuf:"101" json:"accountId"`
-	// 	102: 1
-	TankID uint32 `protobuf:"103" json:"tankId"`
+	Team      uint32 `protobuf:"102" json:"team"`
+	TankID    uint32 `protobuf:"103" json:"tankId"`
 	//  105: 18446744073709551615
 	// 	106: 80120
 	MMRating      float32 `protobuf:"107" json:"mmRating"`
