@@ -48,10 +48,14 @@ func getOverviewStyle() overviewStyle {
 		Direction:      render.DirectionVertical,
 		AlignItems:     render.AlignItemsCenter,
 		JustifyContent: render.JustifyContentCenter,
-		Gap:            10,
 		PaddingX:       10,
+		Gap:            10,
 		// Debug:          true,
-	}, render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}}
+	}, render.Style{
+		Direction:  render.DirectionVertical,
+		AlignItems: render.AlignItemsCenter,
+		// Debug:          true,
+	}}
 }
 
 func defaultCardStyle(width float64) render.Style {
@@ -103,11 +107,12 @@ type ratingIconOptions struct {
 
 	lineStep  int
 	lineWidth float64
+	jump      float64
 	gap       float64
 }
 
 func (opts ratingIconOptions) height() int {
-	return ((opts.lines/2 + 1) * opts.lineStep)
+	return ((opts.lines/2+1)*opts.lineStep + (opts.lines/2)*int(opts.jump))
 }
 func (opts ratingIconOptions) width() int {
 	return opts.lines * (int(opts.lineWidth + opts.gap))
@@ -116,9 +121,10 @@ func (opts ratingIconOptions) width() int {
 func defaultRatingIconOptions(direction int) ratingIconOptions {
 	return ratingIconOptions{
 		gap:       4,
-		lines:     5,
-		lineStep:  15,
-		lineWidth: 8,
+		jump:      6,
+		lines:     7,
+		lineStep:  10,
+		lineWidth: 6,
 		direction: direction,
 	}
 }

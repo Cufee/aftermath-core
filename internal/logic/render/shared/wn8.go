@@ -2,7 +2,7 @@ package shared
 
 import "image/color"
 
-func GetWN8Color(r int) color.Color {
+func GetWN8Color(r int) color.RGBA {
 	if r > 0 && r < 301 {
 		return color.RGBA{255, 0, 0, 180}
 	}
@@ -33,5 +33,5 @@ func GetWN8Color(r int) color.Color {
 	if r > 2900 {
 		return color.RGBA{142, 65, 177, 180}
 	}
-	return color.Transparent
+	return color.RGBA{0, 0, 0, 0}
 }

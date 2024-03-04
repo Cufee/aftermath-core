@@ -46,7 +46,7 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	valueStyle, _ := style.block(stats)
 	valueBlock := render.NewTextContent(valueStyle, stats.Data.String)
 
-	var ratingColor color.Color = render.TextAlt
+	ratingColor := render.TextAlt
 	if stats.Data.Value > 0 {
 		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
 	}
@@ -58,23 +58,29 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	return render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock, iconBlockBottom)
 }
 
-func getIconWN8(ratingColor color.Color, opts ratingIconOptions) image.Image {
+func getIconWN8(ratingColor color.RGBA, opts ratingIconOptions) image.Image {
 	ctx := gg.NewContext(opts.width(), opts.height())
 	for line := range opts.lines {
 		height := opts.lineStep + opts.lineStep*line
+
+		var offset float64
+		jumpOffset := (line * int(opts.jump))
+
 		if line > opts.lines/2 {
 			height = opts.lineStep * (opts.lines - line)
+			jumpOffset = (opts.lines - line - 1) * int(opts.jump)
 		}
-
-		offset := 0.0
 		if opts.direction == 1 {
+			jumpOffset = -jumpOffset
 			offset = float64(opts.height() - height)
 		}
 
+		offset += float64(jumpOffset)
 		ctx.DrawRoundedRectangle(float64(line*(int(opts.lineWidth+opts.gap))), offset, opts.lineWidth, float64(height), 3)
+		ctx.SetColor(ratingColor)
+		ctx.Fill()
+		ctx.ClearPath()
 	}
 
-	ctx.SetColor(ratingColor)
-	ctx.Fill()
 	return ctx.Image()
 }
