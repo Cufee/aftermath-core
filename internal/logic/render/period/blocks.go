@@ -1,8 +1,6 @@
 package period
 
 import (
-	"image/color"
-
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -46,26 +44,23 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 	valueStyle, labelStyle := style.block(stats)
 	valueBlock := render.NewTextContent(valueStyle, stats.Data.String)
 
-	var ratingColor color.Color = render.TextAlt
-	if stats.Data.Value > 0 {
-		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
+	ratingColors := shared.GetWN8Colors(int(stats.Data.Value))
+	if stats.Data.Value <= 0 {
+		ratingColors.Content = render.TextAlt
+		ratingColors.Background = render.TextAlt
 	}
 
-	// style.blockContainer.Gap = 10
-
-	iconTop := shared.AftermathLogo(ratingColor, shared.DefaultLogoOptions())
+	iconTop := shared.AftermathLogo(ratingColors.Background, shared.DefaultLogoOptions())
 	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
 	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock))
 
 	if stats.Data.Value >= 0 {
-		labelStyle.FontColor = render.TextPrimary
-		labelStyle.BackgroundColor = color.White
-
+		labelStyle.FontColor = ratingColors.Content
 		blocks = append(blocks, render.NewBlocksContent(render.Style{
 			PaddingY:        5,
 			PaddingX:        10,
 			BorderRadius:    15,
-			BackgroundColor: ratingColor,
+			BackgroundColor: ratingColors.Background,
 		}, render.NewTextContent(labelStyle, shared.GetWN8TierName(int(stats.Data.Value)))))
 	}
 

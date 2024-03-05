@@ -55,5 +55,5 @@ func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) render.Block {
 	if tag != dataprep.TagWN8 || !stats.ValueValid(value.Value) {
 		return blankIconBlock
 	}
-	return render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: shared.GetWN8Color(int(value.Value))}, wn8Icon)
+	return render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: shared.GetWN8Colors(int(value.Value)).Background}, wn8Icon)
 }
