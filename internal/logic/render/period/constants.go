@@ -48,7 +48,7 @@ func getOverviewStyle(columnWidth float64) overviewStyle {
 		Direction:      render.DirectionVertical,
 		AlignItems:     render.AlignItemsCenter,
 		JustifyContent: render.JustifyContentCenter,
-		PaddingX:       10,
+		PaddingX:       15,
 		PaddingY:       0,
 		Gap:            10,
 		Width:          columnWidth,
@@ -78,9 +78,9 @@ func overviewCardStyle(width float64) render.Style {
 	style := defaultCardStyle(width)
 	style.AlignItems = render.AlignItemsEnd
 	style.Direction = render.DirectionHorizontal
-	style.JustifyContent = render.JustifyContentCenter
-	style.PaddingY = 30
-	style.PaddingX = 10
+	style.JustifyContent = render.JustifyContentSpaceAround
+	style.PaddingY = 25
+	style.PaddingX = 0
 	style.Gap = 0
 	// style.Debug = true
 	return style

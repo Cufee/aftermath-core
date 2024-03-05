@@ -34,6 +34,13 @@ func renderImages(images []image.Image, style Style) (image.Image, error) {
 	case JustifyContentSpaceBetween:
 		justifyOffsetX = float64(imageSize.extraSpacingX / float64(len(images)-1))
 		justifyOffsetY = float64(imageSize.extraSpacingY / float64(len(images)-1))
+	case JustifyContentSpaceAround:
+		spacingX := float64(imageSize.extraSpacingX / float64(len(images)+1))
+		spacingY := float64(imageSize.extraSpacingY / float64(len(images)+1))
+		justifyOffsetX = spacingX
+		justifyOffsetY = spacingY
+		lastX += spacingX
+		lastY += spacingY
 	default: // JustifyContentStart
 		// 0,0
 	}

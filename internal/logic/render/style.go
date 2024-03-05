@@ -18,6 +18,7 @@ const (
 	JustifyContentCenter
 	JustifyContentEnd
 	JustifyContentSpaceBetween // Spacing between each element is the same
+	JustifyContentSpaceAround  // Spacing around all element is the same
 )
 
 type directionValue int

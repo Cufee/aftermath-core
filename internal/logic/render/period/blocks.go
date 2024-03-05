@@ -51,6 +51,8 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 		ratingColor = shared.GetWN8Color(int(stats.Data.Value))
 	}
 
+	// style.blockContainer.Gap = 10
+
 	iconTop := shared.AftermathLogo(ratingColor, shared.DefaultLogoOptions())
 	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
 	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock))
@@ -63,9 +65,9 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 			PaddingY:        5,
 			PaddingX:        10,
 			BorderRadius:    15,
-			BackgroundColor: render.DefaultCardColor,
+			BackgroundColor: ratingColor,
 		}, render.NewTextContent(labelStyle, shared.GetWN8TierName(int(stats.Data.Value)))))
 	}
 
-	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter}, blocks...)
+	return render.NewBlocksContent(render.Style{Direction: render.DirectionVertical, AlignItems: render.AlignItemsCenter, Gap: 10, PaddingY: 5}, blocks...)
 }
