@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	frameStyle = render.Style{Direction: render.DirectionVertical, PaddingX: 20, PaddingY: 20, Gap: 20}
+	frameStyle = render.Style{Direction: render.DirectionVertical, PaddingX: 30, PaddingY: 30, Gap: 10}
 
 	hpBarColorAllies  = color.RGBA{R: 120, G: 255, B: 120, A: 255}
 	hpBarColorEnemies = color.RGBA{R: 255, G: 120, B: 120, A: 255}
