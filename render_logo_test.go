@@ -15,7 +15,7 @@ import (
 
 func TestFullLogoRenderPipeline(t *testing.T) {
 	sizes := []float64{32, 64, 128, 256, 512}
-	colors := map[string]color.Color{"blue": render.ColorAftermathBlue, "red": render.ColorAftermathRed}
+	colors := map[string]color.Color{"blue": render.TextSubscriptionPlus, "red": render.ColorAftermathRed, "yellow": render.TextSubscriptionPremium}
 
 	result := make(map[string]image.Image)
 	for colorName, color := range colors {
@@ -27,31 +27,60 @@ func TestFullLogoRenderPipeline(t *testing.T) {
 			LineWidth: 60,
 		})
 		for _, size := range sizes {
-			withPadding := render.NewBlocksContent(render.Style{
-				// PaddingX: size / 10,
-				// PaddingY: size / 10,
-				// BackgroundColor: render.DiscordBackgroundColor,
-			}, render.NewImageContent(render.Style{Width: size, Height: size}, logo))
-			logoImage, err := withPadding.Render()
-			if err != nil {
-				t.Fatal(err)
+			{
+				withPadding := render.NewBlocksContent(render.Style{
+					// PaddingX: size / 10,
+					// PaddingY: size / 10,
+					// BackgroundColor: render.DiscordBackgroundColor,
+				}, render.NewImageContent(render.Style{Width: size, Height: size}, logo))
+				logoImage, err := withPadding.Render()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				// bgImage, _ := assets.GetImage("images/backgrounds/default")
+				// img := core.AddBackground(logoImage, bgImage, core.Style{})
+				fileName := fmt.Sprintf("logo-%s-%d.png", colorName, int(size))
+				result[fileName] = logoImage
+
+				f, err := os.Create("static/" + fileName)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer f.Close()
+
+				// err = png.Encode(f, img)
+				err = png.Encode(f, logoImage)
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 
-			// bgImage, _ := assets.GetImage("images/backgrounds/default")
-			// img := core.AddBackground(logoImage, bgImage, core.Style{})
-			fileName := fmt.Sprintf("logo-%s-%d.png", colorName, int(size))
-			result[fileName] = logoImage
+			{
+				withBackground := render.NewBlocksContent(render.Style{
+					PaddingX:        size / 5,
+					PaddingY:        size / 5,
+					BackgroundColor: render.DiscordBackgroundColor,
+				}, render.NewImageContent(render.Style{Width: size, Height: size}, logo))
+				withBackgroundImage, err := withBackground.Render()
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			f, err := os.Create("static/" + fileName)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer f.Close()
+				fileName := fmt.Sprintf("logo-%s-%d-dark.png", colorName, int(size))
+				result[fileName] = withBackgroundImage
 
-			// err = png.Encode(f, img)
-			err = png.Encode(f, logoImage)
-			if err != nil {
-				t.Fatal(err)
+				f, err := os.Create("static/" + fileName)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer f.Close()
+
+				// err = png.Encode(f, img)
+				err = png.Encode(f, withBackgroundImage)
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
 	}

@@ -25,7 +25,6 @@ func GetUserHandler(c *fiber.Ctx) error {
 
 	var extended types.User
 	extended.CompleteUser = *user
-	extended.IsBanned = false // TODO: Find ban records
 
 	return c.JSON(server.NewResponse(user))
 }

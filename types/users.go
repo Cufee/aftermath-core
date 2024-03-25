@@ -15,7 +15,36 @@ type UsersConnectionResponse server.Response[UserConnection]
 
 type User struct {
 	models.CompleteUser `json:",inline"`
-	IsBanned            bool `json:"is_banned"`
+	Restrictions        []UserRestriction `json:"restrictions"`
+}
+
+type UserRestriction struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	ExpiresAt   time.Time `json:"expiresAt"`
+	UserMessage string    `json:"userMessage"`
+	Comment     string    `json:"comment"`
+	Scopes      []string  `json:"scopes"`
+}
+
+func (u User) ActiveRestriction(scopes ...string) *UserRestriction {
+	now := time.Now()
+	for _, restriction := range u.Restrictions {
+		if restriction.ExpiresAt.After(now) {
+			if len(restriction.Scopes) == 0 {
+				return &restriction
+			}
+
+			for _, providedScope := range scopes {
+				for _, restrictionScope := range restriction.Scopes {
+					if restrictionScope == providedScope {
+						return &restriction
+					}
+				}
+			}
+
+		}
+	}
+	return nil
 }
 
 func (u User) WargamingConnection() (*wargamingConnection, bool) {
