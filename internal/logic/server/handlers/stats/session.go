@@ -8,6 +8,7 @@ import (
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/types"
 	"golang.org/x/text/language"
 
@@ -144,8 +145,9 @@ func getSessionStats(realm string, accountId int, opts types.SessionRequestPaylo
 		SessionVehicles:       stats.SortVehicles(playerSession.Diff.Vehicles, averages, sortOptions),
 		GlobalVehicleAverages: averages,
 	}, session.ExportOptions{
-		Locale: language.English,
-		Blocks: blocks,
+		Locale:        language.English,
+		LocalePrinter: localization.GetPrinter(language.English),
+		Blocks:        blocks,
 	})
 	if err != nil {
 		return nil, err

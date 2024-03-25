@@ -9,7 +9,9 @@ import (
 	"github.com/cufee/aftermath-core/dataprep"
 	replays "github.com/cufee/aftermath-core/dataprep/replay"
 	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
+	"golang.org/x/text/language"
 
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
@@ -48,7 +50,9 @@ func TestFullReplayRenderPipeline(t *testing.T) {
 		GlobalVehicleAverages: averages,
 		Replay:                replayData,
 	}, replays.ExportOptions{
-		Blocks: []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt, dataprep.TagDamageAssistedCombined, dataprep.TagFrags},
+		Locale:        language.English,
+		LocalePrinter: localization.GetPrinter(language.English),
+		Blocks:        []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt, dataprep.TagDamageAssistedCombined, dataprep.TagFrags},
 	})
 	if err != nil {
 		t.Fatal(err)

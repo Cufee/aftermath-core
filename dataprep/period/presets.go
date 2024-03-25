@@ -4,11 +4,10 @@ import (
 	"errors"
 
 	"github.com/cufee/aftermath-core/dataprep"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/stats"
 )
 
-func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer localization.LocalePrinter) (StatsBlock, error) {
+func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer func(string) string) (StatsBlock, error) {
 	if stats == nil {
 		return StatsBlock{}, errors.New("session is nil")
 	}

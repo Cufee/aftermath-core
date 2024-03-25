@@ -9,6 +9,7 @@ import (
 	replays "github.com/cufee/aftermath-core/dataprep/replay"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/content"
@@ -19,6 +20,7 @@ import (
 	"github.com/cufee/aftermath-core/types"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/language"
 )
 
 func ReplayFromPayload(c *fiber.Ctx) error {
@@ -100,7 +102,9 @@ func getEncodedReplayImage(options types.ReplayRequestPayload) (string, error) {
 			GlobalVehicleAverages: averages,
 			Replay:                replay,
 		}, replays.ExportOptions{
-			Blocks: []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt, dataprep.TagDamageAssistedCombined, dataprep.TagFrags},
+			Locale:        language.English,
+			LocalePrinter: localization.GetPrinter(language.English),
+			Blocks:        []dataprep.Tag{dataprep.TagWN8, dataprep.TagDamageDealt, dataprep.TagDamageAssistedCombined, dataprep.TagFrags},
 		})
 		if err != nil {
 			cardsChan <- core.DataWithError[image.Image]{Err: err}

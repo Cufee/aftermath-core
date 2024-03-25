@@ -12,6 +12,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/content"
@@ -149,9 +150,10 @@ func getEncodedPeriodImage(accountId int, options types.PeriodRequestPayload) (s
 		}
 
 		cards, err := dataprep.SnapshotToSession(stats, dataprep.ExportOptions{
-			Blocks:     dataprep.DefaultBlocks,
-			Locale:     language.English,
-			Highlights: dataprep.DefaultHighlights,
+			Blocks:        dataprep.DefaultBlocks,
+			Locale:        language.English,
+			LocalePrinter: localization.GetPrinter(language.English),
+			Highlights:    dataprep.DefaultHighlights,
 		})
 		if err != nil {
 			cardsChan <- core.DataWithError[image.Image]{Err: err}

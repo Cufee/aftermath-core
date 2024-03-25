@@ -7,11 +7,13 @@ import (
 
 	dataprep "github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	core "github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	render "github.com/cufee/aftermath-core/internal/logic/render/period"
 	"github.com/cufee/aftermath-core/internal/logic/stats/period"
+	"golang.org/x/text/language"
 )
 
 func TestFullPeriodRenderPipeline(t *testing.T) {
@@ -25,7 +27,13 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cards, err := dataprep.SnapshotToSession(stats, dataprep.ExportOptions{Blocks: dataprep.DefaultBlocks, Highlights: dataprep.DefaultHighlights})
+	cards, err := dataprep.SnapshotToSession(stats, dataprep.ExportOptions{
+		Locale:        language.English,
+		LocalePrinter: localization.GetPrinter(language.English),
+
+		Blocks:     dataprep.DefaultBlocks,
+		Highlights: dataprep.DefaultHighlights,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/cufee/aftermath-core/dataprep"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/stats"
 )
 
@@ -17,7 +16,7 @@ type StatsBlock struct {
 	Tag     dataprep.Tag   `json:"tag"`
 }
 
-func presetToBlock(preset dataprep.Tag, session, career, averages *stats.ReducedStatsFrame, printer localization.LocalePrinter) (StatsBlock, error) {
+func presetToBlock(preset dataprep.Tag, session, career, averages *stats.ReducedStatsFrame, printer func(string) string) (StatsBlock, error) {
 	if session == nil {
 		return StatsBlock{}, errors.New("session is nil")
 	}

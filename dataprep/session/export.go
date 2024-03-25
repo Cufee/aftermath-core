@@ -6,7 +6,6 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/rs/zerolog/log"
@@ -21,17 +20,20 @@ type ExportInput struct {
 }
 
 type ExportOptions struct {
-	Blocks []dataprep.Tag
-	Locale language.Tag
+	Blocks        []dataprep.Tag
+	Locale        language.Tag
+	LocalePrinter func(string) string
 }
 
 func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {
 	if input.SessionStats == nil || input.CareerStats == nil {
 		return nil, errors.New("session or career stats are nil")
 	}
+	if options.LocalePrinter == nil {
+		options.LocalePrinter = func(s string) string { return s }
+	}
 
 	var cards Cards
-	printer := localization.GetPrinter(options.Locale)
 
 	// Rating battles
 	if input.SessionStats.Rating.Battles > 0 {
@@ -41,14 +43,14 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
 				preset = dataprep.TagAccuracy
 			}
-			ratingBlock, err := presetToBlock(preset, input.SessionStats.Rating, input.CareerStats.Rating, nil, printer)
+			ratingBlock, err := presetToBlock(preset, input.SessionStats.Rating, input.CareerStats.Rating, nil, options.LocalePrinter)
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
 			}
 			ratingBlocks = append(ratingBlocks, ratingBlock)
 		}
 		cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
-			Title:  printer("label_overview_rating"),
+			Title:  options.LocalePrinter("label_overview_rating"),
 			Blocks: ratingBlocks,
 			Type:   dataprep.CardTypeOverview,
 		})
@@ -64,20 +66,20 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 				if sessionWN8 != core.InvalidValueInt {
 					unratedBlocks = append(unratedBlocks, StatsBlock{
 						Session: dataprep.StatsToValue(sessionWN8),
-						Label:   printer("label_" + string(dataprep.TagWN8)),
+						Label:   options.LocalePrinter("label_" + string(dataprep.TagWN8)),
 						Tag:     dataprep.TagWN8,
 					})
 					continue
 				}
 			}
-			block, err := presetToBlock(preset, input.SessionStats.Global, input.CareerStats.Global, nil, printer)
+			block, err := presetToBlock(preset, input.SessionStats.Global, input.CareerStats.Global, nil, options.LocalePrinter)
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
 			}
 			unratedBlocks = append(unratedBlocks, block)
 		}
 		cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
-			Title:  printer("label_overview_unrated"),
+			Title:  options.LocalePrinter("label_overview_unrated"),
 			Blocks: unratedBlocks,
 			Type:   dataprep.CardTypeOverview,
 		})
@@ -103,7 +105,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 				if input.CareerStats.Vehicles[vehicle.VehicleID] != nil {
 					career = input.CareerStats.Vehicles[vehicle.VehicleID].ReducedStatsFrame
 				}
-				block, err := presetToBlock(preset, vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID], printer)
+				block, err := presetToBlock(preset, vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID], options.LocalePrinter)
 				if err != nil {
 					return nil, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
 				}

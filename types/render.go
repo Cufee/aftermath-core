@@ -4,6 +4,10 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 )
 
+type ImageResponse struct {
+	Image string `json:"image"`
+}
+
 type ReplayRequestPayload struct {
 	URL string `json:"url"`
 }

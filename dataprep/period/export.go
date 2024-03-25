@@ -6,7 +6,6 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/stats/period"
 	"github.com/rs/zerolog/log"
@@ -14,7 +13,9 @@ import (
 )
 
 type ExportOptions struct {
-	Locale     language.Tag
+	Locale        language.Tag
+	LocalePrinter func(string) string
+
 	Blocks     [][]dataprep.Tag
 	Highlights []highlight
 }
@@ -46,9 +47,11 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 	if stats == nil {
 		return Cards{}, errors.New("period stats are nil")
 	}
+	if options.LocalePrinter == nil {
+		options.LocalePrinter = func(s string) string { return s }
+	}
 
 	var cards Cards
-	printer := localization.GetPrinter(options.Locale)
 
 	var ids []int
 	for _, vehicle := range stats.Vehicles {
@@ -68,14 +71,14 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 			if preset == dataprep.TagAvgTier {
 				value := calculateAvgTier(stats.Vehicles, vehiclesGlossary)
 				columnBlocks = append(columnBlocks, StatsBlock{
-					Label:  printer("label_" + string(preset)),
+					Label:  options.LocalePrinter("label_" + string(preset)),
 					Data:   dataprep.StatsToValue(value),
 					Flavor: BlockFlavorSecondary,
 					Tag:    preset,
 				})
 				continue
 			}
-			block, err := presetToBlock(preset, &stats.Stats, printer)
+			block, err := presetToBlock(preset, &stats.Stats, options.LocalePrinter)
 			if err != nil {
 				return cards, err
 			}
@@ -111,7 +114,7 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 		var vehicleBlocks []StatsBlock
 
 		for _, preset := range data.highlight.blocks {
-			block, err := presetToBlock(preset, data.vehicle.ReducedStatsFrame, printer)
+			block, err := presetToBlock(preset, data.vehicle.ReducedStatsFrame, options.LocalePrinter)
 			if err != nil {
 				return cards, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", data.vehicle.VehicleID, err)
 			}
@@ -125,7 +128,7 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 			Title:  fmt.Sprintf("%s %s", utils.IntToRoman(glossary.Tier), glossary.Name(options.Locale)),
 			Type:   dataprep.CardTypeVehicle,
 			Blocks: vehicleBlocks,
-			Meta:   printer(data.highlight.label),
+			Meta:   options.LocalePrinter(data.highlight.label),
 		})
 	}
 

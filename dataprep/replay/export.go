@@ -7,7 +7,6 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/internal/core/database"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/replay"
@@ -22,17 +21,20 @@ type ExportInput struct {
 }
 
 type ExportOptions struct {
-	Blocks []dataprep.Tag
-	Locale language.Tag
+	Blocks        []dataprep.Tag
+	Locale        language.Tag
+	LocalePrinter func(string) string
 }
 
 func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 	if input.Replay == nil {
 		return Cards{}, errors.New("replay is nil")
 	}
+	if options.LocalePrinter == nil {
+		options.LocalePrinter = func(s string) string { return s }
+	}
 
 	var cards Cards
-	printer := localization.GetPrinter(options.Locale)
 
 	var ids []int
 	for _, player := range append(input.Replay.Teams.Allies, input.Replay.Teams.Enemies...) {
@@ -50,20 +52,20 @@ func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 		vehicle := vehiclesGlossary[player.VehicleID]
 		vehicle.ID = player.VehicleID
 		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
-		cards.Allies = append(cards.Allies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, printer))
+		cards.Allies = append(cards.Allies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, options.LocalePrinter))
 	}
 	// Enemies
 	for _, player := range input.Replay.Teams.Enemies {
 		vehicle := vehiclesGlossary[player.VehicleID]
 		vehicle.ID = player.VehicleID
 		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
-		cards.Enemies = append(cards.Enemies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, printer))
+		cards.Enemies = append(cards.Enemies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, options.LocalePrinter))
 	}
 
 	return cards, nil
 }
 
-func playerToCard(player replay.Player, vehicle string, averages *core.ReducedStatsFrame, blocks []dataprep.Tag, printer localization.LocalePrinter) Card {
+func playerToCard(player replay.Player, vehicle string, averages *core.ReducedStatsFrame, blocks []dataprep.Tag, printer func(string) string) Card {
 	card := Card{
 		Type:  dataprep.CardTypeVehicle,
 		Meta:  CardMeta{player, blocks},

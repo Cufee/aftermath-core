@@ -11,6 +11,7 @@ import (
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
@@ -188,8 +189,9 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
 			GlobalVehicleAverages: averages,
 		}, session.ExportOptions{
-			Locale: language.English,
-			Blocks: blocks,
+			Locale:        language.English,
+			LocalePrinter: localization.GetPrinter(language.English),
+			Blocks:        blocks,
 		})
 		if err != nil {
 			cardsChan <- core.DataWithError[image.Image]{Err: err}
