@@ -8,10 +8,10 @@ import (
 	"sync"
 
 	dataprep "github.com/cufee/aftermath-core/dataprep/period"
+	"golang.org/x/text/language"
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/content"
@@ -150,7 +150,7 @@ func getEncodedPeriodImage(accountId int, options types.PeriodRequestPayload) (s
 
 		cards, err := dataprep.SnapshotToSession(stats, dataprep.ExportOptions{
 			Blocks:     dataprep.DefaultBlocks,
-			Locale:     localization.LanguageEN,
+			Locale:     language.English,
 			Highlights: dataprep.DefaultHighlights,
 		})
 		if err != nil {

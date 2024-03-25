@@ -11,6 +11,7 @@ import (
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/replay"
+	"golang.org/x/text/language"
 
 	"github.com/rs/zerolog/log"
 )
@@ -22,7 +23,7 @@ type ExportInput struct {
 
 type ExportOptions struct {
 	Blocks []dataprep.Tag
-	Locale localization.SupportedLanguage
+	Locale language.Tag
 }
 
 func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {

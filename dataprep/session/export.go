@@ -10,6 +10,7 @@ import (
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/language"
 )
 
 type ExportInput struct {
@@ -21,7 +22,7 @@ type ExportInput struct {
 
 type ExportOptions struct {
 	Blocks []dataprep.Tag
-	Locale localization.SupportedLanguage
+	Locale language.Tag
 }
 
 func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {

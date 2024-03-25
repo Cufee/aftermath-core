@@ -9,12 +9,12 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/types"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/language"
 )
 
 var frontendURL = utils.MustGetEnv("FRONTEND_URL")
@@ -108,7 +108,7 @@ func StartUserVerificationHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "database.NewNonce"))
 	}
 
-	link, err := loginUrlFromRealm(realm, localization.LanguageEN.WargamingCode, nonce)
+	link, err := loginUrlFromRealm(realm, language.English.String(), nonce)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "loginUrlFromRealm"))
 	}

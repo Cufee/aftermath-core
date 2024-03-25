@@ -6,6 +6,7 @@ import (
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/replay"
+	"golang.org/x/text/language"
 
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/logic/render"
@@ -21,7 +22,7 @@ type ReplayData struct {
 }
 
 type RenderOptions struct {
-	Locale localization.SupportedLanguage
+	Locale language.Tag
 }
 
 func RenderReplayImage(data ReplayData, opts RenderOptions) (image.Image, error) {

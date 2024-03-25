@@ -10,10 +10,11 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/stats/period"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/language"
 )
 
 type ExportOptions struct {
-	Locale     localization.SupportedLanguage
+	Locale     language.Tag
 	Blocks     [][]dataprep.Tag
 	Highlights []highlight
 }

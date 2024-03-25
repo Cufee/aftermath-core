@@ -11,7 +11,6 @@ import (
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	core "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
@@ -25,6 +24,7 @@ import (
 	"github.com/cufee/aftermath-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/language"
 )
 
 func SessionFromIDHandler(c *fiber.Ctx) error {
@@ -188,7 +188,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
 			GlobalVehicleAverages: averages,
 		}, session.ExportOptions{
-			Locale: localization.LanguageEN,
+			Locale: language.English,
 			Blocks: blocks,
 		})
 		if err != nil {

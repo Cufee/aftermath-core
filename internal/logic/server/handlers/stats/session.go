@@ -9,9 +9,9 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/types"
+	"golang.org/x/text/language"
 
 	"github.com/cufee/aftermath-core/dataprep"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
@@ -144,7 +144,7 @@ func getSessionStats(realm string, accountId int, opts types.SessionRequestPaylo
 		SessionVehicles:       stats.SortVehicles(playerSession.Diff.Vehicles, averages, sortOptions),
 		GlobalVehicleAverages: averages,
 	}, session.ExportOptions{
-		Locale: localization.LanguageEN,
+		Locale: language.English,
 		Blocks: blocks,
 	})
 	if err != nil {
@@ -153,7 +153,7 @@ func getSessionStats(realm string, accountId int, opts types.SessionRequestPaylo
 
 	return &session.SessionStats{
 		Realm:      realm,
-		Locale:     localization.LanguageEN.WargamingCode,
+		Locale:     language.English.String(),
 		LastBattle: playerSession.Account.LastBattleTime,
 		Clan:       playerSession.Account.ClanMember.Clan,
 		Account:    playerSession.Account.Account,

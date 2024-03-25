@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/cufee/aftermath-core/internal/core/database/models"
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
+	"golang.org/x/text/language"
 )
 
 // Response from https://wotinspector.com/en/
@@ -55,9 +55,9 @@ func GetInspectorVehicles() (map[int]InspectorVehicle, error) {
 
 func GetCompleteVehicleGlossary() (map[int]models.Vehicle, error) {
 	vehicles := make(map[int]models.Vehicle)
-	glossaryLocales := []localization.SupportedLanguage{localization.LanguageEN, localization.LanguageRU}
+	glossaryLocales := []language.Tag{language.English, language.Russian, language.Polish}
 	for _, locale := range glossaryLocales {
-		glossary, err := wargaming.Clients.Cache.GetVehiclesGlossary(locale.WargamingCode)
+		glossary, err := wargaming.Clients.Cache.GetVehiclesGlossary(locale.String())
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func GetCompleteVehicleGlossary() (map[int]models.Vehicle, error) {
 					ID:   vehicle.TankID,
 					Tier: vehicle.Tier,
 					LocalizedNames: map[string]string{
-						locale.WargamingCode: vehicle.Name,
+						locale.String(): vehicle.Name,
 					},
 					Class: models.VehicleClassUnknown,
 					Type:  models.VehicleTypeRegular,
@@ -84,7 +84,7 @@ func GetCompleteVehicleGlossary() (map[int]models.Vehicle, error) {
 				// TODO: Handle secret vehicles
 				continue
 			}
-			existingData.LocalizedNames[locale.WargamingCode] = vehicle.Name
+			existingData.LocalizedNames[locale.String()] = vehicle.Name
 			existingData.Nation = vehicle.Nation
 			existingData.Tier = vehicle.Tier
 
@@ -104,10 +104,10 @@ func GetCompleteVehicleGlossary() (map[int]models.Vehicle, error) {
 		names := make(map[string]string)
 
 		if !strings.HasPrefix(vehicle.NameEn, "#") {
-			names[localization.LanguageEN.WargamingCode] = vehicle.NameEn
+			names[language.English.String()] = vehicle.NameEn
 		}
 		if !strings.HasPrefix(vehicle.NameRu, "#") {
-			names[localization.LanguageRU.WargamingCode] = vehicle.NameRu
+			names[language.Russian.String()] = vehicle.NameRu
 		}
 		vehicles[id] = models.Vehicle{
 			ID:             id,

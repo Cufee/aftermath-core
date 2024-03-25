@@ -3,8 +3,8 @@ package models
 import (
 	"fmt"
 
-	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/stats"
+	"golang.org/x/text/language"
 )
 
 type TankAverages struct {
@@ -13,10 +13,10 @@ type TankAverages struct {
 }
 
 type Achievement struct {
-	ID             string                                    `json:"id" bson:"_id"`
-	ImageURL       string                                    `json:"image" bson:"image"`
-	Description    string                                    `json:"description" bson:"description"`
-	LocalizedNames map[localization.SupportedLanguage]string `json:"localized_names" bson:"localized_names"`
+	ID             string                  `json:"id" bson:"_id"`
+	ImageURL       string                  `json:"image" bson:"image"`
+	Description    string                  `json:"description" bson:"description"`
+	LocalizedNames map[language.Tag]string `json:"localized_names" bson:"localized_names"`
 }
 
 type vehicleType string
@@ -52,15 +52,15 @@ func (v Vehicle) IsPremium() bool {
 	return v.Type == VehicleTypePremium
 }
 
-func (v Vehicle) Name(lang localization.SupportedLanguage) string {
+func (v Vehicle) Name(lang language.Tag) string {
 	if v.LocalizedNames == nil {
 		return fmt.Sprintf("Secret Tank #%d", v.ID)
 	}
 
-	if name, ok := v.LocalizedNames[lang.WargamingCode]; ok {
+	if name, ok := v.LocalizedNames[lang.String()]; ok {
 		return name
 	}
-	if name, ok := v.LocalizedNames[localization.LanguageEN.WargamingCode]; ok {
+	if name, ok := v.LocalizedNames[language.English.String()]; ok {
 		return name
 	}
 	return fmt.Sprintf("Secret Tank #%d", v.ID)
