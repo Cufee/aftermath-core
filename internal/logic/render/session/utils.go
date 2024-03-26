@@ -12,18 +12,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 )
 
-func styleBlocks(blocks []session.StatsBlock, styles ...render.Style) []styledStatsBlock {
-	var lastStyle render.Style
-	var styledBlocks []styledStatsBlock
-	for i, block := range blocks {
-		if i < len(styles) {
-			lastStyle = styles[i]
-		}
-		styledBlocks = append(styledBlocks, styledStatsBlock{StatsBlock: block, style: lastStyle})
-	}
-	return styledBlocks
-}
-
 func comparisonIconFromBlock(block session.StatsBlock) render.Block {
 	if !stats.ValueValid(block.Session.Value) || !stats.ValueValid(block.Career.Value) {
 		return blankIconBlock
@@ -48,12 +36,12 @@ func comparisonIconFromBlock(block session.StatsBlock) render.Block {
 		return blankIconBlock
 	}
 
-	return render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: iconColor}, icon)
+	return render.NewImageContent(render.Style{Width: float64(iconSize), Height: float64(iconSize), BackgroundColor: iconColor}, icon)
 }
 
 func blockToWN8Icon(value dataprep.Value, tag dataprep.Tag) render.Block {
 	if tag != dataprep.TagWN8 || !stats.ValueValid(value.Value) {
 		return blankIconBlock
 	}
-	return render.NewImageContent(render.Style{Width: 25, Height: 25, BackgroundColor: shared.GetWN8Colors(int(value.Value)).Background}, wn8Icon)
+	return render.NewImageContent(render.Style{Width: float64(iconSize), Height: float64(iconSize), BackgroundColor: shared.GetWN8Colors(int(value.Value)).Background}, wn8Icon)
 }

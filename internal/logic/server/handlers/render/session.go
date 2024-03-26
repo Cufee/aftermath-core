@@ -208,7 +208,6 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 
 		renderOptions := render.RenderOptions{
 			PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-			CardStyle: render.DefaultCardStyle(nil),
 		}
 
 		cards, err := render.RenderStatsImage(player, renderOptions)

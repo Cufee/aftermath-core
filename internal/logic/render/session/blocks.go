@@ -16,12 +16,7 @@ type convertOptions struct {
 	showIcons        bool
 }
 
-type styledStatsBlock struct {
-	session.StatsBlock
-	style render.Style
-}
-
-func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) ([]render.Block, error) {
+func statsBlocksToCardBlocks(stats []session.StatsBlock, blockWidth map[dataprep.Tag]float64, opts ...convertOptions) ([]render.Block, error) {
 	var options convertOptions = convertOptions{
 		showSessionStats: true,
 		showCareerStats:  true,
@@ -32,35 +27,36 @@ func statsBlocksToCardBlocks(stats []styledStatsBlock, opts ...convertOptions) (
 		options = opts[0]
 	}
 
-	sessionStyle := render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}
-	careerStyle := render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}
-	labelStyle := render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}
-
 	var content []render.Block
-	for _, statsBlock := range stats {
+	for index, statsBlock := range stats {
 		blocks := make([]render.Block, 0, 3)
 		if options.showSessionStats {
 			if options.showIcons && statsBlock.Tag != dataprep.TagBattles {
-				blocks = append(blocks, newStatsBlockRow(sessionStyle, statsBlock.Session.String, comparisonIconFromBlock(statsBlock.StatsBlock)))
+				blocks = append(blocks, newStatsBlockRow(defaultBlockStyle.session, statsBlock.Session.String, comparisonIconFromBlock(statsBlock)))
 			} else {
-				blocks = append(blocks, render.NewTextContent(sessionStyle, statsBlock.Session.String))
+				blocks = append(blocks, render.NewTextContent(defaultBlockStyle.session, statsBlock.Session.String))
 			}
 		}
 		if options.showCareerStats && statsBlock.Career.String != "" {
 			if options.showIcons && statsBlock.Tag != dataprep.TagBattles {
-				blocks = append(blocks, newStatsBlockRow(careerStyle, statsBlock.Career.String, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
+				blocks = append(blocks, newStatsBlockRow(defaultBlockStyle.career, statsBlock.Career.String, blockToWN8Icon(statsBlock.Career, statsBlock.Tag)))
 			} else {
-				blocks = append(blocks, render.NewTextContent(careerStyle, statsBlock.Career.String))
+				blocks = append(blocks, render.NewTextContent(defaultBlockStyle.career, statsBlock.Career.String))
 			}
 		}
 		if options.showLabels && statsBlock.Tag != dataprep.TagBattles {
 			if options.showIcons {
-				blocks = append(blocks, newStatsBlockRow(labelStyle, statsBlock.Label, blankIconBlock))
+				blocks = append(blocks, newStatsBlockRow(defaultBlockStyle.label, statsBlock.Label, blankIconBlock))
 			} else {
-				blocks = append(blocks, render.NewTextContent(labelStyle, statsBlock.Label))
+				blocks = append(blocks, render.NewTextContent(defaultBlockStyle.label, statsBlock.Label))
 			}
 		}
-		content = append(content, render.NewBlocksContent(statsBlock.style, blocks...))
+
+		containerStyle := defaultStatsBlockStyle(blockWidth[statsBlock.Tag])
+		if index == 0 {
+			containerStyle = highlightStatsBlockStyle(blockWidth[statsBlock.Tag])
+		}
+		content = append(content, render.NewBlocksContent(containerStyle, blocks...))
 	}
 	return content, nil
 }
@@ -75,7 +71,7 @@ func newStatsBlockRow(style render.Style, value string, icon render.Block) rende
 
 func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.Block) render.Block {
 	if len(clanTagBlocks) == 0 {
-		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, name))
+		return render.NewBlocksContent(style, render.NewTextContent(playerNameStyle, name))
 	}
 
 	content := make([]render.Block, 0, 3)
@@ -88,7 +84,7 @@ func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.
 		PaddingX:        10,
 		PaddingY:        2.5,
 		Gap:             2.5,
-		BackgroundColor: HighlightCardColor(style.BackgroundColor),
+		BackgroundColor: highlightCardColor(),
 		BorderRadius:    10,
 		// Debug:           true,
 	}, clanTagBlocks...)
@@ -97,33 +93,30 @@ func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to render clan tag")
 		// This error is not fatal, we can just render the name
-		return render.NewBlocksContent(style, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, name))
+		return render.NewBlocksContent(style, render.NewTextContent(playerNameStyle, name))
 	}
 	content = append(content, render.NewImageContent(render.Style{Width: float64(clanTagImage.Bounds().Dx()), Height: float64(clanTagImage.Bounds().Dy())}, clanTagImage))
 
 	// Nickname
-	content = append(content, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}, name))
+	content = append(content, render.NewTextContent(playerNameStyle, name))
 
 	// Invisible tag to offset the nickname
+	invisibleStyle := clanTagStyle
+	invisibleStyle.FontColor = color.Transparent
 	clanBlock := render.NewBlocksContent(render.Style{
 		Width:          float64(clanTagImage.Bounds().Dx()),
 		JustifyContent: render.JustifyContentEnd,
-	}, render.NewTextContent(render.Style{Font: &render.FontLarge, FontColor: color.Transparent}, "-"))
+	}, render.NewTextContent(invisibleStyle, "-"))
 
 	content = append(content, clanBlock)
 
-	return render.NewBlocksContent(style, render.NewBlocksContent(render.Style{
-		JustifyContent: render.JustifyContentSpaceBetween,
-		Direction:      render.DirectionHorizontal,
-		AlignItems:     render.AlignItemsCenter,
-		Width:          BaseCardWidth,
-		PaddingX:       20,
-		// Debug:          true,
-	}, content...))
+	containerStyle := style
+	containerStyle.JustifyContent = render.JustifyContentSpaceBetween
+	return render.NewBlocksContent(containerStyle, content...)
 }
 
-func newTextLabel(label string) render.Block {
-	return render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, label)
+func newCardTitle(label string) render.Block {
+	return render.NewTextContent(defaultBlockStyle.career, label)
 }
 
 func newCardBlock(cardStyle render.Style, label render.Block, stats []render.Block) render.Block {

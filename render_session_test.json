@@ -5,57 +5,60 @@
     "blocks": [
       {
         "session": {
-          "value": 99,
-          "string": "99"
+          "value": 7,
+          "string": "7"
         },
         "career": {
-          "value": 900,
-          "string": "900"
+          "value": 34676,
+          "string": "34676"
         },
         "label": "Battles",
         "tag": "battles"
       },
       {
         "session": {
-          "value": 3900,
-          "string": "99999"
+          "value": 1754,
+          "string": "1754"
         },
         "career": {
-          "value": 3500,
-          "string": "99999"
+          "value": 1330,
+          "string": "1330"
         },
-        "label": "Damage"
+        "label": "Damage",
+        "tag": "avg_damage"
       },
       {
         "session": {
-          "value": 4.20,
-          "string": "99.99"
+          "value": 1.1930251121520996,
+          "string": "1.19"
         },
         "career": {
-          "value": 2.228,
-          "string": "99.99"
+          "value": 0.9937644004821777,
+          "string": "0.99"
         },
-        "label": "Damage Ratio"
+        "label": "Damage Ratio",
+        "tag": "damage_ratio"
       },
       {
         "session": {
-          "value": 96.96,
-          "string": "999.99%"
+          "value": 57.14285714285714,
+          "string": "57.14%"
         },
         "career": {
-          "value": 69.69,
-          "string": "999.99%"
+          "value": 49.21559580113046,
+          "string": "49.22%"
         },
-        "label": "Winrate"
+        "label": "Winrate",
+        "tag": "winrate"
       },
       {
         "session": {
-          "value": 6400,
-          "string": "99999"
+          "value": 2430,
+          "string": "2430"
         },
         "career": {
-          "value": 4600,
-          "string": "99999"
+          "value": 0,
+          "string": ""
         },
         "label": "WN8",
         "tag": "wn8"
@@ -64,61 +67,196 @@
   },
   {
     "type": "vehicle",
-    "title": "X B-C 25 t Aftermath",
+    "title": "X VK 72.01 (K)",
     "blocks": [
       {
         "session": {
-          "value": 99,
-          "string": "99"
+          "value": 1,
+          "string": "1"
         },
         "career": {
-          "value": 900,
-          "string": "900"
+          "value": 259,
+          "string": "259"
         },
         "label": "Battles",
         "tag": "battles"
       },
       {
         "session": {
-          "value": 999999,
-          "string": "3900"
+          "value": 4041,
+          "string": "4041"
         },
         "career": {
-          "value": -1,
-          "string": "3500"
+          "value": 2214,
+          "string": "2214"
         },
-        "label": "Damage"
+        "label": "Damage",
+        "tag": "avg_damage"
       },
       {
         "session": {
-          "value": 4.20,
-          "string": "4.20"
+          "value": 2.5351316928863525,
+          "string": "2.54"
         },
         "career": {
-          "value": 2.228,
-          "string": "2.22"
+          "value": 1.0798243284225464,
+          "string": "1.08"
         },
-        "label": "Damage Ratio"
+        "label": "Damage Ratio",
+        "tag": "damage_ratio"
       },
       {
         "session": {
-          "value": 100.00,
+          "value": 100,
           "string": "100.00%"
         },
         "career": {
-          "value": 69.69,
-          "string": "69.69%"
+          "value": 63.7065637065637,
+          "string": "63.71%"
         },
-        "label": "Winrate"
+        "label": "Winrate",
+        "tag": "winrate"
       },
       {
         "session": {
-          "value": 99999,
-          "string": "6400"
+          "value": 4898,
+          "string": "4898"
         },
         "career": {
-          "value": 4600,
-          "string": "4600"
+          "value": 1805,
+          "string": "1805"
+        },
+        "label": "WN8",
+        "tag": "wn8"
+      }
+    ]
+  },
+  {
+    "type": "vehicle",
+    "title": "VIII Fixer",
+    "blocks": [
+      {
+        "session": {
+          "value": 4,
+          "string": "4"
+        },
+        "career": {
+          "value": 133,
+          "string": "133"
+        },
+        "label": "Battles",
+        "tag": "battles"
+      },
+      {
+        "session": {
+          "value": 988,
+          "string": "988"
+        },
+        "career": {
+          "value": 1559,
+          "string": "1559"
+        },
+        "label": "Damage",
+        "tag": "avg_damage"
+      },
+      {
+        "session": {
+          "value": 0.6818965673446655,
+          "string": "0.68"
+        },
+        "career": {
+          "value": 1.2964273691177368,
+          "string": "1.30"
+        },
+        "label": "Damage Ratio",
+        "tag": "damage_ratio"
+      },
+      {
+        "session": {
+          "value": 50,
+          "string": "50.00%"
+        },
+        "career": {
+          "value": 54.13533834586466,
+          "string": "54.14%"
+        },
+        "label": "Winrate",
+        "tag": "winrate"
+      },
+      {
+        "session": {
+          "value": 1104,
+          "string": "1104"
+        },
+        "career": {
+          "value": 2300,
+          "string": "2300"
+        },
+        "label": "WN8",
+        "tag": "wn8"
+      }
+    ]
+  },
+  {
+    "type": "vehicle",
+    "title": "VIII Nebulon",
+    "blocks": [
+      {
+        "session": {
+          "value": 2,
+          "string": "2"
+        },
+        "career": {
+          "value": 48,
+          "string": "48"
+        },
+        "label": "Battles",
+        "tag": "battles"
+      },
+      {
+        "session": {
+          "value": 2142,
+          "string": "2142"
+        },
+        "career": {
+          "value": 1463,
+          "string": "1463"
+        },
+        "label": "Damage",
+        "tag": "avg_damage"
+      },
+      {
+        "session": {
+          "value": 1.4775861501693726,
+          "string": "1.48"
+        },
+        "career": {
+          "value": 1.1049203872680664,
+          "string": "1.10"
+        },
+        "label": "Damage Ratio",
+        "tag": "damage_ratio"
+      },
+      {
+        "session": {
+          "value": 50,
+          "string": "50.00%"
+        },
+        "career": {
+          "value": 52.083333333333336,
+          "string": "52.08%"
+        },
+        "label": "Winrate",
+        "tag": "winrate"
+      },
+      {
+        "session": {
+          "value": 3849,
+          "string": "3849"
+        },
+        "career": {
+          "value": 2413,
+          "string": "2413"
         },
         "label": "WN8",
         "tag": "wn8"

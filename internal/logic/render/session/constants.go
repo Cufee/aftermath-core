@@ -8,6 +8,12 @@ import (
 	"github.com/fogleman/gg"
 )
 
+type blockStyle struct {
+	session render.Style
+	career  render.Style
+	label   render.Style
+}
+
 func init() {
 	{
 		ctx := gg.NewContext(iconSize, iconSize)
@@ -27,24 +33,29 @@ var (
 	iconSize       = 25
 	wn8Icon        image.Image
 	blankIconBlock render.Block
-
-	BaseCardWidth       = 680.0
-	BaseStatsBlockWidth = 120.0
-	ClanPillWidth       = 80
 )
 
-func HighlightCardColor(base color.Color) color.Color {
-	casted, ok := base.(color.RGBA)
-	if !ok {
-		return base
+var (
+	clanTagStyle    = render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}
+	playerNameStyle = render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}
+	promoTextStyle  = render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}
+
+	defaultBlockStyle = blockStyle{
+		render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary},
+		render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary},
+		render.Style{Font: &render.FontSmall, FontColor: render.TextAlt},
 	}
-	casted.R += 10
-	casted.G += 10
-	casted.B += 10
-	return casted
+)
+
+func highlightCardColor() color.Color {
+	backgroundColor := render.DefaultCardColor
+	backgroundColor.R += 10
+	backgroundColor.G += 10
+	backgroundColor.B += 10
+	return backgroundColor
 }
 
-func DefaultCardStyle(matchToImage image.Image) render.Style {
+func defaultCardStyle(width float64) render.Style {
 	style := render.Style{
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
@@ -53,23 +64,47 @@ func DefaultCardStyle(matchToImage image.Image) render.Style {
 		PaddingY:        20,
 		BackgroundColor: render.DefaultCardColor,
 		BorderRadius:    20,
-		Width:           BaseCardWidth,
+		Width:           width,
 		// Debug:           true,
 	}
 	return style
 }
 
-var DefaultStatsBlockStyle = render.Style{
-	Direction:  render.DirectionVertical,
-	AlignItems: render.AlignItemsCenter,
-	Width:      BaseStatsBlockWidth,
-	// Debug:      true,
+func titleCardStyle(width float64) render.Style {
+	style := defaultCardStyle(width)
+	style.Direction = render.DirectionHorizontal
+	return style
 }
 
-func HighlightStatsBlockStyle(bgColor color.Color) render.Style {
-	s := DefaultStatsBlockStyle
+func footerCardStyle() render.Style {
+	backgroundColor := render.DefaultCardColor
+	backgroundColor.A = 120
+	return render.Style{
+		JustifyContent:  render.JustifyContentCenter,
+		AlignItems:      render.AlignItemsCenter,
+		Direction:       render.DirectionVertical,
+		PaddingX:        20,
+		PaddingY:        5,
+		BackgroundColor: backgroundColor,
+		BorderRadius:    15,
+		// Debug:           true,
+	}
+}
+
+func defaultStatsBlockStyle(width float64) render.Style {
+	style := render.Style{
+		Direction:  render.DirectionVertical,
+		AlignItems: render.AlignItemsCenter,
+		Width:      width,
+		// Debug:      true,
+	}
+	return style
+}
+
+func highlightStatsBlockStyle(width float64) render.Style {
+	s := defaultStatsBlockStyle(width)
 	s.PaddingY = 10
 	s.BorderRadius = 10
-	s.BackgroundColor = bgColor
+	s.BackgroundColor = highlightCardColor()
 	return s
 }

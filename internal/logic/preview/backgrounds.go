@@ -111,10 +111,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 }
 
 func renderCardsPreview(player session.PlayerData) (image.Image, error) {
-	renderOptions := session.RenderOptions{
-		CardStyle: session.DefaultCardStyle(nil),
-	}
-
+	renderOptions := session.RenderOptions{}
 	cards, err := session.RenderStatsImage(player, renderOptions)
 	if err != nil {
 		return nil, err

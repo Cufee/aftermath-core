@@ -8,6 +8,7 @@ import (
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	helpers "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
@@ -27,7 +28,6 @@ type PlayerData struct {
 
 type RenderOptions struct {
 	PromoText []string
-	CardStyle render.Style
 }
 
 func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
@@ -38,6 +38,55 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	if len(player.Cards) == 0 {
 		log.Error().Msg("player cards slice is 0 length, this should not happen")
 		return nil, errors.New("no cards provided")
+	}
+
+	// Calculate minimal card width to fit all the content
+	var cardWidth float64
+	blockSizes := make(map[dataprep.Tag]float64)
+	{
+		{
+			var clanSize float64
+			if player.Clan != nil && player.Clan.Tag != "" {
+				size := render.MeasureString(player.Clan.Tag, *clanTagStyle.Font)
+				clanSize = size.TotalWidth + clanTagStyle.PaddingX*2
+			}
+			nameSize := render.MeasureString(player.Account.Nickname, *playerNameStyle.Font)
+			cardWidth = helpers.Max(cardWidth, defaultCardStyle(0).PaddingX*2+defaultCardStyle(0).Gap*2+nameSize.TotalWidth+clanSize*2)
+		}
+
+		{
+			for _, text := range options.PromoText {
+				size := render.MeasureString(text, *promoTextStyle.Font)
+				cardWidth = helpers.Max(size.TotalWidth, cardWidth)
+			}
+		}
+
+		{
+			for _, card := range player.Cards {
+				for _, block := range card.Blocks {
+					var blockWidth float64
+					{
+						size := render.MeasureString(block.Session.String, *defaultBlockStyle.session.Font)
+						blockWidth = helpers.Max(size.TotalWidth+defaultBlockStyle.session.PaddingX*2+defaultBlockStyle.session.Gap, blockWidth)
+					}
+					{
+						size := render.MeasureString(block.Career.String, *defaultBlockStyle.career.Font)
+						blockWidth = helpers.Max(size.TotalWidth+defaultBlockStyle.career.PaddingX*2+defaultBlockStyle.career.Gap, blockWidth)
+					}
+					{
+						size := render.MeasureString(block.Label, *defaultBlockStyle.label.Font)
+						blockWidth = helpers.Max(size.TotalWidth+defaultBlockStyle.label.PaddingX*2+defaultBlockStyle.label.Gap, blockWidth)
+					}
+					blockSizes[block.Tag] = helpers.Max(blockSizes[block.Tag], blockWidth+float64(iconSize))
+				}
+			}
+			var totalContentSize float64
+			for _, size := range blockSizes {
+				totalContentSize += size
+			}
+
+			cardWidth = helpers.Max(cardWidth, (defaultCardStyle(0).PaddingX*4)+(defaultCardStyle(0).Gap*float64(len(blockSizes)-1))+totalContentSize) // why padding is *4? no idea
+		}
 	}
 
 	var cards []render.Block
@@ -52,18 +101,13 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			break
 		}
 	}
-	// User Subscription Badge and promo text
-	if badges, _ := badges.SubscriptionsBadges(player.Subscriptions); len(badges) > 0 {
-		cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, Gap: 10},
-			badges...,
-		))
-	}
 
+	// User Subscription Badge and promo text
 	if addPromoText && options.PromoText != nil {
 		// Users without a subscription get promo text
 		var textBlocks []render.Block
 		for _, text := range options.PromoText {
-			textBlocks = append(textBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}, text))
+			textBlocks = append(textBlocks, render.NewTextContent(promoTextStyle, text))
 		}
 		cards = append(cards, render.NewBlocksContent(render.Style{
 			Direction:  render.DirectionVertical,
@@ -72,11 +116,16 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			textBlocks...,
 		))
 	}
+	if badges, _ := badges.SubscriptionsBadges(player.Subscriptions); len(badges) > 0 {
+		cards = append(cards, render.NewBlocksContent(render.Style{Direction: render.DirectionHorizontal, AlignItems: render.AlignItemsCenter, Gap: 10},
+			badges...,
+		))
+	}
 
 	// Title Card
 	var clanTagBlocks []render.Block
 	if player.Clan != nil && player.Clan.Tag != "" {
-		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}, player.Clan.Tag))
+		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(clanTagStyle, player.Clan.Tag))
 		if sub := badges.ClanSubscriptionsBadges(player.Subscriptions); sub != nil {
 			iconBlock, err := sub.Block()
 			if err == nil {
@@ -84,11 +133,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			}
 		}
 	}
-	cards = append(cards, newPlayerTitleCard(options.CardStyle, player.Account.Nickname, clanTagBlocks))
-
-	styled := func(blocks []session.StatsBlock) []styledStatsBlock {
-		return styleBlocks(blocks, HighlightStatsBlockStyle(options.CardStyle.BackgroundColor), DefaultStatsBlockStyle)
-	}
+	cards = append(cards, newPlayerTitleCard(titleCardStyle(cardWidth), player.Account.Nickname, clanTagBlocks))
 
 	for _, card := range player.Cards {
 		var hasCareer bool
@@ -106,11 +151,11 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession}
 		}
 
-		blocks, err := statsBlocksToCardBlocks(styled(card.Blocks), opts)
+		blocks, err := statsBlocksToCardBlocks(card.Blocks, blockSizes, opts)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, newCardBlock(options.CardStyle, newTextLabel(card.Title), blocks))
+		cards = append(cards, newCardBlock(defaultCardStyle(cardWidth), newCardTitle(card.Title), blocks))
 	}
 
 	var footer []string
@@ -133,7 +178,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	if len(footer) > 0 {
-		cards = append(cards, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
+		cards = append(cards, render.NewBlocksContent(footerCardStyle(), render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary}, strings.Join(footer, " • "))))
 	}
 
 	return cards, nil
