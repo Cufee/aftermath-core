@@ -11,6 +11,7 @@ import (
 	helpers "github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
+	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/utils"
 	wg "github.com/cufee/am-wg-proxy-next/types"
@@ -178,7 +179,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	if len(footer) > 0 {
-		cards = append(cards, render.NewBlocksContent(footerCardStyle(), render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary}, strings.Join(footer, " • "))))
+		cards = append(cards, render.NewBlocksContent(shared.FooterCardStyle(), render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary}, strings.Join(footer, " • "))))
 	}
 
 	return cards, nil

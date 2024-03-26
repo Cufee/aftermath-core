@@ -102,7 +102,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 		} else {
 			footer = append(footer, sessionFrom+" - "+sessionTo)
 		}
-		footerBlock := render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • "))
+		footerBlock := render.NewBlocksContent(shared.FooterCardStyle(), render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
 		footerImage, err := footerBlock.Render()
 		if err != nil {
 			return cards, err
