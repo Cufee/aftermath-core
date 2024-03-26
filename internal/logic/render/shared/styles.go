@@ -9,7 +9,7 @@ func FooterCardStyle() render.Style {
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
 		Direction:       render.DirectionVertical,
-		PaddingX:        10,
+		PaddingX:        12.5,
 		PaddingY:        5,
 		BackgroundColor: backgroundColor,
 		BorderRadius:    15,
