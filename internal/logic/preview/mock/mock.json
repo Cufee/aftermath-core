@@ -24,7 +24,8 @@
           "value": 3500,
           "string": "3500"
         },
-        "label": "Damage"
+        "label": "Damage",
+        "tag": "avg_damage"
       },
       {
         "session": {
@@ -35,7 +36,8 @@
           "value": 2.228,
           "string": "2.22"
         },
-        "label": "Damage Ratio"
+        "label": "Damage Ratio",
+        "tag": "damage_ratio"
       },
       {
         "session": {
@@ -46,7 +48,8 @@
           "value": 69.69,
           "string": "69.69%"
         },
-        "label": "Winrate"
+        "label": "Winrate",
+        "tag": "winrate"
       },
       {
         "session": {
@@ -87,7 +90,8 @@
           "value": 3500,
           "string": "3500"
         },
-        "label": "Damage"
+        "label": "Damage",
+        "tag": "avg_damage"
       },
       {
         "session": {
@@ -98,7 +102,8 @@
           "value": 2.228,
           "string": "2.22"
         },
-        "label": "Damage Ratio"
+        "label": "Damage Ratio",
+        "tag": "damage_ratio"
       },
       {
         "session": {
@@ -109,7 +114,8 @@
           "value": 69.69,
           "string": "69.69%"
         },
-        "label": "Winrate"
+        "label": "Winrate",
+        "tag": "winrate"
       },
       {
         "session": {

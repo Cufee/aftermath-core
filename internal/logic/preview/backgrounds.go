@@ -19,6 +19,8 @@ import (
 )
 
 var numberBlockWidth = 100
+var framePaddingX = 20
+var framePaddingY = 20
 
 func CurrentBackgroundsPreview() (*types.RenderPreviewResponse, error) {
 	data, err := database.GetAppConfiguration[[]string]("backgroundImagesSelection")
@@ -56,7 +58,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 	if err != nil {
 		return nil, err
 	}
-	frameWidth, frameHeight := statsImage.Bounds().Dx()+numberBlockWidth, statsImage.Bounds().Dy()*len(options)
+	frameWidth, frameHeight := statsImage.Bounds().Dx()+numberBlockWidth+framePaddingX*2, statsImage.Bounds().Dy()*len(options)+framePaddingY*2
 
 	var mux sync.Mutex
 	var wait sync.WaitGroup
@@ -74,7 +76,7 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 				return
 			}
 
-			resized := imaging.Fill(background, frameWidth, statsImage.Bounds().Dy(), imaging.Center, imaging.Linear)
+			resized := imaging.Fill(background, frameWidth, frameHeight/len(options), imaging.Center, imaging.Linear)
 			mux.Lock()
 			previews[i] = utils.DataWithError[image.Image]{Data: resized}
 			mux.Unlock()
@@ -97,13 +99,13 @@ func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.
 
 	frameCtx.DrawImage(imaging.Blur(frameCtx.Image(), 10-float64(len(options)-1)), 0, 0)
 
-	lastY = 0
+	lastY = framePaddingY
 	for i := range previews {
 		img, err := statsWithNumber(statsImage, i+1)
 		if err != nil {
 			return nil, err
 		}
-		frameCtx.DrawImage(img, 0, lastY)
+		frameCtx.DrawImage(img, framePaddingX, lastY)
 		lastY += statsImage.Bounds().Dy()
 	}
 
