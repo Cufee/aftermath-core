@@ -57,6 +57,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 			Title:  options.LocalePrinter("label_overview_rating"),
 			Blocks: ratingBlocks,
 			Type:   dataprep.CardTypeOverview,
+			Meta:   "rating",
 		})
 	}
 
@@ -86,6 +87,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 			Title:  options.LocalePrinter("label_overview_unrated"),
 			Blocks: unratedBlocks,
 			Type:   dataprep.CardTypeOverview,
+			Meta:   "unrated",
 		})
 	}
 

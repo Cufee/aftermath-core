@@ -69,17 +69,3 @@ func newStatsBlockRow(style render.Style, value string, icon render.Block) rende
 func newCardTitle(label string) render.Block {
 	return render.NewTextContent(defaultBlockStyle.career, label)
 }
-
-func newCardBlock(cardStyle render.Style, label render.Block, stats []render.Block) render.Block {
-	var content []render.Block
-	content = append(content, label)
-	content = append(content, render.NewBlocksContent(render.Style{
-		JustifyContent: render.JustifyContentSpaceBetween,
-		Direction:      render.DirectionHorizontal,
-		AlignItems:     render.AlignItemsCenter,
-		Width:          cardStyle.Width - cardStyle.PaddingX*2,
-		Gap:            10,
-	}, stats...))
-
-	return render.NewBlocksContent(cardStyle, content...)
-}

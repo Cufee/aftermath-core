@@ -150,7 +150,19 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, newCardBlock(defaultCardStyle(cardWidth), newCardTitle(card.Title), blocks))
+
+		cardContentBlocks := []render.Block{newCardTitle(card.Title)}
+		contentWidth := cardWidth - defaultCardStyle(0).PaddingX*2
+
+		statsRowBlock := render.NewBlocksContent(statsRowStyle(contentWidth), blocks...)
+		cardContentBlocks = append(cardContentBlocks, statsRowBlock)
+
+		// if card.Type == dataprep.CardTypeOverview && card.Meta == "unrated" {
+		// 	tiersBlock := shared.NewTierPercentageCard(tierPercentageCardStyle(contentWidth), player.Session.Diff.Vehicles, nil)
+		// 	cardContentBlocks = append(cardContentBlocks, tiersBlock)
+		// }
+
+		cards = append(cards, render.NewBlocksContent(defaultCardStyle(cardWidth), cardContentBlocks...))
 	}
 
 	var footer []string

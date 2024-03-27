@@ -68,6 +68,16 @@ func defaultCardStyle(width float64) render.Style {
 	return style
 }
 
+func tierPercentageCardStyle(width float64) render.Style {
+	style := defaultCardStyle(width)
+	style.Direction = render.DirectionHorizontal
+	style.BackgroundColor = nil
+	style.BorderRadius = 0
+	style.PaddingX = 0
+	style.PaddingY = 5
+	return style
+}
+
 func defaultStatsBlockStyle(width float64) render.Style {
 	style := render.Style{
 		Direction:  render.DirectionVertical,
@@ -76,6 +86,16 @@ func defaultStatsBlockStyle(width float64) render.Style {
 		// Debug:      true,
 	}
 	return style
+}
+
+func statsRowStyle(width float64) render.Style {
+	return render.Style{
+		JustifyContent: render.JustifyContentSpaceBetween,
+		Direction:      render.DirectionHorizontal,
+		AlignItems:     render.AlignItemsCenter,
+		Width:          width,
+		Gap:            10,
+	}
 }
 
 func highlightStatsBlockStyle(width float64) render.Style {
