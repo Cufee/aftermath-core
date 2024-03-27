@@ -14,25 +14,27 @@ type RatingSeason struct {
 	FinishAt  string `json:"finish_at"`
 	UpdatedAt string `json:"updated_at"`
 
-	Rewards []struct {
-		Type         string         `json:"type"`
-		Vehicle      *VehicleReward `json:"vehicle"`
-		Item         *ItemReward    `json:"stuff"`
-		FromPosition int            `json:"from_position"`
-		ToPosition   int            `json:"to_position"`
-		Count        int            `json:"count"`
-	} `json:"rewards"`
-
-	Leagues []struct {
-		Title      string  `json:"title"`
-		SmallIcon  string  `json:"small_icon"`
-		BigIcon    string  `json:"big_icon"`
-		Background string  `json:"background"`
-		Index      int     `json:"index"`
-		Percentile float64 `json:"percentile"`
-	} `json:"leagues"`
+	Rewards []Reward `json:"rewards"`
+	Leagues []League `json:"leagues"`
 
 	TotalPlayers int `json:"count"`
+}
+
+type League struct {
+	Title      string  `json:"title"`
+	SmallIcon  string  `json:"small_icon"`
+	BigIcon    string  `json:"big_icon"`
+	Background string  `json:"background"`
+	Index      int     `json:"index"`
+	Percentile float64 `json:"percentile"`
+}
+type Reward struct {
+	Type         string         `json:"type"`
+	Vehicle      *VehicleReward `json:"vehicle"`
+	Item         *ItemReward    `json:"stuff"`
+	FromPosition int            `json:"from_position"`
+	ToPosition   int            `json:"to_position"`
+	Count        int            `json:"count"`
 }
 
 type ItemReward struct {
