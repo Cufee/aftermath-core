@@ -24,17 +24,6 @@ import (
 func TestFullSessionRenderPipeline(t *testing.T) {
 	var err error
 
-	// file, err := os.ReadFile("render_session_test.json")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// var statsCards dataprep.Cards
-	// err = json.Unmarshal(file, &statsCards)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-
 	err = database.Connect(utils.MustGetEnv("DATABASE_URL"))
 	if err != nil {
 		t.Fatal(err)
@@ -83,13 +72,13 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 	}
 
 	player := session.PlayerData{
-		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}},
+		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}},
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeSupporter}, {Type: models.SubscriptionTypeVerifiedClan}},
-		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
-		Clan:    sessionData.Account.Clan,
-		Account: sessionData.Account.Account,
-		Session: sessionData,
-		Cards:   statsCards,
+		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
+		Clan:          sessionData.Account.Clan,
+		Account:       sessionData.Account.Account,
+		Session:       sessionData,
+		Cards:         statsCards,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/light")
