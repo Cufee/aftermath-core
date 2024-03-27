@@ -46,7 +46,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	cardBlockSizes := make(map[int]float64)
 	{
 		{
-			titleStyle := shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth))
+			titleStyle := shared.DefaultPlayerTitleStyle(titleCardStyle(cardWidth))
 			clanSize := render.MeasureString(player.Clan.Tag, *titleStyle.ClanTag.Font)
 			nameSize := render.MeasureString(player.Account.Nickname, *titleStyle.Nickname.Font)
 			cardWidth = helpers.Max(cardWidth, titleStyle.TotalPaddingAndGaps()+nameSize.TotalWidth+clanSize.TotalWidth*2)
@@ -128,7 +128,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		))
 	}
 
-	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth)), player.Account.Nickname, player.Clan.Tag, player.Subscriptions))
+	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(titleCardStyle(cardWidth)), player.Account.Nickname, player.Clan.Tag, player.Subscriptions))
 
 	for _, card := range player.Cards {
 		var hasCareer bool

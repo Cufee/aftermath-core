@@ -60,7 +60,7 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, opts)
+	stats, err := getSessionStats(accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -93,7 +93,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	stats, err := getSessionStats(utils.RealmFromAccountID(accountId), accountId, opts)
+	stats, err := getSessionStats(accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getSessionStats"))
 	}
@@ -101,14 +101,16 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(stats))
 }
 
-func getSessionStats(realm string, accountId int, opts types.SessionRequestPayload) (*session.SessionStats, error) {
+func getSessionStats(accountId int, opts types.SessionRequestPayload) (*session.SessionStats, error) {
+	realm := utils.RealmFromAccountID(accountId)
+
 	blocks, err := dataprep.ParseTags(opts.Presets...)
 	if err != nil {
 		blocks = session.DefaultSessionBlocks
 	}
 
 	now := int(time.Now().Unix())
-	playerSession, err := sessions.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{LastBattleBefore: &now, ReferenceID: opts.ReferenceID})
+	playerSession, err := sessions.GetCurrentPlayerSession(accountId, database.SessionGetOptions{LastBattleBefore: &now, ReferenceID: opts.ReferenceID})
 	if err != nil {
 		if !errors.Is(err, sessions.ErrNoSessionCached) {
 			return nil, err

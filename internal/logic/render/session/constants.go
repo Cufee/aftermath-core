@@ -68,6 +68,12 @@ func defaultCardStyle(width float64) render.Style {
 	return style
 }
 
+func titleCardStyle(width float64) render.Style {
+	style := defaultCardStyle(width)
+	style.PaddingX, style.PaddingY = 10, 10
+	return style
+}
+
 // func tierPercentageCardStyle(width float64) render.Style {
 // 	style := defaultCardStyle(width)
 // 	style.Direction = render.DirectionHorizontal

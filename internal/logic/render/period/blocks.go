@@ -52,6 +52,8 @@ func uniqueBlockWN8(style overviewStyle, stats period.StatsBlock) render.Block {
 
 	iconTop := shared.AftermathLogo(ratingColors.Background, shared.DefaultLogoOptions())
 	iconBlockTop := render.NewImageContent(render.Style{Width: float64(iconTop.Bounds().Dx()), Height: float64(iconTop.Bounds().Dy())}, iconTop)
+
+	style.blockContainer.Gap = 10
 	blocks = append(blocks, render.NewBlocksContent(style.blockContainer, iconBlockTop, valueBlock))
 
 	if stats.Data.Value >= 0 {

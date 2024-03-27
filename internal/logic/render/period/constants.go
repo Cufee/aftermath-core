@@ -61,6 +61,12 @@ func defaultCardStyle(width float64) render.Style {
 	return style
 }
 
+func titleCardStyle(width float64) render.Style {
+	style := defaultCardStyle(width)
+	style.PaddingX = style.PaddingY
+	return style
+}
+
 func overviewCardStyle(width float64) render.Style {
 	style := defaultCardStyle(width)
 	style.AlignItems = render.AlignItemsEnd

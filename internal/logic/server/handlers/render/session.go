@@ -41,7 +41,7 @@ func SessionFromIDHandler(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
-	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId, opts)
+	imageData, err := getEncodedSessionImage(accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -74,7 +74,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 		return c.Status(500).JSON(server.NewErrorResponse("invalid connection", "strconv.Atoi"))
 	}
 
-	imageData, err := getEncodedSessionImage(utils.RealmFromAccountID(accountId), accountId, opts)
+	imageData, err := getEncodedSessionImage(accountId, opts)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "getEncodedSessionImage"))
 	}
@@ -82,13 +82,15 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 	return c.JSON(server.NewResponse(imageData))
 }
 
-func getEncodedSessionImage(realm string, accountId int, options types.SessionRequestPayload) (string, error) {
+func getEncodedSessionImage(accountId int, options types.SessionRequestPayload) (string, error) {
+	realm := utils.RealmFromAccountID(accountId)
+
 	blocks, err := dataprep.ParseTags(options.Presets...)
 	if err != nil {
 		blocks = session.DefaultSessionBlocks
 	}
 
-	sessionData, err := sessions.GetCurrentPlayerSession(realm, accountId, database.SessionGetOptions{Type: options.Type(), ReferenceID: options.ReferenceID})
+	sessionData, err := sessions.GetCurrentPlayerSession(accountId, database.SessionGetOptions{Type: options.Type(), ReferenceID: options.ReferenceID})
 	if err != nil {
 		if !errors.Is(err, sessions.ErrNoSessionCached) {
 			return "", err

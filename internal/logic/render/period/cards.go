@@ -27,7 +27,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	overviewColumnWidth := float64(shared.DefaultLogoOptions().Width())
 	{
 		{
-			titleStyle := shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth))
+			titleStyle := shared.DefaultPlayerTitleStyle(titleCardStyle(cardWidth))
 			clanSize := render.MeasureString(player.Stats.Clan.Tag, *titleStyle.ClanTag.Font)
 			nameSize := render.MeasureString(player.Stats.Account.Nickname, *titleStyle.Nickname.Font)
 			cardWidth = helpers.Max(cardWidth, titleStyle.TotalPaddingAndGaps()+nameSize.TotalWidth+clanSize.TotalWidth*2)
@@ -122,7 +122,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	}
 
 	// Player Title card
-	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth)), player.Stats.Account.Nickname, player.Stats.Clan.Tag, player.Subscriptions))
+	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(titleCardStyle(cardWidth)), player.Stats.Account.Nickname, player.Stats.Clan.Tag, player.Subscriptions))
 
 	// Overview Card
 	{

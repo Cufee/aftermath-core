@@ -22,7 +22,7 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	stats, err := period.GetPlayerStats(521493973, 0)
+	stats, err := period.GetPlayerStats(521493973, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bgImage, _ := assets.GetImage("images/backgrounds/default")
+	bgImage, _ := assets.GetImage("images/backgrounds/light")
 	img := core.AddBackground(image, bgImage, core.Style{Blur: 10, BorderRadius: 30})
 
 	f, err := os.Create("test-period.png")
