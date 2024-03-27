@@ -5,12 +5,16 @@ import (
 	"fmt"
 
 	"github.com/cufee/aftermath-core/dataprep"
-	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/stats/period"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/text/language"
 )
+
+type ExportInput struct {
+	Stats           *period.PeriodStats
+	VehicleGlossary map[int]models.Vehicle
+}
 
 type ExportOptions struct {
 	Locale        language.Tag
@@ -43,33 +47,25 @@ type StatsBlock struct {
 	Flavor BlockFlavor    `json:"flavor"`
 }
 
-func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards, error) {
-	if stats == nil {
+func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {
+	if input.Stats == nil {
 		return Cards{}, errors.New("period stats are nil")
 	}
 	if options.LocalePrinter == nil {
 		options.LocalePrinter = func(s string) string { return s }
 	}
+	if input.VehicleGlossary == nil {
+		input.VehicleGlossary = make(map[int]models.Vehicle)
+	}
 
 	var cards Cards
-
-	var ids []int
-	for _, vehicle := range stats.Vehicles {
-		ids = append(ids, vehicle.VehicleID)
-	}
-
-	vehiclesGlossary, err := database.GetGlossaryVehicles(ids...)
-	if err != nil {
-		// This is definitely not fatal, but will look ugly
-		log.Warn().Err(err).Msg("failed to get vehicles glossary")
-	}
 
 	// Overview Card
 	for _, column := range options.Blocks {
 		var columnBlocks []StatsBlock
 		for _, preset := range column {
 			if preset == dataprep.TagAvgTier {
-				value := calculateAvgTier(stats.Vehicles, vehiclesGlossary)
+				value := calculateAvgTier(input.Stats.Vehicles, input.VehicleGlossary)
 				columnBlocks = append(columnBlocks, StatsBlock{
 					Label:  options.LocalePrinter("label_" + string(preset)),
 					Data:   dataprep.StatsToValue(value),
@@ -78,7 +74,7 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 				})
 				continue
 			}
-			block, err := presetToBlock(preset, &stats.Stats, options.LocalePrinter)
+			block, err := presetToBlock(preset, &input.Stats.Stats, options.LocalePrinter)
 			if err != nil {
 				return cards, err
 			}
@@ -90,13 +86,13 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 		cards.Overview.Blocks = append(cards.Overview.Blocks, columnBlocks)
 	}
 
-	if len(stats.Vehicles) < 1 || len(options.Highlights) < 1 {
+	if len(input.Stats.Vehicles) < 1 || len(options.Highlights) < 1 {
 		return cards, nil
 	}
 
 	// Vehicle Highlights
 	var minimumBattles int = 5
-	periodDays := stats.End.Sub(stats.Start).Hours() / 24
+	periodDays := input.Stats.End.Sub(input.Stats.Start).Hours() / 24
 	if periodDays > 90 {
 		minimumBattles = 100
 	} else if periodDays > 60 {
@@ -109,7 +105,7 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 		minimumBattles = 10
 	}
 
-	highlightedVehicles := getHighlightedVehicles(options.Highlights, stats.Vehicles, minimumBattles)
+	highlightedVehicles := getHighlightedVehicles(options.Highlights, input.Stats.Vehicles, minimumBattles)
 	for _, data := range highlightedVehicles {
 		var vehicleBlocks []StatsBlock
 
@@ -121,7 +117,7 @@ func SnapshotToSession(stats *period.PeriodStats, options ExportOptions) (Cards,
 			vehicleBlocks = append(vehicleBlocks, block)
 		}
 
-		glossary := vehiclesGlossary[data.vehicle.VehicleID]
+		glossary := input.VehicleGlossary[data.vehicle.VehicleID]
 		glossary.ID = data.vehicle.VehicleID
 
 		cards.Highlights = append(cards.Highlights, VehicleCard{

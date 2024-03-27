@@ -2,10 +2,10 @@ package shared
 
 import "github.com/cufee/aftermath-core/internal/logic/render"
 
-func FooterCardStyle() render.Style {
+func NewFooterCard(text string) render.Block {
 	backgroundColor := render.DefaultCardColor
 	backgroundColor.A = 120
-	return render.Style{
+	return render.NewBlocksContent(render.Style{
 		JustifyContent:  render.JustifyContentCenter,
 		AlignItems:      render.AlignItemsCenter,
 		Direction:       render.DirectionVertical,
@@ -14,5 +14,5 @@ func FooterCardStyle() render.Style {
 		BackgroundColor: backgroundColor,
 		BorderRadius:    15,
 		// Debug:           true,
-	}
+	}, render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary}, text))
 }

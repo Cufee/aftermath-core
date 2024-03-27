@@ -18,9 +18,11 @@ import (
 	"github.com/fogleman/gg"
 )
 
-var numberBlockWidth = 100
-var framePaddingX = 20
-var framePaddingY = 20
+const (
+	numberBlockWidth = 100
+	framePaddingX    = 20
+	framePaddingY    = 20
+)
 
 func CurrentBackgroundsPreview() (*types.RenderPreviewResponse, error) {
 	data, err := database.GetAppConfiguration[[]string]("backgroundImagesSelection")
@@ -45,13 +47,11 @@ func CurrentBackgroundsPreview() (*types.RenderPreviewResponse, error) {
 func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.Image, error) {
 	var player session.PlayerData
 	player.Cards = mock.PreviewStatsCards
-	player.Account = &wg.Account{
+	player.Account = wg.Account{
 		Nickname: nickname,
 	}
-	if clanTag != "" {
-		player.Clan = &wg.Clan{
-			Tag: clanTag,
-		}
+	player.Clan = wg.Clan{
+		Tag: clanTag,
 	}
 
 	statsImage, err := renderCardsPreview(player)

@@ -251,15 +251,15 @@
       },
       {
         "session": {
-          "value": 3849,
-          "string": "3849"
+          "value": 72.083333333333336,
+          "string": "72.08%"
         },
         "career": {
-          "value": 2413,
-          "string": "2413"
+          "value": 82.083333333333336,
+          "string": "82.08%"
         },
-        "label": "WN8",
-        "tag": "wn8"
+        "label": "Accuracy",
+        "tag": "accuracy"
       }
     ]
   }

@@ -1,12 +1,9 @@
 package session
 
 import (
-	"image/color"
-
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	"github.com/rs/zerolog/log"
 )
 
 type convertOptions struct {
@@ -16,7 +13,7 @@ type convertOptions struct {
 	showIcons        bool
 }
 
-func statsBlocksToCardBlocks(stats []session.StatsBlock, blockWidth map[dataprep.Tag]float64, opts ...convertOptions) ([]render.Block, error) {
+func statsBlocksToCardBlocks(stats []session.StatsBlock, blockWidth map[int]float64, opts ...convertOptions) ([]render.Block, error) {
 	var options convertOptions = convertOptions{
 		showSessionStats: true,
 		showCareerStats:  true,
@@ -52,9 +49,9 @@ func statsBlocksToCardBlocks(stats []session.StatsBlock, blockWidth map[dataprep
 			}
 		}
 
-		containerStyle := defaultStatsBlockStyle(blockWidth[statsBlock.Tag])
+		containerStyle := defaultStatsBlockStyle(blockWidth[index])
 		if index == 0 {
-			containerStyle = highlightStatsBlockStyle(blockWidth[statsBlock.Tag])
+			containerStyle = highlightStatsBlockStyle(blockWidth[index])
 		}
 		content = append(content, render.NewBlocksContent(containerStyle, blocks...))
 	}
@@ -69,52 +66,6 @@ func newStatsBlockRow(style render.Style, value string, icon render.Block) rende
 	)
 }
 
-func newPlayerTitleCard(style render.Style, name string, clanTagBlocks []render.Block) render.Block {
-	if len(clanTagBlocks) == 0 {
-		return render.NewBlocksContent(style, render.NewTextContent(playerNameStyle, name))
-	}
-
-	content := make([]render.Block, 0, 3)
-	style.JustifyContent = render.JustifyContentSpaceBetween
-
-	// Visible tag
-	clanTagBlock := render.NewBlocksContent(render.Style{
-		Direction:       render.DirectionHorizontal,
-		AlignItems:      render.AlignItemsCenter,
-		PaddingX:        10,
-		PaddingY:        2.5,
-		Gap:             2.5,
-		BackgroundColor: highlightCardColor(),
-		BorderRadius:    10,
-		// Debug:           true,
-	}, clanTagBlocks...)
-
-	clanTagImage, err := clanTagBlock.Render()
-	if err != nil {
-		log.Warn().Err(err).Msg("failed to render clan tag")
-		// This error is not fatal, we can just render the name
-		return render.NewBlocksContent(style, render.NewTextContent(playerNameStyle, name))
-	}
-	content = append(content, render.NewImageContent(render.Style{Width: float64(clanTagImage.Bounds().Dx()), Height: float64(clanTagImage.Bounds().Dy())}, clanTagImage))
-
-	// Nickname
-	content = append(content, render.NewTextContent(playerNameStyle, name))
-
-	// Invisible tag to offset the nickname
-	invisibleStyle := clanTagStyle
-	invisibleStyle.FontColor = color.Transparent
-	clanBlock := render.NewBlocksContent(render.Style{
-		Width:          float64(clanTagImage.Bounds().Dx()),
-		JustifyContent: render.JustifyContentEnd,
-	}, render.NewTextContent(invisibleStyle, "-"))
-
-	content = append(content, clanBlock)
-
-	containerStyle := style
-	containerStyle.JustifyContent = render.JustifyContentSpaceBetween
-	return render.NewBlocksContent(containerStyle, content...)
-}
-
 func newCardTitle(label string) render.Block {
 	return render.NewTextContent(defaultBlockStyle.career, label)
 }
@@ -123,11 +74,11 @@ func newCardBlock(cardStyle render.Style, label render.Block, stats []render.Blo
 	var content []render.Block
 	content = append(content, label)
 	content = append(content, render.NewBlocksContent(render.Style{
+		JustifyContent: render.JustifyContentSpaceBetween,
 		Direction:      render.DirectionHorizontal,
 		AlignItems:     render.AlignItemsCenter,
-		JustifyContent: render.JustifyContentSpaceBetween,
+		Width:          cardStyle.Width - cardStyle.PaddingX*2,
 		Gap:            10,
-		// Debug:          true,
 	}, stats...))
 
 	return render.NewBlocksContent(cardStyle, content...)

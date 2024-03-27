@@ -3,7 +3,6 @@ package period
 import (
 	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/logic/render"
-	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 )
 
 type overviewStyle struct {
@@ -27,19 +26,6 @@ func (s *overviewStyle) block(block period.StatsBlock) (render.Style, render.Sty
 		return render.Style{FontColor: render.TextSecondary, Font: &render.FontMedium}, render.Style{FontColor: render.TextAlt, Font: &render.FontSmall}
 	default:
 		return render.Style{FontColor: render.TextPrimary, Font: &render.FontLarge}, render.Style{FontColor: render.TextAlt, Font: &render.FontSmall}
-	}
-}
-
-func titleCardStyle(containerStyle render.Style) shared.TitleCardStyle {
-	container := containerStyle
-	container.AlignItems = render.AlignItemsCenter
-	container.Direction = render.DirectionHorizontal
-	container.PaddingX = 20
-
-	return shared.TitleCardStyle{
-		Container: container,
-		Nickname:  render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary},
-		ClanTag:   render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary},
 	}
 }
 
@@ -67,6 +53,7 @@ func defaultCardStyle(width float64) render.Style {
 		BackgroundColor: render.DefaultCardColor,
 		BorderRadius:    20,
 		PaddingY:        10,
+		PaddingX:        20,
 		Gap:             20,
 		Width:           width,
 		// Debug:           true,

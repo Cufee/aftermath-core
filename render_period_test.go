@@ -27,7 +27,19 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cards, err := dataprep.SnapshotToSession(stats, dataprep.ExportOptions{
+	var vehicleIDs []int
+	for _, vehicle := range stats.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
+	vehiclesGlossary, err := database.GetGlossaryVehicles(vehicleIDs...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+		Stats:           stats,
+		VehicleGlossary: vehiclesGlossary,
+	}, dataprep.ExportOptions{
 		Locale:        language.English,
 		LocalePrinter: localization.GetPrinter(language.English),
 
@@ -43,9 +55,7 @@ func TestFullPeriodRenderPipeline(t *testing.T) {
 		Cards: cards,
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypeContentTranslator}},
-	}, render.RenderOptions{
-		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-	})
+	}, render.RenderOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

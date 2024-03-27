@@ -130,9 +130,24 @@ func getSessionStats(realm string, accountId int, opts types.SessionRequestPaylo
 			}
 		}()
 	}
-	averages, err := stats.GetVehicleAverages(playerSession.Diff.Vehicles)
+
+	var vehicleIDs []int
+	for _, vehicle := range playerSession.Diff.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
+	for _, vehicle := range playerSession.Selected.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
+
+	averages, err := database.GetVehicleAverages(vehicleIDs...)
 	if err != nil {
 		return nil, err
+	}
+
+	vehiclesGlossary, err := database.GetGlossaryVehicles(vehicleIDs...)
+	if err != nil {
+		// This is definitely not fatal, but will look ugly
+		log.Warn().Err(err).Msg("failed to get vehicles glossary")
 	}
 
 	sortOptions := stats.SortOptions{
@@ -143,6 +158,7 @@ func getSessionStats(realm string, accountId int, opts types.SessionRequestPaylo
 		SessionStats:          playerSession.Diff,
 		CareerStats:           playerSession.Selected,
 		SessionVehicles:       stats.SortVehicles(playerSession.Diff.Vehicles, averages, sortOptions),
+		VehicleGlossary:       vehiclesGlossary,
 		GlobalVehicleAverages: averages,
 	}, session.ExportOptions{
 		Locale:        language.English,

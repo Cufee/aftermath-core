@@ -6,17 +6,17 @@ import (
 	"slices"
 
 	"github.com/cufee/aftermath-core/dataprep"
-	"github.com/cufee/aftermath-core/internal/core/database"
+	"github.com/cufee/aftermath-core/internal/core/database/models"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/replay"
 	"golang.org/x/text/language"
-
-	"github.com/rs/zerolog/log"
 )
 
 type ExportInput struct {
-	Replay                *replay.Replay
+	Replay *replay.Replay
+
+	VehicleGlossary       map[int]models.Vehicle
 	GlobalVehicleAverages map[int]*core.ReducedStatsFrame
 }
 
@@ -33,30 +33,23 @@ func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 	if options.LocalePrinter == nil {
 		options.LocalePrinter = func(s string) string { return s }
 	}
+	if input.VehicleGlossary == nil {
+		input.VehicleGlossary = make(map[int]models.Vehicle)
+	}
 
 	var cards Cards
-
-	var ids []int
-	for _, player := range append(input.Replay.Teams.Allies, input.Replay.Teams.Enemies...) {
-		ids = append(ids, player.VehicleID)
-	}
-	vehiclesGlossary, err := database.GetGlossaryVehicles(ids...)
-	if err != nil {
-		// This is definitely not fatal, but will look ugly
-		log.Warn().Err(err).Msg("failed to get vehicles glossary")
-	}
 
 	sortTeams(input.Replay.Teams)
 	// Allies
 	for _, player := range input.Replay.Teams.Allies {
-		vehicle := vehiclesGlossary[player.VehicleID]
+		vehicle := input.VehicleGlossary[player.VehicleID]
 		vehicle.ID = player.VehicleID
 		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
 		cards.Allies = append(cards.Allies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, options.LocalePrinter))
 	}
 	// Enemies
 	for _, player := range input.Replay.Teams.Enemies {
-		vehicle := vehiclesGlossary[player.VehicleID]
+		vehicle := input.VehicleGlossary[player.VehicleID]
 		vehicle.ID = player.VehicleID
 		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
 		cards.Enemies = append(cards.Enemies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, options.LocalePrinter))

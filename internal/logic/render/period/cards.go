@@ -27,10 +27,10 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	overviewColumnWidth := float64(shared.DefaultLogoOptions().Width())
 	{
 		{
-			titleStyle := titleCardStyle(defaultCardStyle(cardWidth))
+			titleStyle := shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth))
 			clanSize := render.MeasureString(player.Stats.Clan.Tag, *titleStyle.ClanTag.Font)
 			nameSize := render.MeasureString(player.Stats.Account.Nickname, *titleStyle.Nickname.Font)
-			cardWidth = helpers.Max(cardWidth, titleStyle.Container.PaddingX*2+titleStyle.Container.Gap*2+nameSize.TotalWidth+clanSize.TotalWidth*2)
+			cardWidth = helpers.Max(cardWidth, titleStyle.TotalPaddingAndGaps()+nameSize.TotalWidth+clanSize.TotalWidth*2)
 		}
 		{
 			rowStyle := getOverviewStyle(cardWidth)
@@ -102,7 +102,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 		} else {
 			footer = append(footer, sessionFrom+" - "+sessionTo)
 		}
-		footerBlock := render.NewBlocksContent(shared.FooterCardStyle(), render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextAlt}, strings.Join(footer, " • ")))
+		footerBlock := shared.NewFooterCard(strings.Join(footer, " • "))
 		footerImage, err := footerBlock.Render()
 		if err != nil {
 			return cards, err
@@ -122,7 +122,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	}
 
 	// Player Title card
-	cards = append(cards, shared.NewPlayerTitleCard(titleCardStyle(defaultCardStyle(cardWidth)), player.Stats.Account.Nickname, player.Stats.Clan.Tag, player.Subscriptions))
+	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth)), player.Stats.Account.Nickname, player.Stats.Clan.Tag, player.Subscriptions))
 
 	// Overview Card
 	{

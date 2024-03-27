@@ -124,12 +124,6 @@ func getEncodedPeriodImage(accountId int, options types.PeriodRequestPayload) (s
 	go func() {
 		defer wait.Done()
 
-		// averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
-		// if err != nil {
-		// 	cardsChan <- core.DataWithError[image.Image]{Err: err}
-		// 	return
-		// }
-
 		// Find a user who has a verified connection for this account
 		var referenceIds []string = []string{fmt.Sprint(stats.Account.ID), fmt.Sprint(stats.Clan.ID)}
 		connections, err := database.FindConnectionsByReferenceID(fmt.Sprint(stats.Account.ID), models.ConnectionTypeWargaming)
@@ -143,25 +137,37 @@ func getEncodedPeriodImage(accountId int, options types.PeriodRequestPayload) (s
 			}
 		}
 
+		var vehicleIDs []int
+		for _, vehicle := range stats.Vehicles {
+			vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+		}
+		vehiclesGlossary, err := database.GetGlossaryVehicles(vehicleIDs...)
+		if err != nil {
+			// This is definitely not fatal, but will look ugly
+			log.Warn().Err(err).Msg("failed to get vehicles glossary")
+		}
+
 		subscriptions, err := database.FindActiveSubscriptionsByReferenceIDs(referenceIds...)
 		if err != nil && !errors.Is(err, database.ErrSubscriptionNotFound) {
 			log.Warn().Err(err).Msg("failed to get subscriptions")
 			// We can continue without subscriptions
 		}
 
-		cards, err := dataprep.SnapshotToSession(stats, dataprep.ExportOptions{
-			Blocks:        dataprep.DefaultBlocks,
-			Locale:        language.English,
-			LocalePrinter: localization.GetPrinter(language.English),
-			Highlights:    dataprep.DefaultHighlights,
-		})
+		cards, err := dataprep.SnapshotToSession(
+			dataprep.ExportInput{
+				Stats:           stats,
+				VehicleGlossary: vehiclesGlossary,
+			}, dataprep.ExportOptions{
+				Blocks:        dataprep.DefaultBlocks,
+				Locale:        language.English,
+				LocalePrinter: localization.GetPrinter(language.English),
+				Highlights:    dataprep.DefaultHighlights,
+			})
 		if err != nil {
 			cardsChan <- core.DataWithError[image.Image]{Err: err}
 		}
 
-		renderOptions := render.RenderOptions{
-			PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-		}
+		renderOptions := render.RenderOptions{}
 
 		img, err := render.RenderImage(render.PlayerData{
 			Stats:         stats,

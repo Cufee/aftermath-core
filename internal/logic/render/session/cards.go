@@ -19,9 +19,9 @@ import (
 )
 
 type PlayerData struct {
-	Clan    *wg.Clan
-	Account *wg.Account
-	Session *sessions.Snapshot
+	Clan    wg.Clan
+	Account wg.Account
+	Session sessions.Snapshot
 
 	Subscriptions []models.UserSubscription
 	Cards         session.Cards
@@ -32,8 +32,8 @@ type RenderOptions struct {
 }
 
 func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
-	if player.Account == nil {
-		log.Error().Msg("player account is nil, this should not happen")
+	if player.Account.ID <= 0 {
+		log.Error().Msg("player account is not set, this should not happen")
 		return nil, errors.New("player account is nil")
 	}
 	if len(player.Cards) == 0 {
@@ -43,18 +43,14 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	// Calculate minimal card width to fit all the content
 	var cardWidth float64
-	blockSizes := make(map[dataprep.Tag]float64)
+	cardBlockSizes := make(map[int]float64)
 	{
 		{
-			var clanSize float64
-			if player.Clan != nil && player.Clan.Tag != "" {
-				size := render.MeasureString(player.Clan.Tag, *clanTagStyle.Font)
-				clanSize = size.TotalWidth + clanTagStyle.PaddingX*2
-			}
-			nameSize := render.MeasureString(player.Account.Nickname, *playerNameStyle.Font)
-			cardWidth = helpers.Max(cardWidth, defaultCardStyle(0).PaddingX*2+defaultCardStyle(0).Gap*2+nameSize.TotalWidth+clanSize*2)
+			titleStyle := shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth))
+			clanSize := render.MeasureString(player.Clan.Tag, *titleStyle.ClanTag.Font)
+			nameSize := render.MeasureString(player.Account.Nickname, *titleStyle.Nickname.Font)
+			cardWidth = helpers.Max(cardWidth, titleStyle.TotalPaddingAndGaps()+nameSize.TotalWidth+clanSize.TotalWidth*2)
 		}
-
 		{
 			for _, text := range options.PromoText {
 				size := render.MeasureString(text, *promoTextStyle.Font)
@@ -64,7 +60,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 		{
 			for _, card := range player.Cards {
-				for _, block := range card.Blocks {
+				for index, block := range card.Blocks {
 					var blockWidth float64
 					{
 						size := render.MeasureString(block.Session.String, *defaultBlockStyle.session.Font)
@@ -74,19 +70,28 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 						size := render.MeasureString(block.Career.String, *defaultBlockStyle.career.Font)
 						blockWidth = helpers.Max(size.TotalWidth+defaultBlockStyle.career.PaddingX*2+defaultBlockStyle.career.Gap, blockWidth)
 					}
-					{
+					if card.Type != dataprep.CardTypeVehicle {
 						size := render.MeasureString(block.Label, *defaultBlockStyle.label.Font)
 						blockWidth = helpers.Max(size.TotalWidth+defaultBlockStyle.label.PaddingX*2+defaultBlockStyle.label.Gap, blockWidth)
 					}
-					blockSizes[block.Tag] = helpers.Max(blockSizes[block.Tag], blockWidth+float64(iconSize))
+
+					totalBlockWidth := blockWidth + float64(iconSize)
+					if index == 0 {
+						totalBlockWidth += highlightStatsBlockStyle(0).PaddingX * 2
+					}
+
+					cardBlockSizes[index] = helpers.Max(cardBlockSizes[index], totalBlockWidth)
 				}
 			}
+
+			// Find the minimum required width to fix card content for the largest card
 			var totalContentSize float64
-			for _, size := range blockSizes {
+			for _, size := range cardBlockSizes {
 				totalContentSize += size
 			}
 
-			cardWidth = helpers.Max(cardWidth, (defaultCardStyle(0).PaddingX*4)+(defaultCardStyle(0).Gap*float64(len(blockSizes)-1))+totalContentSize) // why padding is *4? no idea
+			// why padding is *4? did not care to debug, but smells like a bug with how card width vs content width is calculated
+			cardWidth = helpers.Max(cardWidth, (defaultCardStyle(0).PaddingX*4)+(defaultCardStyle(0).Gap*float64(len(cardBlockSizes)-1))+totalContentSize)
 		}
 	}
 
@@ -123,18 +128,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		))
 	}
 
-	// Title Card
-	var clanTagBlocks []render.Block
-	if player.Clan != nil && player.Clan.Tag != "" {
-		clanTagBlocks = append(clanTagBlocks, render.NewTextContent(clanTagStyle, player.Clan.Tag))
-		if sub := badges.ClanSubscriptionsBadges(player.Subscriptions); sub != nil {
-			iconBlock, err := sub.Block()
-			if err == nil {
-				clanTagBlocks = append(clanTagBlocks, iconBlock)
-			}
-		}
-	}
-	cards = append(cards, newPlayerTitleCard(titleCardStyle(cardWidth), player.Account.Nickname, clanTagBlocks))
+	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(defaultCardStyle(cardWidth)), player.Account.Nickname, player.Clan.Tag, player.Subscriptions))
 
 	for _, card := range player.Cards {
 		var hasCareer bool
@@ -152,7 +146,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession}
 		}
 
-		blocks, err := statsBlocksToCardBlocks(card.Blocks, blockSizes, opts)
+		blocks, err := statsBlocksToCardBlocks(card.Blocks, cardBlockSizes, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -168,7 +162,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	case "as":
 		footer = append(footer, "Asia")
 	}
-	if player.Session != nil && player.Session.Selected.LastBattleTime > 0 {
+	if player.Session.Selected != nil && player.Session.Selected.LastBattleTime > 0 {
 		sessionTo := time.Unix(int64(player.Session.Live.LastBattleTime), 0).Format("January 2")
 		sessionFrom := time.Unix(int64(player.Session.Selected.LastBattleTime), 0).Format("January 2")
 		if sessionFrom == sessionTo {
@@ -179,7 +173,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	if len(footer) > 0 {
-		cards = append(cards, render.NewBlocksContent(shared.FooterCardStyle(), render.NewTextContent(render.Style{Font: &render.FontSmall, FontColor: render.TextSecondary}, strings.Join(footer, " • "))))
+		cards = append(cards, shared.NewFooterCard(strings.Join(footer, " • ")))
 	}
 
 	return cards, nil

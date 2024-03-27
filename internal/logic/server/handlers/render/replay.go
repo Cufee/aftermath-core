@@ -98,8 +98,15 @@ func getEncodedReplayImage(options types.ReplayRequestPayload) (string, error) {
 			return
 		}
 
+		vehiclesGlossary, err := database.GetGlossaryVehicles(vehicles...)
+		if err != nil {
+			// This is definitely not fatal, but will look ugly
+			log.Warn().Err(err).Msg("failed to get vehicles glossary")
+		}
+
 		cards, err := replays.ReplayToCards(replays.ExportInput{
 			GlobalVehicleAverages: averages,
+			VehicleGlossary:       vehiclesGlossary,
 			Replay:                replay,
 		}, replays.ExportOptions{
 			Locale:        language.English,

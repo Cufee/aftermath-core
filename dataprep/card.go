@@ -3,9 +3,10 @@ package dataprep
 type cardType string
 
 const (
-	CardTypeVehicle   cardType = "vehicle"
-	CardTypeOverview  cardType = "overview"
-	CardTypeHighlight cardType = "overview"
+	CardTypeVehicle        cardType = "vehicle"
+	CardTypeOverview       cardType = "overview"
+	CardTypeHighlight      cardType = "overview"
+	CardTypeTierPercentage cardType = "tierPercentage"
 )
 
 type StatsCard[T, M interface{}] struct {

@@ -15,6 +15,26 @@ type TitleCardStyle struct {
 	ClanTag   render.Style
 }
 
+func (style TitleCardStyle) TotalPaddingAndGaps() float64 {
+	return style.Container.PaddingX*2 + style.Container.Gap + style.Nickname.PaddingX*2 + style.ClanTag.PaddingX*2
+}
+
+func DefaultPlayerTitleStyle(containerStyle render.Style) TitleCardStyle {
+	containerStyle.AlignItems = render.AlignItemsCenter
+	containerStyle.Direction = render.DirectionHorizontal
+
+	clanTagBackgroundColor := render.DefaultCardColor
+	clanTagBackgroundColor.R += 10
+	clanTagBackgroundColor.G += 10
+	clanTagBackgroundColor.B += 10
+
+	return TitleCardStyle{
+		Container: containerStyle,
+		Nickname:  render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary},
+		ClanTag:   render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary, PaddingX: 10, PaddingY: 5, BackgroundColor: clanTagBackgroundColor, BorderRadius: 10},
+	}
+}
+
 func NewPlayerTitleCard(style TitleCardStyle, nickname, clanTag string, subscriptions []models.UserSubscription) render.Block {
 	clanTagBlock, hasClanTagBlock := newClanTagBlock(style.ClanTag, clanTag, subscriptions)
 	if !hasClanTagBlock {

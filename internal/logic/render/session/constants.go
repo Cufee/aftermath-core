@@ -36,9 +36,7 @@ var (
 )
 
 var (
-	clanTagStyle    = render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary}
-	playerNameStyle = render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary}
-	promoTextStyle  = render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}
+	promoTextStyle = render.Style{Font: &render.FontMedium, FontColor: render.TextPrimary}
 
 	defaultBlockStyle = blockStyle{
 		render.Style{Font: &render.FontLarge, FontColor: render.TextPrimary},
@@ -68,27 +66,6 @@ func defaultCardStyle(width float64) render.Style {
 		// Debug:           true,
 	}
 	return style
-}
-
-func titleCardStyle(width float64) render.Style {
-	style := defaultCardStyle(width)
-	style.Direction = render.DirectionHorizontal
-	return style
-}
-
-func footerCardStyle() render.Style {
-	backgroundColor := render.DefaultCardColor
-	backgroundColor.A = 120
-	return render.Style{
-		JustifyContent:  render.JustifyContentCenter,
-		AlignItems:      render.AlignItemsCenter,
-		Direction:       render.DirectionVertical,
-		PaddingX:        10,
-		PaddingY:        5,
-		BackgroundColor: backgroundColor,
-		BorderRadius:    15,
-		// Debug:           true,
-	}
 }
 
 func defaultStatsBlockStyle(width float64) render.Style {

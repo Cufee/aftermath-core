@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"image/png"
 	"os"
@@ -9,26 +8,32 @@ import (
 	"time"
 
 	dataprep "github.com/cufee/aftermath-core/dataprep/session"
+	// dataprep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/assets"
 	"github.com/cufee/aftermath-core/internal/logic/render/session"
+	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
+	"golang.org/x/text/language"
 )
 
 func TestFullSessionRenderPipeline(t *testing.T) {
-	file, err := os.ReadFile("render_session_test.json")
-	if err != nil {
-		panic(err)
-	}
+	var err error
 
-	var statsCards dataprep.Cards
-	err = json.Unmarshal(file, &statsCards)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// file, err := os.ReadFile("render_session_test.json")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// var statsCards dataprep.Cards
+	// err = json.Unmarshal(file, &statsCards)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
 	err = database.Connect(utils.MustGetEnv("DATABASE_URL"))
 	if err != nil {
@@ -40,45 +45,55 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
+	var vehicleIDs []int
+	for _, vehicle := range sessionData.Diff.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
+	for _, vehicle := range sessionData.Selected.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
 
-	// opts := stats.SortOptions{
-	// 	By:    stats.SortByLastBattle,
-	// 	Limit: 5,
-	// }
+	averages, err := database.GetVehicleAverages(vehicleIDs...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	vehiclesGlossary, err := database.GetGlossaryVehicles(vehicleIDs...)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-	// 	SessionStats:          sessionData.Diff,
-	// 	CareerStats:           sessionData.Selected,
-	// 	SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, opts),
-	// 	GlobalVehicleAverages: averages,
-	// }, dataprep.ExportOptions{
-	// 	Blocks:        dataprep.DefaultSessionBlocks,
-	// 	Locale:        language.English,
-	// 	LocalePrinter: localization.GetPrinter(language.English),
-	// })
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
+	opts := stats.SortOptions{
+		By:    stats.SortByLastBattle,
+		Limit: 5,
+	}
+
+	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
+		SessionStats:          sessionData.Diff,
+		CareerStats:           sessionData.Selected,
+		SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, opts),
+		GlobalVehicleAverages: averages,
+		VehicleGlossary:       vehiclesGlossary,
+	}, dataprep.ExportOptions{
+		Blocks:        dataprep.DefaultSessionBlocks,
+		Locale:        language.English,
+		LocalePrinter: localization.GetPrinter(language.English),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	player := session.PlayerData{
 		Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}},
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeSupporter}, {Type: models.SubscriptionTypeVerifiedClan}},
 		// Subscriptions: []models.UserSubscription{{Type: models.SubscriptionTypeServerModerator}, {Type: models.SubscriptionTypeServerBooster}, {Type: models.SubscriptionTypePro}, {Type: models.SubscriptionTypeContentTranslator}},
-		Clan:    &sessionData.Account.Clan,
-		Account: &sessionData.Account.Account,
-		Session: &sessionData,
+		Clan:    sessionData.Account.Clan,
+		Account: sessionData.Account.Account,
+		Session: sessionData,
 		Cards:   statsCards,
 	}
 
 	bgImage, _ := assets.GetImage("images/backgrounds/light")
-	options := session.RenderOptions{
-		PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-		// BackgroundImage: bgImage,
-	}
+	options := session.RenderOptions{}
 
 	now := time.Now()
 	cards, err := session.RenderStatsImage(player, options)

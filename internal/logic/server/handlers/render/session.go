@@ -150,10 +150,24 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 	go func() {
 		defer wait.Done()
 
-		averages, err := stats.GetVehicleAverages(sessionData.Diff.Vehicles)
+		var vehicleIDs []int
+		for _, vehicle := range sessionData.Diff.Vehicles {
+			vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+		}
+		for _, vehicle := range sessionData.Selected.Vehicles {
+			vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+		}
+
+		averages, err := database.GetVehicleAverages(vehicleIDs...)
 		if err != nil {
 			cardsChan <- core.DataWithError[image.Image]{Err: err}
 			return
+		}
+
+		vehiclesGlossary, err := database.GetGlossaryVehicles(vehicleIDs...)
+		if err != nil {
+			// This is definitely not fatal, but will look ugly
+			log.Warn().Err(err).Msg("failed to get vehicles glossary")
 		}
 
 		// Find a user who has a verified connection for this account
@@ -187,6 +201,7 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 			SessionStats:          sessionData.Diff,
 			CareerStats:           sessionData.Selected,
 			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
+			VehicleGlossary:       vehiclesGlossary,
 			GlobalVehicleAverages: averages,
 		}, session.ExportOptions{
 			Locale:        language.English,
@@ -199,16 +214,14 @@ func getEncodedSessionImage(realm string, accountId int, options types.SessionRe
 		}
 
 		player := render.PlayerData{
-			Clan:          &sessionData.Account.Clan,
-			Account:       &sessionData.Account.Account,
+			Clan:          sessionData.Account.Clan,
+			Account:       sessionData.Account.Account,
 			Subscriptions: subscriptions,
-			Session:       &sessionData,
+			Session:       sessionData,
 			Cards:         statsCards,
 		}
 
-		renderOptions := render.RenderOptions{
-			PromoText: []string{"Aftermath is back!", "amth.one/join  |  amth.one/invite"},
-		}
+		renderOptions := render.RenderOptions{}
 
 		cards, err := render.RenderStatsImage(player, renderOptions)
 		cardsChan <- core.DataWithError[image.Image]{Data: cards, Err: err}

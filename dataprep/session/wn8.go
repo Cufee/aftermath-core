@@ -14,7 +14,7 @@ type SessionStats struct {
 	Cards      Cards      `json:"cards"`
 }
 
-func calculateSessionWN8(vehicles map[int]*stats.ReducedVehicleStats, averages map[int]*stats.ReducedStatsFrame) int {
+func calculateWeightedWN8(vehicles map[int]*stats.ReducedVehicleStats, averages map[int]*stats.ReducedStatsFrame) int {
 	var wn8VehiclesTotal, wn8VehiclesBattles int
 	for id, vehicle := range vehicles {
 		if vehicle.Valid(vehicle.WN8(averages[id])) {
