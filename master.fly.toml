@@ -13,6 +13,7 @@ CACHE_WG_PROXY_URL = 'http://aftermath-wg-proxy-cache.internal:9090/v1'
 LIVE_WG_PROXY_URL = 'http://aftermath-wg-proxy-live.internal:9090/v1'
 BLITZ_STARS_API_URL = "https://www.blitzstars.com/api"
 FRONTEND_URL = 'https://amth.one'
+INDEX_SYNC_ENABLED = 'true'
 SCHEDULER_ENABLED = 'true'
 LOG_LEVEL = 'info'
 NETWORK = 'tcp'

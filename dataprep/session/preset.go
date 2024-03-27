@@ -55,6 +55,11 @@ func presetToBlock(preset dataprep.Tag, session, career, averages *stats.Reduced
 		if career != nil {
 			block.Career = dataprep.StatsToValue(career.DamageRatio())
 		}
+	case dataprep.TagRankedRating:
+		block.Session = dataprep.StatsToValue(session.Rating())
+		if career != nil {
+			block.Career = dataprep.StatsToValue(career.Rating())
+		}
 	default:
 		return StatsBlock{}, errors.New("invalid preset")
 	}

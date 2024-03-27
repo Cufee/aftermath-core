@@ -6,11 +6,12 @@ type Tag string
 
 const (
 	// Global
-	TagWN8      Tag = "wn8"
-	TagFrags    Tag = "frags"
-	TagBattles  Tag = "battles"
-	TagWinrate  Tag = "winrate"
-	TagAccuracy Tag = "accuracy"
+	TagWN8          Tag = "wn8"
+	TagFrags        Tag = "frags"
+	TagBattles      Tag = "battles"
+	TagWinrate      Tag = "winrate"
+	TagAccuracy     Tag = "accuracy"
+	TagRankedRating Tag = "ranked_rating"
 
 	// Session Specific
 	TagAvgDamage   Tag = "avg_damage"

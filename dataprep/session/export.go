@@ -45,7 +45,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 		for _, preset := range options.Blocks {
 			if preset == dataprep.TagWN8 {
 				// Rating battles have no WN8, so we use Accuracy instead of drawing a blank
-				preset = dataprep.TagAccuracy
+				preset = dataprep.TagRankedRating
 			}
 			ratingBlock, err := presetToBlock(preset, input.SessionStats.Rating, input.CareerStats.Rating, nil, options.LocalePrinter)
 			if err != nil {

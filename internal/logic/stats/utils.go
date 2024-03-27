@@ -19,6 +19,7 @@ func FrameToReducedStatsFrame(frame types.StatsFrame) *stats.ReducedStatsFrame {
 		EnemiesSpotted:       frame.Spotted,
 		CapturePoints:        frame.CapturePoints,
 		DroppedCapturePoints: frame.DroppedCapturePoints,
+		RawRating:            frame.Rating,
 	}
 }
 

@@ -15,6 +15,7 @@ LOG_LEVEL = 'info'
 NETWORK = 'tcp'
 PORT = '9090'
 SCHEDULER_ENABLED = 'false'
+INDEX_SYNC_ENABLED = 'false'
 WOT_INSPECTOR_TANK_DB_URL = 'https://armor.wotinspector.com/static/armorinspector/tank_db_blitz.js'
 WOT_INSPECTOR_REPLAYS_URL = 'https://api.wotinspector.com/v2/blitz/replays/'
 

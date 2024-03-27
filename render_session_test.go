@@ -29,7 +29,7 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sessionData, err := sessions.GetCurrentPlayerSession(1013072123) // 1013072123 1032698345
+	sessionData, err := sessions.GetCurrentPlayerSession(572420365) // 1013072123 1032698345
 	if err != nil && !errors.Is(err, sessions.ErrNoSessionCached) {
 		t.Fatal(err)
 	}
@@ -46,6 +46,7 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	vehiclesGlossary, err := database.GetGlossaryVehicles(vehicleIDs...)
 	if err != nil {
 		t.Fatal(err)

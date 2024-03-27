@@ -26,6 +26,8 @@ type ReducedStatsFrame struct {
 	CapturePoints        int `json:"capturePoints" bson:"capturePoints"`
 	DroppedCapturePoints int `json:"droppedCapturePoints" bson:"droppedCapturePoints"`
 
+	RawRating float64 `json:"mmRating" bson:"mmRating"`
+
 	wn8             int     `json:"-" bson:"-"`
 	winrate         float64 `json:"-" bson:"-"`
 	accuracy        float64 `json:"-" bson:"-"`
@@ -110,6 +112,13 @@ func (r *ReducedStatsFrame) Accuracy() float64 {
 		r.accuracy = float64(r.ShotsHit) / float64(r.ShotsFired) * 100
 	}
 	return r.accuracy
+}
+
+func (r *ReducedStatsFrame) Rating() int {
+	if r.RawRating <= 0 {
+		return InvalidValueInt
+	}
+	return int(r.RawRating*10 + 3000)
 }
 
 func (r *ReducedStatsFrame) SetWN8(wn8 int) {

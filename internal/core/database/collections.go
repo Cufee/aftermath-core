@@ -15,9 +15,10 @@ const (
 	CollectionUserConnections   = collectionName("user-connections")
 	CollectionUserSubscriptions = collectionName("user-subscriptions")
 
-	CollectionClans    = collectionName("clans")
-	CollectionAccounts = collectionName("accounts")
-	CollectionSessions = collectionName("sessions")
+	CollectionClans                 = collectionName("clans")
+	CollectionAccounts              = collectionName("accounts")
+	CollectionSessions              = collectionName("sessions")
+	CollectionRatingSeasonSnapshots = collectionName("rating-season-snapshots")
 
 	CollectionVehicleAverages     = collectionName("vehicle-averages")
 	CollectionVehicleGlossary     = collectionName("glossary-vehicles")
@@ -188,6 +189,31 @@ func init() {
 			Keys:    bson.M{"createdAt": 1},
 			Options: options.Index().SetExpireAfterSeconds(2_592_864).SetName("createdAt"),
 		},
+	})
+	addCollectionIndexes(CollectionRatingSeasonSnapshots, []Index{
+		// {
+		// 	Keys: bson.D{
+		// 		{Key: "type", Value: 1},
+		// 		{Key: "accountId", Value: 1},
+		// 	},
+		// 	Options: options.Index().SetName("type-accountId"),
+		// },
+		// {
+		// 	Keys: bson.D{
+		// 		{Key: "type", Value: 1},
+		// 		{Key: "accountId", Value: 1},
+		// 		{Key: "createdAt", Value: -1},
+		// 	},
+		// 	Options: options.Index().SetName("type-accountId-createdAt"),
+		// },
+		// {
+		// 	Keys: bson.D{
+		// 		{Key: "type", Value: 1},
+		// 		{Key: "accountId", Value: 1},
+		// 		{Key: "lastBattleTime", Value: -1},
+		// 	},
+		// 	Options: options.Index().SetName("type-accountId-lastBattleTime"),
+		// },
 	})
 
 	// Glossary

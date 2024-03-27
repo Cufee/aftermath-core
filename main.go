@@ -19,9 +19,10 @@ func main() {
 		panic(err)
 	}
 
-	err = database.SyncIndexes(database.DefaultClient.Database())
-	if err != nil {
-		panic(err)
+	if os.Getenv("INDEX_SYNC_ENABLED") != "false" {
+		if err := database.SyncIndexes(database.DefaultClient.Database()); err != nil {
+			panic(err)
+		}
 	}
 
 	if os.Getenv("SCHEDULER_ENABLED") != "false" {
