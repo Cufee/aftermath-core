@@ -1,4 +1,4 @@
-package wargaming
+package wotblitz
 
 import (
 	"fmt"
