@@ -35,7 +35,7 @@ func RefreshSessionsAndAccounts(sessionType models.SessionType, referenceId *str
 	}
 
 	updateErrors := make(map[int]error)
-	var snapshots []*core.SessionSnapshot
+	var snapshots []core.SessionSnapshot
 	for accountId, session := range sessions {
 		if session.Err != nil {
 			updateErrors[accountId] = session.Err

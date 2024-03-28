@@ -129,11 +129,17 @@ func (r *ReducedStatsFrame) SetWN8(wn8 int) {
 	 Calculate WN8 Rating for a tank using the following formula:
 		(980*rDAMAGEc + 210*rDAMAGEc*rFRAGc + 155*rFRAGc*rSPOTc + 75*rDEFc*rFRAGc + 145*MIN(1.8,rWINc))/EXPc
 */
-func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
+func (r *ReducedStatsFrame) WN8(vehicleAverages ...ReducedStatsFrame) int {
 	if r.wn8 > 0 {
 		return r.wn8
 	}
-	if average == nil || r.Battles == 0 || average.Battles == 0 {
+
+	if len(vehicleAverages) < 1 || r.Battles == 0 {
+		return InvalidValueInt
+	}
+
+	average := vehicleAverages[0]
+	if average.Battles == 0 {
 		return InvalidValueInt
 	}
 
@@ -169,7 +175,7 @@ func (r *ReducedStatsFrame) WN8(average *ReducedStatsFrame) int {
 	return r.wn8
 }
 
-func (r *ReducedStatsFrame) Add(other *ReducedStatsFrame) {
+func (r *ReducedStatsFrame) Add(other ReducedStatsFrame) {
 	r.Battles += other.Battles
 	r.BattlesWon += other.BattlesWon
 	r.BattlesSurvived += other.BattlesSurvived
@@ -189,7 +195,7 @@ func (r *ReducedStatsFrame) Add(other *ReducedStatsFrame) {
 	r.DroppedCapturePoints += other.DroppedCapturePoints
 }
 
-func (r *ReducedStatsFrame) Subtract(other *ReducedStatsFrame) {
+func (r *ReducedStatsFrame) Subtract(other ReducedStatsFrame) {
 	r.Battles -= other.Battles
 	r.BattlesWon -= other.BattlesWon
 	r.BattlesSurvived -= other.BattlesSurvived
@@ -210,14 +216,14 @@ func (r *ReducedStatsFrame) Subtract(other *ReducedStatsFrame) {
 }
 
 type ReducedVehicleStats struct {
-	VehicleID          int `json:"vehicleId" bson:"vehicleId"`
-	*ReducedStatsFrame `bson:",inline"`
+	VehicleID         int `json:"vehicleId" bson:"vehicleId"`
+	ReducedStatsFrame `bson:",inline"`
 
 	MarkOfMastery  int `json:"markOfMastery" bson:"markOfMastery"`
 	LastBattleTime int `json:"lastBattleTime" bson:"lastBattleTime"`
 }
 
-func (r *ReducedVehicleStats) Add(other *ReducedVehicleStats) {
+func (r *ReducedVehicleStats) Add(other ReducedVehicleStats) {
 	r.ReducedStatsFrame.Add(other.ReducedStatsFrame)
 	if other.MarkOfMastery > r.MarkOfMastery {
 		r.MarkOfMastery = other.MarkOfMastery
@@ -227,7 +233,7 @@ func (r *ReducedVehicleStats) Add(other *ReducedVehicleStats) {
 	}
 }
 
-func (r *ReducedVehicleStats) Subtract(other *ReducedVehicleStats) {
+func (r *ReducedVehicleStats) Subtract(other ReducedVehicleStats) {
 	r.ReducedStatsFrame.Subtract(other.ReducedStatsFrame)
 	if other.MarkOfMastery > r.MarkOfMastery {
 		r.MarkOfMastery = other.MarkOfMastery

@@ -13,7 +13,7 @@ var (
 	ErrConnectionNotFound = errors.New("connection not found")
 )
 
-func FindUserConnection(userId string, connectionType models.ConnectionType) (*models.UserConnection, error) {
+func FindUserConnection(userId string, connectionType models.ConnectionType) (models.UserConnection, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -21,12 +21,12 @@ func FindUserConnection(userId string, connectionType models.ConnectionType) (*m
 	err := DefaultClient.Collection(CollectionUserConnections).FindOne(ctx, bson.M{"userID": userId, "connectionType": connectionType}).Decode(&connection)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrConnectionNotFound
+			return connection, ErrConnectionNotFound
 		}
-		return nil, err
+		return connection, err
 	}
 
-	return &connection, nil
+	return connection, nil
 }
 
 func FindConnectionsByReferenceID(referenceId string, connectionType models.ConnectionType) ([]models.UserConnection, error) {
@@ -60,7 +60,7 @@ func GetUserConnections(userId string) ([]models.UserConnection, error) {
 	return connections, cur.All(ctx, &connections)
 }
 
-func GetUserConnection(userId string, connectionType models.ConnectionType) (*models.UserConnection, error) {
+func GetUserConnection(userId string, connectionType models.ConnectionType) (models.UserConnection, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -68,15 +68,15 @@ func GetUserConnection(userId string, connectionType models.ConnectionType) (*mo
 	err := DefaultClient.Collection(CollectionUserConnections).FindOne(ctx, bson.M{"userID": userId, "connectionType": connectionType}).Decode(&connection)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrConnectionNotFound
+			return connection, ErrConnectionNotFound
 		}
-		return nil, err
+		return connection, err
 	}
 
-	return &connection, nil
+	return connection, nil
 }
 
-func AddUserConnection(userId string, connectionType models.ConnectionType, externalID string, metadata map[string]any) (*models.UserConnection, error) {
+func AddUserConnection(userId string, connectionType models.ConnectionType, externalID string, metadata map[string]any) (models.UserConnection, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -89,27 +89,27 @@ func AddUserConnection(userId string, connectionType models.ConnectionType, exte
 
 	res, err := DefaultClient.Collection(CollectionUserConnections).InsertOne(ctx, connection)
 	if err != nil {
-		return nil, err
+		return models.UserConnection{}, err
 	}
 	insertedId, ok := res.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return nil, errors.New("failed to cast inserted ID to primitive.ObjectID")
+		return models.UserConnection{}, errors.New("failed to cast inserted ID to primitive.ObjectID")
 	}
 
 	connection.ID = insertedId
-	return &connection, nil
+	return connection, nil
 }
 
-func UpdateUserConnection(userId string, connectionType models.ConnectionType, payload models.ConnectionUpdate) (*models.UserConnection, error) {
+func UpdateUserConnection(userId string, connectionType models.ConnectionType, payload models.ConnectionUpdate) (models.UserConnection, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
 	_, err := DefaultClient.Collection(CollectionUserConnections).UpdateOne(ctx, bson.M{"userID": userId, "connectionType": connectionType}, bson.M{"$set": payload})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrConnectionNotFound
+			return models.UserConnection{}, ErrConnectionNotFound
 		}
-		return nil, err
+		return models.UserConnection{}, err
 	}
 
 	return GetUserConnection(userId, connectionType)

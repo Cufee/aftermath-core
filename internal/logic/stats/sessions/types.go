@@ -13,7 +13,7 @@ var (
 
 type Snapshot struct {
 	Account  stats.AccountWithClan
-	Selected *core.SessionSnapshot // The session that was selected from the database
-	Live     *core.SessionSnapshot // The live session
-	Diff     *core.SessionSnapshot // The difference between the selected and live sessions
+	Selected core.SessionSnapshot // The session that was selected from the database
+	Live     core.SessionSnapshot // The live session
+	Diff     core.SessionSnapshot // The difference between the selected and live sessions
 }

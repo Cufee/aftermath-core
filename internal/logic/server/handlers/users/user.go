@@ -24,7 +24,7 @@ func GetUserHandler(c *fiber.Ctx) error {
 	}
 
 	var extended types.User
-	extended.CompleteUser = *user
+	extended.CompleteUser = user
 
 	return c.JSON(server.NewResponse(user))
 }

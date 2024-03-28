@@ -22,7 +22,7 @@ type SessionGetOptions struct {
 	Type             models.SessionType
 }
 
-func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Snapshot, error) {
+func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (models.Snapshot, error) {
 	opts := SessionGetOptions{Type: models.SessionTypeDaily}
 	if len(o) > 0 {
 		opts = o[0]
@@ -52,12 +52,12 @@ func GetPlayerSessionSnapshot(accountID int, o ...SessionGetOptions) (*models.Sn
 	err := DefaultClient.Collection(CollectionSessions).FindOne(ctx, query, findOptions).Decode(&snapshot)
 	if err != nil {
 		if errors.Is(mongo.ErrNoDocuments, err) {
-			return nil, ErrNoSessionCache
+			return snapshot, ErrNoSessionCache
 		}
-		return nil, err
+		return snapshot, err
 	}
 
-	return &snapshot, nil
+	return snapshot, nil
 }
 
 func GetLastBattleTimes(sessionType models.SessionType, referenceId *string, accountIDs ...int) (map[int]int, error) {
@@ -100,7 +100,7 @@ func GetLastBattleTimes(sessionType models.SessionType, referenceId *string, acc
 	return lastBattles, nil
 }
 
-func InsertSession(sessionType models.SessionType, referenceId *string, sessions ...*stats.SessionSnapshot) error {
+func InsertSession(sessionType models.SessionType, referenceId *string, sessions ...stats.SessionSnapshot) error {
 	var sessionInserts []mongo.WriteModel
 	for _, session := range sessions {
 		model := mongo.NewInsertOneModel()

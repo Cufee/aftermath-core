@@ -5,8 +5,8 @@ import (
 	"github.com/cufee/am-wg-proxy-next/types"
 )
 
-func FrameToReducedStatsFrame(frame types.StatsFrame) *stats.ReducedStatsFrame {
-	return &stats.ReducedStatsFrame{
+func FrameToReducedStatsFrame(frame types.StatsFrame) stats.ReducedStatsFrame {
+	return stats.ReducedStatsFrame{
 		Battles:              frame.Battles,
 		BattlesWon:           frame.Wins,
 		BattlesSurvived:      frame.SurvivedBattles,
@@ -23,17 +23,17 @@ func FrameToReducedStatsFrame(frame types.StatsFrame) *stats.ReducedStatsFrame {
 	}
 }
 
-func CompleteStatsFromWargaming(account types.ExtendedAccount, accountVehicles []types.VehicleStatsFrame) *stats.SessionSnapshot {
-	session := &stats.SessionSnapshot{
+func CompleteStatsFromWargaming(account types.ExtendedAccount, accountVehicles []types.VehicleStatsFrame) stats.SessionSnapshot {
+	session := stats.SessionSnapshot{
 		AccountID:      account.ID,
 		LastBattleTime: account.LastBattleTime,
 		Global:         FrameToReducedStatsFrame(account.Statistics.All),
 		Rating:         FrameToReducedStatsFrame(account.Statistics.Rating),
-		Vehicles:       make(map[int]*stats.ReducedVehicleStats),
+		Vehicles:       make(map[int]stats.ReducedVehicleStats),
 	}
 
 	for _, vehicle := range accountVehicles {
-		session.Vehicles[vehicle.TankID] = &stats.ReducedVehicleStats{
+		session.Vehicles[vehicle.TankID] = stats.ReducedVehicleStats{
 			VehicleID:         vehicle.TankID,
 			ReducedStatsFrame: FrameToReducedStatsFrame(vehicle.Stats),
 			MarkOfMastery:     vehicle.MarkOfMastery,

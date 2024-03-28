@@ -15,5 +15,5 @@ type RatingSnapshot struct {
 	AccountID      int `bson:"accountId"`
 	LastBattleTime int `bson:"lastBattleTime"`
 
-	Stats *stats.ReducedStatsFrame `bson:",inline"`
+	Stats stats.ReducedStatsFrame `bson:",inline"`
 }

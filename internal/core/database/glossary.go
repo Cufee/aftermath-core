@@ -33,7 +33,7 @@ func UpdateAverages(averages map[int]stats.ReducedStatsFrame) error {
 	return nil
 }
 
-func GetVehicleAverages(vehicleIDs ...int) (map[int]*stats.ReducedStatsFrame, error) {
+func GetVehicleAverages(vehicleIDs ...int) (map[int]stats.ReducedStatsFrame, error) {
 	if len(vehicleIDs) == 0 {
 		return nil, nil
 	}
@@ -52,9 +52,9 @@ func GetVehicleAverages(vehicleIDs ...int) (map[int]*stats.ReducedStatsFrame, er
 		return nil, err
 	}
 
-	averageMap := make(map[int]*stats.ReducedStatsFrame)
+	averageMap := make(map[int]stats.ReducedStatsFrame)
 	for _, average := range averages {
-		averageMap[average.ID] = &average.ReducedStatsFrame
+		averageMap[average.ID] = average.ReducedStatsFrame
 	}
 
 	return averageMap, nil

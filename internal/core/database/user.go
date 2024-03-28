@@ -12,22 +12,22 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-func GetOrCreateUserByID(id string) (*models.CompleteUser, error) {
+func GetOrCreateUserByID(id string) (models.CompleteUser, error) {
 	user, err := GetUserByID(id)
 	if err != nil {
 		if !errors.Is(err, ErrUserNotFound) {
-			return nil, err
+			return models.CompleteUser{}, err
 		}
 		partial, err := CreateUser(id)
 		if err != nil {
-			return nil, err
+			return models.CompleteUser{}, err
 		}
-		user = &models.CompleteUser{User: *partial}
+		user = models.CompleteUser{User: partial}
 	}
 	return user, nil
 }
 
-func GetUserByID(id string) (*models.CompleteUser, error) {
+func GetUserByID(id string) (models.CompleteUser, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -40,27 +40,27 @@ func GetUserByID(id string) (*models.CompleteUser, error) {
 	cur, err := DefaultClient.Collection(CollectionUsers).Aggregate(ctx, pipeline)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrUserNotFound
+			return models.CompleteUser{}, ErrUserNotFound
 		}
-		return nil, err
+		return models.CompleteUser{}, err
 	}
 
 	var results []models.CompleteUser
 	if err := cur.All(ctx, &results); err != nil {
-		return nil, err
+		return models.CompleteUser{}, err
 	}
 
 	if len(results) == 0 {
-		return nil, ErrUserNotFound
+		return models.CompleteUser{}, ErrUserNotFound
 	}
 	if len(results) > 1 {
-		return nil, errors.New("multiple users found")
+		return models.CompleteUser{}, errors.New("multiple users found")
 	}
 
-	return &results[0], nil
+	return results[0], nil
 }
 
-func FindUserByConnection(connectionType models.ConnectionType, externalID string) (*models.CompleteUser, error) {
+func FindUserByConnection(connectionType models.ConnectionType, externalID string) (models.CompleteUser, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -76,27 +76,27 @@ func FindUserByConnection(connectionType models.ConnectionType, externalID strin
 	cur, err := DefaultClient.Collection(CollectionUsers).Aggregate(ctx, pipeline)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrUserNotFound
+			return models.CompleteUser{}, ErrUserNotFound
 		}
-		return nil, err
+		return models.CompleteUser{}, err
 	}
 
 	var users []models.CompleteUser
 	if err := cur.All(ctx, &users); err != nil {
-		return nil, err
+		return models.CompleteUser{}, err
 	}
 
 	if len(users) == 0 {
-		return nil, ErrUserNotFound
+		return models.CompleteUser{}, ErrUserNotFound
 	}
 	if len(users) > 1 {
-		return nil, errors.New("multiple users found")
+		return models.CompleteUser{}, errors.New("multiple users found")
 	}
 
-	return &users[0], nil
+	return users[0], nil
 }
 
-func CreateUser(id string) (*models.User, error) {
+func CreateUser(id string) (models.User, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -104,13 +104,13 @@ func CreateUser(id string) (*models.User, error) {
 
 	_, err := DefaultClient.Collection(CollectionUsers).InsertOne(ctx, user)
 	if err != nil {
-		return nil, err
+		return models.User{}, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
-func UpdateUser(id string, update models.User) (*models.User, error) {
+func UpdateUser(id string, update models.User) (models.User, error) {
 	update.ID = id
 
 	ctx, cancel := DefaultClient.Ctx()
@@ -119,10 +119,10 @@ func UpdateUser(id string, update models.User) (*models.User, error) {
 	_, err := DefaultClient.Collection(CollectionUsers).UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": update})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrUserNotFound
+			return models.User{}, ErrUserNotFound
 		}
-		return nil, err
+		return models.User{}, err
 	}
 
-	return &update, nil
+	return update, nil
 }

@@ -36,25 +36,25 @@ func NewNonce(referenceID string, duration time.Duration) (string, error) {
 	return id.Hex(), nil
 }
 
-func GetNonceByID(id string) (*models.Nonce, error) {
+func GetNonceByID(id string) (models.Nonce, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return models.Nonce{}, err
 	}
 
 	var nonce models.Nonce
 	err = DefaultClient.Collection(CollectionNonce).FindOne(ctx, bson.M{"_id": oid, "expiresAt": bson.M{"$gt": time.Now()}}).Decode(&nonce)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrNonceNotFound
+			return nonce, ErrNonceNotFound
 		}
-		return nil, err
+		return nonce, err
 	}
 
-	return &nonce, nil
+	return nonce, nil
 }
 
 func ExpireNonceByID(id string) error {

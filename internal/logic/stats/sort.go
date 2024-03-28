@@ -24,13 +24,13 @@ const (
 	SortByLastBattle    = vehicleSortOptions("lastBattleTime")
 )
 
-func SortVehicles(vehicles map[int]*core.ReducedVehicleStats, averages map[int]*core.ReducedStatsFrame, options ...SortOptions) []*core.ReducedVehicleStats {
+func SortVehicles(vehicles map[int]core.ReducedVehicleStats, averages map[int]core.ReducedStatsFrame, options ...SortOptions) []core.ReducedVehicleStats {
 	opts := SortOptions{By: SortByLastBattle, Limit: 10}
 	if len(options) > 0 {
 		opts = options[0]
 	}
 
-	var sorted []*core.ReducedVehicleStats
+	var sorted []core.ReducedVehicleStats
 	for _, vehicle := range vehicles {
 		sorted = append(sorted, vehicle)
 	}

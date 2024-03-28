@@ -12,7 +12,7 @@ import (
 
 var ErrSubscriptionNotFound = errors.New("subscription not found")
 
-func GetSubscriptionByID(id primitive.ObjectID) (*models.UserSubscription, error) {
+func GetSubscriptionByID(id primitive.ObjectID) (models.UserSubscription, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -20,12 +20,12 @@ func GetSubscriptionByID(id primitive.ObjectID) (*models.UserSubscription, error
 	err := DefaultClient.Collection(CollectionUserSubscriptions).FindOne(ctx, bson.M{"_id": id}).Decode(&subscription)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrSubscriptionNotFound
+			return subscription, ErrSubscriptionNotFound
 		}
-		return nil, err
+		return subscription, err
 	}
 
-	return &subscription, nil
+	return subscription, nil
 }
 
 func FindActiveSubscriptionsByUserID(userId string) ([]models.UserSubscription, error) {
@@ -98,7 +98,7 @@ func FindActiveSubscriptionsByReferenceIDs(referenceIDs ...string) ([]models.Use
 	return activeSubscriptions, nil
 }
 
-func AddNewUserSubscription(userId string, payload models.UserSubscription) (*models.UserSubscription, error) {
+func AddNewUserSubscription(userId string, payload models.UserSubscription) (models.UserSubscription, error) {
 	payload.ID = primitive.NilObjectID // Ensure ID is empty
 
 	ctx, cancel := DefaultClient.Ctx()
@@ -106,28 +106,28 @@ func AddNewUserSubscription(userId string, payload models.UserSubscription) (*mo
 
 	result, err := DefaultClient.Collection(CollectionUserSubscriptions).InsertOne(ctx, payload)
 	if err != nil {
-		return nil, err
+		return models.UserSubscription{}, err
 	}
 
 	id, ok := result.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return nil, errors.New("invalid inserted id")
+		return models.UserSubscription{}, errors.New("invalid inserted id")
 	}
 
 	payload.ID = id
-	return &payload, nil
+	return payload, nil
 }
 
-func UpdateUserSubscription(id primitive.ObjectID, payload models.SubscriptionUpdate) (*models.UserSubscription, error) {
+func UpdateUserSubscription(id primitive.ObjectID, payload models.SubscriptionUpdate) (models.UserSubscription, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
 	_, err := DefaultClient.Collection(CollectionUserSubscriptions).UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": payload})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrSubscriptionNotFound
+			return models.UserSubscription{}, ErrSubscriptionNotFound
 		}
-		return nil, err
+		return models.UserSubscription{}, err
 	}
 
 	return GetSubscriptionByID(id)

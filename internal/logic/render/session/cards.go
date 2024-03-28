@@ -174,7 +174,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	case "as":
 		footer = append(footer, "Asia")
 	}
-	if player.Session.Selected != nil && player.Session.Selected.LastBattleTime > 0 {
+	if player.Session.Selected.LastBattleTime > 0 {
 		sessionTo := time.Unix(int64(player.Session.Live.LastBattleTime), 0).Format("January 2")
 		sessionFrom := time.Unix(int64(player.Session.Selected.LastBattleTime), 0).Format("January 2")
 		if sessionFrom == sessionTo {

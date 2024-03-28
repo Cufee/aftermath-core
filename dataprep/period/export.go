@@ -1,7 +1,6 @@
 package period
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/cufee/aftermath-core/dataprep"
@@ -12,7 +11,7 @@ import (
 )
 
 type ExportInput struct {
-	Stats           *period.PeriodStats
+	Stats           period.PeriodStats
 	VehicleGlossary map[int]models.Vehicle
 }
 
@@ -48,9 +47,6 @@ type StatsBlock struct {
 }
 
 func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {
-	if input.Stats == nil {
-		return Cards{}, errors.New("period stats are nil")
-	}
 	if options.LocalePrinter == nil {
 		options.LocalePrinter = func(s string) string { return s }
 	}
@@ -74,7 +70,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 				})
 				continue
 			}
-			block, err := presetToBlock(preset, &input.Stats.Stats, options.LocalePrinter)
+			block, err := presetToBlock(preset, options.LocalePrinter, input.Stats.Stats)
 			if err != nil {
 				return cards, err
 			}
@@ -110,7 +106,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 		var vehicleBlocks []StatsBlock
 
 		for _, preset := range data.highlight.blocks {
-			block, err := presetToBlock(preset, data.vehicle.ReducedStatsFrame, options.LocalePrinter)
+			block, err := presetToBlock(preset, options.LocalePrinter, data.vehicle.ReducedStatsFrame)
 			if err != nil {
 				return cards, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", data.vehicle.VehicleID, err)
 			}

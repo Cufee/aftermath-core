@@ -20,11 +20,11 @@ var (
 
 type highlightedVehicle struct {
 	highlight highlight
-	vehicle   *stats.ReducedVehicleStats
+	vehicle   stats.ReducedVehicleStats
 	value     float64
 }
 
-func getHighlightedVehicles(highlights []highlight, vehicles map[int]*stats.ReducedVehicleStats, minBattles int) []highlightedVehicle {
+func getHighlightedVehicles(highlights []highlight, vehicles map[int]stats.ReducedVehicleStats, minBattles int) []highlightedVehicle {
 	leadersMap := make(map[string]highlightedVehicle)
 	for _, vehicle := range vehicles {
 		if vehicle.Battles < minBattles {
@@ -34,7 +34,7 @@ func getHighlightedVehicles(highlights []highlight, vehicles map[int]*stats.Redu
 		for _, highlight := range highlights {
 			currentLeader := leadersMap[highlight.label]
 
-			value, err := presetToBlock(highlight.compareWith, vehicle.ReducedStatsFrame, func(s string) string { return s })
+			value, err := presetToBlock(highlight.compareWith, func(s string) string { return s }, vehicle.ReducedStatsFrame)
 			if err != nil {
 				log.Warn().Str("highlight", highlight.label).Msg("failed to get preset value for a vehicle highlight")
 				continue

@@ -22,12 +22,12 @@ type PeriodStats struct {
 	Start time.Time `json:"start"`
 	End   time.Time `json:"end"`
 
-	Vehicles map[int]*core.ReducedVehicleStats `json:"vehicles"`
-	Stats    core.ReducedStatsFrame            `json:"stats"`
+	Vehicles map[int]core.ReducedVehicleStats `json:"vehicles"`
+	Stats    core.ReducedStatsFrame           `json:"stats"`
 }
 
-func (stats *PeriodStats) CareerWN8(averages map[int]*core.ReducedStatsFrame) int {
-	if v := stats.Stats.WN8(nil); v != core.InvalidValueInt {
+func (stats *PeriodStats) CareerWN8(averages map[int]core.ReducedStatsFrame) int {
+	if v := stats.Stats.WN8(); v != core.InvalidValueInt {
 		return v
 	}
 
@@ -56,18 +56,18 @@ var sessionsCronNA = cronexpr.MustParse("0 9 * * *")
 var sessionsCronEU = cronexpr.MustParse("0 1 * * *")
 var sessionsCronAsia = cronexpr.MustParse("0 18 * * *")
 
-func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
+func GetPlayerStats(accountId int, days int) (PeriodStats, error) {
 	realm := utils.RealmFromAccountID(accountId)
 	allStats, err := stats.GetCompleteStatsWithClient(wargaming.Clients.Live, realm, accountId)
 	if err != nil {
-		return nil, err
+		return PeriodStats{}, err
 	}
 	accountStats, ok := allStats[accountId]
 	if !ok {
-		return nil, stats.ErrBlankResponse
+		return PeriodStats{}, stats.ErrBlankResponse
 	}
 	if accountStats.Err != nil {
-		return nil, accountStats.Err
+		return PeriodStats{}, accountStats.Err
 	}
 
 	var vehicleIDs []int
@@ -77,13 +77,13 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 
 	tankAverages, err := database.GetVehicleAverages(vehicleIDs...)
 	if err != nil {
-		return nil, err
+		return PeriodStats{}, err
 	}
 
 	var periodStats = PeriodStats{
 		Clan:     accountStats.Data.Clan.Clan,
 		Account:  accountStats.Data.Account.Account,
-		Vehicles: make(map[int]*core.ReducedVehicleStats),
+		Vehicles: make(map[int]core.ReducedVehicleStats),
 		End:      time.Unix(int64(accountStats.Data.Account.LastBattleTime), 0),
 	}
 
@@ -93,22 +93,23 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 	case days > 90:
 		// Return career stats
 		for _, vehicle := range accountStats.Data.Vehicles {
-			periodStats.Vehicles[vehicle.TankID] = &core.ReducedVehicleStats{
+			stats := core.ReducedVehicleStats{
 				ReducedStatsFrame: stats.FrameToReducedStatsFrame(vehicle.Stats),
 				LastBattleTime:    vehicle.LastBattleTime,
 				MarkOfMastery:     vehicle.MarkOfMastery,
 				VehicleID:         vehicle.TankID,
 			}
-			periodStats.Vehicles[vehicle.TankID].WN8(tankAverages[vehicle.TankID])
+			stats.WN8(tankAverages[vehicle.TankID])
+			periodStats.Vehicles[vehicle.TankID] = stats
 		}
 
 		// TODO: Get calculated career WN8
 
 		periodStats.Start = time.Unix(int64(accountStats.Data.Account.CreatedAt), 0)
-		periodStats.Stats = *accountStats.Data.Session.Global
+		periodStats.Stats = accountStats.Data.Session.Global
 
 		periodStats.CareerWN8(tankAverages)
-		return &periodStats, nil
+		return periodStats, nil
 
 	default:
 		// Get time specific stats
@@ -120,7 +121,7 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 
 	tankHistory, err := blitzstars.GetPlayerTankHistories(accountId)
 	if err != nil {
-		return nil, err
+		return PeriodStats{}, err
 	}
 
 	var vehiclesMap = make(map[int]types.VehicleStatsFrame)
@@ -160,14 +161,15 @@ func GetPlayerStats(accountId int, days int) (*PeriodStats, error) {
 				LastBattleTime:    vehicle.LastBattleTime,
 				VehicleID:         vehicle.TankID,
 			}
-			periodStats.Vehicles[vehicle.TankID] = &frame
+			frame.WN8(tankAverages[vehicle.TankID])
+
+			periodStats.Vehicles[vehicle.TankID] = frame
 			periodStats.Stats.Add(frame.ReducedStatsFrame)
-			periodStats.Vehicles[vehicle.TankID].WN8(tankAverages[vehicle.TankID])
 		}
 	}
 
 	periodStats.CareerWN8(tankAverages)
-	return &periodStats, nil
+	return periodStats, nil
 }
 
 func daysToRealmTime(realm string, days int) time.Time {

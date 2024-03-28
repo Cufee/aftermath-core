@@ -35,11 +35,10 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 	}
 
 	var vehicleIDs []int
-	for _, vehicle := range sessionData.Diff.Vehicles {
-		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
-	}
-	for _, vehicle := range sessionData.Selected.Vehicles {
-		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	for _, vehicle := range sessionData.Live.Vehicles {
+		if vehicle.LastBattleTime > sessionData.Selected.LastBattleTime {
+			vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+		}
 	}
 
 	averages, err := database.GetVehicleAverages(vehicleIDs...)

@@ -2,13 +2,13 @@ package stats
 
 import "github.com/cufee/aftermath-core/internal/core/utils"
 
-func EmptySession(accountID, lastBattle int) *SessionSnapshot {
-	return &SessionSnapshot{
+func EmptySession(accountID, lastBattle int) SessionSnapshot {
+	return SessionSnapshot{
 		AccountID:      accountID,
 		LastBattleTime: lastBattle,
-		Global:         &ReducedStatsFrame{},
-		Rating:         &ReducedStatsFrame{},
-		Vehicles:       make(map[int]*ReducedVehicleStats),
+		Global:         ReducedStatsFrame{},
+		Rating:         ReducedStatsFrame{},
+		Vehicles:       make(map[int]ReducedVehicleStats),
 	}
 }
 
@@ -16,16 +16,16 @@ type SessionSnapshot struct {
 	AccountID      int `json:"accountId" bson:"accountId"`
 	LastBattleTime int `json:"lastBattleTime" bson:"lastBattleTime"`
 
-	Global *ReducedStatsFrame `json:"global" bson:"global"`
-	Rating *ReducedStatsFrame `json:"rating" bson:"rating"`
+	Global ReducedStatsFrame `json:"global" bson:"global"`
+	Rating ReducedStatsFrame `json:"rating" bson:"rating"`
 
-	Vehicles map[int]*ReducedVehicleStats `json:"vehicles" bson:"vehicles"`
+	Vehicles map[int]ReducedVehicleStats `json:"vehicles" bson:"vehicles"`
 }
 
-func (a *SessionSnapshot) Diff(b *SessionSnapshot) (*SessionSnapshot, error) {
+func (a *SessionSnapshot) Diff(b SessionSnapshot) (SessionSnapshot, error) {
 	var diff SessionSnapshot
 	if err := utils.DeepCopy[SessionSnapshot](a, &diff); err != nil {
-		return nil, err
+		return SessionSnapshot{}, err
 	}
 
 	diff.Global.Subtract(b.Global)
@@ -44,5 +44,5 @@ func (a *SessionSnapshot) Diff(b *SessionSnapshot) (*SessionSnapshot, error) {
 		diff.LastBattleTime = b.LastBattleTime
 	}
 
-	return &diff, nil
+	return diff, nil
 }

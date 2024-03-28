@@ -17,7 +17,7 @@ type ExportInput struct {
 	Replay *replay.Replay
 
 	VehicleGlossary       map[int]models.Vehicle
-	GlobalVehicleAverages map[int]*core.ReducedStatsFrame
+	GlobalVehicleAverages map[int]core.ReducedStatsFrame
 }
 
 type ExportOptions struct {
@@ -45,20 +45,20 @@ func ReplayToCards(input ExportInput, options ExportOptions) (Cards, error) {
 		vehicle := input.VehicleGlossary[player.VehicleID]
 		vehicle.ID = player.VehicleID
 		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
-		cards.Allies = append(cards.Allies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, options.LocalePrinter))
+		cards.Allies = append(cards.Allies, playerToCard(player, name, options.LocalePrinter, options.Blocks, input.GlobalVehicleAverages[player.VehicleID]))
 	}
 	// Enemies
 	for _, player := range input.Replay.Teams.Enemies {
 		vehicle := input.VehicleGlossary[player.VehicleID]
 		vehicle.ID = player.VehicleID
 		name := fmt.Sprintf("%s %s", utils.IntToRoman(vehicle.Tier), vehicle.Name(options.Locale))
-		cards.Enemies = append(cards.Enemies, playerToCard(player, name, input.GlobalVehicleAverages[player.VehicleID], options.Blocks, options.LocalePrinter))
+		cards.Enemies = append(cards.Enemies, playerToCard(player, name, options.LocalePrinter, options.Blocks, input.GlobalVehicleAverages[player.VehicleID]))
 	}
 
 	return cards, nil
 }
 
-func playerToCard(player replay.Player, vehicle string, averages *core.ReducedStatsFrame, blocks []dataprep.Tag, printer func(string) string) Card {
+func playerToCard(player replay.Player, vehicle string, printer func(string) string, blocks []dataprep.Tag, averages ...core.ReducedStatsFrame) Card {
 	card := Card{
 		Type:  dataprep.CardTypeVehicle,
 		Meta:  CardMeta{player, blocks},
@@ -71,7 +71,7 @@ func playerToCard(player replay.Player, vehicle string, averages *core.ReducedSt
 		}
 		// Special case
 		if preset == dataprep.TagWN8 {
-			block.Value = dataprep.Value{Value: float64(player.Performance.WN8(averages)), String: fmt.Sprintf("%d", player.Performance.WN8(averages))}
+			block.Value = dataprep.Value{Value: float64(player.Performance.WN8(averages...)), String: fmt.Sprintf("%d", player.Performance.WN8(averages...))}
 		} else {
 			block.Value = presetToValue(player, preset)
 		}

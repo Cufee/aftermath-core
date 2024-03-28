@@ -33,7 +33,7 @@ func UpdateAppConfiguration[T any](key string, data T, metadata map[string]any, 
 	return nil
 }
 
-func GetAppConfiguration[T any](key string) (*models.AppConfiguration[T], error) {
+func GetAppConfiguration[T any](key string) (models.AppConfiguration[T], error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
@@ -41,9 +41,9 @@ func GetAppConfiguration[T any](key string) (*models.AppConfiguration[T], error)
 	err := DefaultClient.Collection(CollectionConfiguration).FindOne(ctx, bson.M{"key": key}).Decode(&content)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrConfigurationNotFound
+			return content, ErrConfigurationNotFound
 		}
-		return nil, err
+		return content, err
 	}
-	return &content, nil
+	return content, nil
 }

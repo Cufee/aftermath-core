@@ -29,5 +29,5 @@ type Snapshot struct {
 	CreatedAt   time.Time          `bson:"createdAt"`
 	ReferenceID string             `bson:"referenceId"`
 
-	Session *stats.SessionSnapshot `bson:",inline"`
+	Session stats.SessionSnapshot `bson:",inline"`
 }

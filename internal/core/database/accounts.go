@@ -27,17 +27,17 @@ func UpdatePlayerAccounts(accounts ...models.Account) error {
 	return nil
 }
 
-func GetPlayerAccount(id int) (*models.Account, error) {
+func GetPlayerAccount(id int) (models.Account, error) {
 	ctx, cancel := DefaultClient.Ctx()
 	defer cancel()
 
 	var account models.Account
 	err := DefaultClient.Collection(CollectionAccounts).FindOne(ctx, bson.M{"_id": id}).Decode(&account)
 	if err != nil {
-		return nil, err
+		return account, err
 	}
 
-	return &account, nil
+	return account, nil
 }
 
 func GetRealmAccountIDs(realm string) ([]int, error) {

@@ -10,7 +10,7 @@ import (
 )
 
 type PlayerData struct {
-	Stats *period.PeriodStats
+	Stats period.PeriodStats
 	Cards dataprep.Cards
 
 	Subscriptions []models.UserSubscription

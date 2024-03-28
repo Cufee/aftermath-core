@@ -15,7 +15,7 @@ import (
 )
 
 type CompleteStats struct {
-	Session  *stats.SessionSnapshot
+	Session  stats.SessionSnapshot
 	Account  wg.ExtendedAccount
 	Clan     wg.ClanMember
 	Vehicles []wg.VehicleStatsFrame

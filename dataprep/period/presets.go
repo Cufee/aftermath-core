@@ -7,17 +7,13 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/stats"
 )
 
-func presetToBlock(preset dataprep.Tag, stats *stats.ReducedStatsFrame, printer func(string) string) (StatsBlock, error) {
-	if stats == nil {
-		return StatsBlock{}, errors.New("session is nil")
-	}
-
+func presetToBlock(preset dataprep.Tag, printer func(string) string, stats stats.ReducedStatsFrame) (StatsBlock, error) {
 	var block StatsBlock
 	block.Label = printer("label_" + string(preset))
 	block.Tag = preset
 	switch preset {
 	case dataprep.TagWN8:
-		block.Data = dataprep.StatsToValue(stats.WN8(nil))
+		block.Data = dataprep.StatsToValue(stats.WN8())
 		block.Flavor = BlockFlavorSpecial
 
 	case dataprep.TagBattles:
