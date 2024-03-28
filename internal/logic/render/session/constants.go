@@ -43,6 +43,8 @@ var (
 		render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary},
 		render.Style{Font: &render.FontSmall, FontColor: render.TextAlt},
 	}
+
+	ratingVehicleTitleStyle = render.Style{Font: &render.FontLarge, FontColor: render.TextSecondary}
 )
 
 func highlightCardColor() color.Color {

@@ -60,6 +60,8 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 		{
 			for _, card := range player.Cards {
+				var blockSizeMax float64
+
 				for index, block := range card.Blocks {
 					var blockWidth float64
 					{
@@ -82,6 +84,12 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 					cardBlockSizes[index] = helpers.Max(cardBlockSizes[index], totalBlockWidth)
 				}
+
+				if card.Type == dataprep.CardTypeRatingVehicle {
+					vehicleNameSize := render.MeasureString(card.Title, *ratingVehicleTitleStyle.Font)
+					cardWidth = helpers.Max(cardWidth, (defaultCardStyle(0).PaddingX*4)+(defaultCardStyle(0).Gap*float64(len(card.Blocks)-1))+vehicleNameSize.TotalWidth+blockSizeMax)
+				}
+
 			}
 
 			// Find the minimum required width to fix card content for the largest card
@@ -141,28 +149,16 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 			}
 		}
 
-		opts := convertOptions{true, hasCareer, true, hasCareer && hasSession}
+		opts := convertOptions{true, hasCareer, true, hasCareer && hasSession, 0}
 		if card.Type == dataprep.CardTypeVehicle {
-			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession}
+			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession, 0}
 		}
 
-		blocks, err := statsBlocksToCardBlocks(card.Blocks, cardBlockSizes, opts)
+		card, err := newVehicleCard(defaultCardStyle(cardWidth), card, cardBlockSizes, opts)
 		if err != nil {
 			return nil, err
 		}
-
-		cardContentBlocks := []render.Block{newCardTitle(card.Title)}
-		contentWidth := cardWidth - defaultCardStyle(0).PaddingX*2
-
-		statsRowBlock := render.NewBlocksContent(statsRowStyle(contentWidth), blocks...)
-		cardContentBlocks = append(cardContentBlocks, statsRowBlock)
-
-		// if card.Type == dataprep.CardTypeOverview && card.Meta == "unrated" {
-		// 	tiersBlock := shared.NewTierPercentageCard(tierPercentageCardStyle(contentWidth), player.Session.Diff.Vehicles, nil)
-		// 	cardContentBlocks = append(cardContentBlocks, tiersBlock)
-		// }
-
-		cards = append(cards, render.NewBlocksContent(defaultCardStyle(cardWidth), cardContentBlocks...))
+		cards = append(cards, card)
 	}
 
 	var footer []string

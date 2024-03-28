@@ -4,6 +4,7 @@ type cardType string
 
 const (
 	CardTypeVehicle        cardType = "vehicle"
+	CardTypeRatingVehicle  cardType = "ratingVehicle"
 	CardTypeOverview       cardType = "overview"
 	CardTypeHighlight      cardType = "overview"
 	CardTypeTierPercentage cardType = "tierPercentage"

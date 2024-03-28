@@ -24,7 +24,7 @@ type SessionSnapshot struct {
 
 func (a *SessionSnapshot) Diff(b SessionSnapshot) (SessionSnapshot, error) {
 	var diff SessionSnapshot
-	if err := utils.DeepCopy[SessionSnapshot](a, &diff); err != nil {
+	if err := utils.DeepCopy(a, &diff); err != nil {
 		return SessionSnapshot{}, err
 	}
 

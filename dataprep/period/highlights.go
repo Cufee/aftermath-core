@@ -34,7 +34,7 @@ func getHighlightedVehicles(highlights []highlight, vehicles map[int]stats.Reduc
 		for _, highlight := range highlights {
 			currentLeader := leadersMap[highlight.label]
 
-			value, err := presetToBlock(highlight.compareWith, func(s string) string { return s }, vehicle.ReducedStatsFrame)
+			value, err := presetToBlock(highlight.compareWith, func(s string) string { return s }, *vehicle.ReducedStatsFrame)
 			if err != nil {
 				log.Warn().Str("highlight", highlight.label).Msg("failed to get preset value for a vehicle highlight")
 				continue

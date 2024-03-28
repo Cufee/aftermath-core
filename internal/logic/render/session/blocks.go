@@ -7,18 +7,64 @@ import (
 )
 
 type convertOptions struct {
-	showSessionStats bool
-	showCareerStats  bool
-	showLabels       bool
-	showIcons        bool
+	showSessionStats    bool
+	showCareerStats     bool
+	showLabels          bool
+	showIcons           bool
+	highlightBlockIndex int
+}
+
+func newVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlock, string], sizes map[int]float64, opts convertOptions) (render.Block, error) {
+	if card.Type == dataprep.CardTypeRatingVehicle {
+		return slimVehicleCard(style, card, sizes, opts)
+	}
+
+	return defaultVehicleCard(style, card, sizes, opts)
+}
+
+func defaultVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlock, string], sizes map[int]float64, opts convertOptions) (render.Block, error) {
+	blocks, err := statsBlocksToCardBlocks(card.Blocks, sizes, opts)
+	if err != nil {
+		return render.Block{}, err
+	}
+
+	cardContentBlocks := []render.Block{newCardTitle(card.Title)}
+	contentWidth := style.Width - style.PaddingX*2
+
+	statsRowBlock := render.NewBlocksContent(statsRowStyle(contentWidth), blocks...)
+	cardContentBlocks = append(cardContentBlocks, statsRowBlock)
+
+	return render.NewBlocksContent(style, cardContentBlocks...), nil
+}
+
+func slimVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlock, string], sizes map[int]float64, opts convertOptions) (render.Block, error) {
+	opts.highlightBlockIndex = -1
+	opts.showCareerStats = false
+	opts.showLabels = false
+	opts.showIcons = true
+
+	blocks, err := statsBlocksToCardBlocks(card.Blocks, sizes, opts)
+	if err != nil {
+		return render.Block{}, err
+	}
+
+	titleBlock := render.NewTextContent(ratingVehicleTitleStyle, card.Title)
+	statsRowBlock := render.NewBlocksContent(statsRowStyle(0), blocks...)
+
+	containerStyle := style
+	containerStyle.Direction = render.DirectionHorizontal
+	containerStyle.JustifyContent = render.JustifyContentSpaceBetween
+
+	return render.NewBlocksContent(containerStyle, titleBlock, statsRowBlock), nil
 }
 
 func statsBlocksToCardBlocks(stats []session.StatsBlock, blockWidth map[int]float64, opts ...convertOptions) ([]render.Block, error) {
 	var options convertOptions = convertOptions{
-		showSessionStats: true,
-		showCareerStats:  true,
-		showLabels:       true,
-		showIcons:        true,
+		showSessionStats:    true,
+		showCareerStats:     true,
+		showLabels:          true,
+		showIcons:           true,
+		highlightBlockIndex: 0,
 	}
 	if len(opts) > 0 {
 		options = opts[0]
@@ -50,7 +96,7 @@ func statsBlocksToCardBlocks(stats []session.StatsBlock, blockWidth map[int]floa
 		}
 
 		containerStyle := defaultStatsBlockStyle(blockWidth[index])
-		if index == 0 {
+		if index == options.highlightBlockIndex {
 			containerStyle = highlightStatsBlockStyle(blockWidth[index])
 		}
 		content = append(content, render.NewBlocksContent(containerStyle, blocks...))

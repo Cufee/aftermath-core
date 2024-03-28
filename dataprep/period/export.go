@@ -106,7 +106,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 		var vehicleBlocks []StatsBlock
 
 		for _, preset := range data.highlight.blocks {
-			block, err := presetToBlock(preset, options.LocalePrinter, data.vehicle.ReducedStatsFrame)
+			block, err := presetToBlock(preset, options.LocalePrinter, *data.vehicle.ReducedStatsFrame)
 			if err != nil {
 				return cards, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", data.vehicle.VehicleID, err)
 			}

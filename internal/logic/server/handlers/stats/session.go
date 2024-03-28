@@ -163,9 +163,10 @@ func getSessionStats(accountId int, opts types.SessionRequestPayload) (*session.
 		VehicleGlossary:       vehiclesGlossary,
 		GlobalVehicleAverages: averages,
 	}, session.ExportOptions{
-		Locale:        language.English,
-		LocalePrinter: localization.GetPrinter(language.English),
-		Blocks:        blocks,
+		Locale:                language.English,
+		LocalePrinter:         localization.GetPrinter(language.English),
+		Blocks:                blocks,
+		IncludeRatingVehicles: true,
 	})
 	if err != nil {
 		return nil, err

@@ -33,9 +33,10 @@ func CompleteStatsFromWargaming(account types.ExtendedAccount, accountVehicles [
 	}
 
 	for _, vehicle := range accountVehicles {
+		frame := FrameToReducedStatsFrame(vehicle.Stats)
 		session.Vehicles[vehicle.TankID] = stats.ReducedVehicleStats{
 			VehicleID:         vehicle.TankID,
-			ReducedStatsFrame: FrameToReducedStatsFrame(vehicle.Stats),
+			ReducedStatsFrame: &frame,
 			MarkOfMastery:     vehicle.MarkOfMastery,
 			LastBattleTime:    vehicle.LastBattleTime,
 		}

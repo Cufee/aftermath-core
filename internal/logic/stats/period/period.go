@@ -93,8 +93,9 @@ func GetPlayerStats(accountId int, days int) (PeriodStats, error) {
 	case days > 90:
 		// Return career stats
 		for _, vehicle := range accountStats.Data.Vehicles {
+			frame := stats.FrameToReducedStatsFrame(vehicle.Stats)
 			stats := core.ReducedVehicleStats{
-				ReducedStatsFrame: stats.FrameToReducedStatsFrame(vehicle.Stats),
+				ReducedStatsFrame: &frame,
 				LastBattleTime:    vehicle.LastBattleTime,
 				MarkOfMastery:     vehicle.MarkOfMastery,
 				VehicleID:         vehicle.TankID,
@@ -157,14 +158,14 @@ func GetPlayerStats(accountId int, days int) (PeriodStats, error) {
 			compareToFrame.Subtract(selectedFrame)
 
 			frame := core.ReducedVehicleStats{
-				ReducedStatsFrame: compareToFrame,
+				ReducedStatsFrame: &compareToFrame,
 				LastBattleTime:    vehicle.LastBattleTime,
 				VehicleID:         vehicle.TankID,
 			}
 			frame.WN8(tankAverages[vehicle.TankID])
 
 			periodStats.Vehicles[vehicle.TankID] = frame
-			periodStats.Stats.Add(frame.ReducedStatsFrame)
+			periodStats.Stats.Add(*frame.ReducedStatsFrame)
 		}
 	}
 

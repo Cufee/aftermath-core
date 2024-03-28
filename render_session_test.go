@@ -29,16 +29,17 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sessionData, err := sessions.GetCurrentPlayerSession(572420365) // 1013072123 1032698345
+	sessionData, err := sessions.GetCurrentPlayerSession(1013072123) // 1013072123 1032698345
 	if err != nil && !errors.Is(err, sessions.ErrNoSessionCached) {
 		t.Fatal(err)
 	}
 
 	var vehicleIDs []int
-	for _, vehicle := range sessionData.Live.Vehicles {
-		if vehicle.LastBattleTime > sessionData.Selected.LastBattleTime {
-			vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
-		}
+	for _, vehicle := range sessionData.Diff.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
+	}
+	for _, vehicle := range sessionData.Selected.Vehicles {
+		vehicleIDs = append(vehicleIDs, vehicle.VehicleID)
 	}
 
 	averages, err := database.GetVehicleAverages(vehicleIDs...)
@@ -63,9 +64,10 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		GlobalVehicleAverages: averages,
 		VehicleGlossary:       vehiclesGlossary,
 	}, dataprep.ExportOptions{
-		Blocks:        dataprep.DefaultSessionBlocks,
-		Locale:        language.English,
-		LocalePrinter: localization.GetPrinter(language.English),
+		Blocks:                dataprep.DefaultSessionBlocks,
+		Locale:                language.English,
+		LocalePrinter:         localization.GetPrinter(language.English),
+		IncludeRatingVehicles: true,
 	})
 	if err != nil {
 		t.Fatal(err)
