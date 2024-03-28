@@ -66,7 +66,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 	// Rating Vehicles
 	if input.SessionStats.Rating.Battles > 0 && options.IncludeRatingVehicles {
 		for _, vehicle := range input.SessionVehicles {
-			if vehicle.LastBattleTime < input.CareerStats.LastBattleTime || vehicle.Battles > 0 {
+			if vehicle.Battles > 0 {
 				continue
 			}
 

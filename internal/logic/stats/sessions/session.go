@@ -66,10 +66,8 @@ func GetCurrentPlayerSession(accountId int, options ...database.SessionGetOption
 
 	// Clean up vehicles that do not belong to this session
 	for _, vehicle := range diffSession.Vehicles {
-		if vehicle.LastBattleTime < lastSession.Session.LastBattleTime {
+		if vehicle.LastBattleTime <= lastSession.Session.LastBattleTime {
 			delete(diffSession.Vehicles, vehicle.VehicleID)
-		} else {
-			println(vehicle.Battles)
 		}
 	}
 
