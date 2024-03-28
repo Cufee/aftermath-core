@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/EdlinOrg/prominentcolor v1.0.0
-	github.com/cufee/am-wg-proxy-next v1.5.0
+	github.com/cufee/am-wg-proxy-next v1.5.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
 	github.com/go-co-op/gocron v1.37.0
