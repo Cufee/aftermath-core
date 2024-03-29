@@ -1,7 +1,6 @@
 package session
 
 import (
-	"errors"
 	"strings"
 	"time"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/utils"
 	wg "github.com/cufee/am-wg-proxy-next/types"
-	"github.com/rs/zerolog/log"
 )
 
 type PlayerData struct {
@@ -32,14 +30,7 @@ type RenderOptions struct {
 }
 
 func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.Block, error) {
-	if player.Account.ID <= 0 {
-		log.Error().Msg("player account is not set, this should not happen")
-		return nil, errors.New("player account is nil")
-	}
-	if len(player.Cards) == 0 {
-		log.Error().Msg("player cards slice is 0 length, this should not happen")
-		return nil, errors.New("no cards provided")
-	}
+	allCards := append(player.Cards.Rating, player.Cards.Unrated...)
 
 	// Calculate minimal card width to fit all the content
 	var cardWidth float64
@@ -59,8 +50,8 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 		}
 
 		{
-			for _, card := range player.Cards {
-				var blockSizeMax float64
+			for _, card := range allCards {
+				var allClocksWidthTotal float64
 
 				for index, block := range card.Blocks {
 					var blockWidth float64
@@ -82,12 +73,14 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 						totalBlockWidth += highlightStatsBlockStyle(0).PaddingX * 2
 					}
 
+					allClocksWidthTotal += totalBlockWidth
 					cardBlockSizes[index] = helpers.Max(cardBlockSizes[index], totalBlockWidth)
 				}
 
 				if card.Type == dataprep.CardTypeRatingVehicle {
 					vehicleNameSize := render.MeasureString(card.Title, *ratingVehicleTitleStyle.Font)
-					cardWidth = helpers.Max(cardWidth, (defaultCardStyle(0).PaddingX*4)+(defaultCardStyle(0).Gap*float64(len(card.Blocks)-1))+vehicleNameSize.TotalWidth+blockSizeMax)
+					paddingAndGapsTotal := (defaultCardStyle(0).PaddingX * 4) + (defaultCardStyle(0).Gap * float64(len(card.Blocks)-1)) + ratingVehicleTitleStyle.Gap + ratingVehicleTitleStyle.PaddingX*2
+					cardWidth = helpers.Max(cardWidth, paddingAndGapsTotal+vehicleNameSize.TotalWidth+allClocksWidthTotal)
 				}
 
 			}
@@ -138,27 +131,22 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 
 	cards = append(cards, shared.NewPlayerTitleCard(shared.DefaultPlayerTitleStyle(titleCardStyle(cardWidth)), player.Account.Nickname, player.Clan.Tag, player.Subscriptions))
 
-	for _, card := range player.Cards {
-		var hasCareer bool
-		var hasSession bool
-		for _, block := range card.Blocks {
-			if block.Tag == dataprep.TagBattles {
-				hasSession = block.Session.Value > 0
-				hasCareer = block.Career.Value > 0
-				break
-			}
-		}
-
-		opts := convertOptions{true, hasCareer, true, hasCareer && hasSession, 0}
-		if card.Type == dataprep.CardTypeVehicle {
-			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession, 0}
-		}
-
-		card, err := newVehicleCard(defaultCardStyle(cardWidth), card, cardBlockSizes, opts)
+	// Rating Cards
+	if len(player.Cards.Rating) > 0 {
+		ratingGroup, err := makeCardsGroup(player.Cards.Rating, cardWidth, cardBlockSizes)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, card)
+		cards = append(cards, ratingGroup)
+	}
+
+	// Unrated Cards
+	if len(player.Cards.Unrated) > 0 {
+		unratedGroup, err := makeCardsGroup(player.Cards.Unrated, cardWidth, cardBlockSizes)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, unratedGroup)
 	}
 
 	var footer []string
@@ -185,4 +173,41 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	return cards, nil
+}
+
+func makeCardsGroup(cards []session.Card, cardWidth float64, cardBlockSizes map[int]float64) (render.Block, error) {
+	var groupCards []render.Block
+
+	for _, card := range cards {
+		var hasCareer bool
+		var hasSession bool
+		for _, block := range card.Blocks {
+			if block.Tag == dataprep.TagBattles {
+				hasSession = block.Session.Value > 0
+				hasCareer = block.Career.Value > 0
+				break
+			}
+		}
+
+		opts := convertOptions{true, hasCareer, true, hasCareer && hasSession, 0}
+		if card.Type == dataprep.CardTypeVehicle {
+			opts = convertOptions{true, hasCareer, false, hasCareer && hasSession, 0}
+		}
+
+		card, err := newVehicleCard(defaultCardStyle(cardWidth), card, cardBlockSizes, opts)
+		if err != nil {
+			return render.Block{}, err
+		}
+		groupCards = append(groupCards, card)
+	}
+
+	groupBlock := render.NewBlocksContent(
+		render.Style{
+			Direction:  render.DirectionVertical,
+			AlignItems: render.AlignItemsCenter,
+			Gap:        5,
+			// Debug:      true,
+		}, groupCards...)
+
+	return groupBlock, nil
 }

@@ -199,10 +199,14 @@ func getEncodedSessionImage(accountId int, options types.SessionRequestPayload) 
 			sortOptions.Limit = 5
 		}
 
+		unratedVehicles, ratingVehicles := stats.SortAndSplitVehicles(sessionData.Diff.Vehicles, averages, stats.SortOptions{By: stats.SortByLastBattle, Limit: 5}, stats.SortOptions{By: stats.SortByLastBattle, Limit: 3})
+
 		statsCards, err := session.SnapshotToSession(session.ExportInput{
-			SessionStats:          sessionData.Diff,
-			CareerStats:           sessionData.Selected,
-			SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, sortOptions),
+			SessionStats:           sessionData.Diff,
+			CareerStats:            sessionData.Selected,
+			SessionUnratedVehicles: unratedVehicles,
+			SessionRatingVehicles:  ratingVehicles,
+
 			VehicleGlossary:       vehiclesGlossary,
 			GlobalVehicleAverages: averages,
 		}, session.ExportOptions{

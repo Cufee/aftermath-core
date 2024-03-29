@@ -24,6 +24,21 @@ const (
 	SortByLastBattle    = vehicleSortOptions("lastBattleTime")
 )
 
+func SortAndSplitVehicles(vehicles map[int]core.ReducedVehicleStats, averages map[int]core.ReducedStatsFrame, unratedOptions, ratingOptions SortOptions) ([]core.ReducedVehicleStats, []core.ReducedVehicleStats) {
+	var unratedVehicles = make(map[int]core.ReducedVehicleStats)
+	var ratingVehicles = make(map[int]core.ReducedVehicleStats)
+
+	for id, vehicle := range vehicles {
+		if vehicle.Battles > 0 {
+			unratedVehicles[id] = vehicle
+		} else {
+			ratingVehicles[id] = vehicle
+		}
+	}
+
+	return SortVehicles(unratedVehicles, averages, unratedOptions), SortVehicles(ratingVehicles, averages, ratingOptions)
+}
+
 func SortVehicles(vehicles map[int]core.ReducedVehicleStats, averages map[int]core.ReducedStatsFrame, options ...SortOptions) []core.ReducedVehicleStats {
 	opts := SortOptions{By: SortByLastBattle, Limit: 10}
 	if len(options) > 0 {

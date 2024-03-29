@@ -7,7 +7,12 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/stats"
 )
 
-type Cards []dataprep.StatsCard[StatsBlock, string]
+type Card dataprep.StatsCard[StatsBlock, string]
+
+type Cards struct {
+	Unrated []Card `json:"unrated"`
+	Rating  []Card `json:"rating"`
+}
 
 type StatsBlock struct {
 	Session dataprep.Value `json:"session"`

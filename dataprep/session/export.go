@@ -12,9 +12,11 @@ import (
 )
 
 type ExportInput struct {
-	CareerStats     core.SessionSnapshot
-	SessionStats    core.SessionSnapshot
-	SessionVehicles []core.ReducedVehicleStats
+	CareerStats  core.SessionSnapshot
+	SessionStats core.SessionSnapshot
+
+	SessionRatingVehicles  []core.ReducedVehicleStats
+	SessionUnratedVehicles []core.ReducedVehicleStats
 
 	VehicleGlossary       map[int]models.Vehicle
 	GlobalVehicleAverages map[int]core.ReducedStatsFrame
@@ -29,7 +31,7 @@ type ExportOptions struct {
 
 func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) {
 	if input.SessionStats.AccountID == 0 || input.CareerStats.AccountID == 0 {
-		return nil, errors.New("session or career stats have blank accountID")
+		return Cards{}, errors.New("session or career stats have blank accountID")
 	}
 	if options.LocalePrinter == nil {
 		options.LocalePrinter = func(s string) string { return s }
@@ -52,11 +54,11 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 			}
 			ratingBlock, err := presetToBlock(preset, options.LocalePrinter, input.SessionStats.Rating, input.CareerStats.Rating)
 			if err != nil {
-				return nil, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
+				return cards, fmt.Errorf("failed to generate a rating stats from preset: %w", err)
 			}
 			ratingBlocks = append(ratingBlocks, ratingBlock)
 		}
-		cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
+		cards.Rating = append(cards.Rating, Card{
 			Title:  options.LocalePrinter("label_overview_rating"),
 			Blocks: ratingBlocks,
 			Type:   dataprep.CardTypeOverview,
@@ -65,21 +67,17 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 
 	// Rating Vehicles
 	if input.SessionStats.Rating.Battles > 0 && options.IncludeRatingVehicles {
-		for _, vehicle := range input.SessionVehicles {
-			if vehicle.Battles > 0 {
-				continue
-			}
-
+		for _, vehicle := range input.SessionRatingVehicles {
 			// Wargaming does not provide any stats whatsoever on vehicle stats from Rating Battles
 			// we just calculate WN8 based on the entire session and make this the only block
 			block, err := presetToBlock(dataprep.TagWN8, options.LocalePrinter, input.SessionStats.Rating, input.CareerStats.Rating, input.GlobalVehicleAverages[vehicle.VehicleID])
 			if err != nil {
-				return nil, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
+				return cards, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
 			}
 
 			glossary := input.VehicleGlossary[vehicle.VehicleID]
 			glossary.ID = vehicle.VehicleID
-			cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
+			cards.Rating = append(cards.Rating, Card{
 				Title:  fmt.Sprintf("%s %s", utils.IntToRoman(glossary.Tier), glossary.Name(options.Locale)),
 				Blocks: []StatsBlock{block},
 				Type:   dataprep.CardTypeRatingVehicle,
@@ -105,11 +103,11 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 			}
 			block, err := presetToBlock(preset, options.LocalePrinter, input.SessionStats.Global, input.CareerStats.Global)
 			if err != nil {
-				return nil, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
+				return cards, fmt.Errorf("failed to generate a unrated stats from preset: %w", err)
 			}
 			unratedBlocks = append(unratedBlocks, block)
 		}
-		cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
+		cards.Unrated = append(cards.Unrated, Card{
 			Title:  options.LocalePrinter("label_overview_unrated"),
 			Blocks: unratedBlocks,
 			Type:   dataprep.CardTypeOverview,
@@ -119,11 +117,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 
 	// Unrated Vehicles
 	if input.SessionStats.Global.Battles > 0 {
-		for _, vehicle := range input.SessionVehicles {
-			if vehicle.Battles == 0 {
-				continue
-			}
-
+		for _, vehicle := range input.SessionUnratedVehicles {
 			var vehicleBlocks []StatsBlock
 			for _, preset := range options.Blocks {
 				var career core.ReducedStatsFrame
@@ -133,14 +127,14 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 
 				block, err := presetToBlock(preset, options.LocalePrinter, *vehicle.ReducedStatsFrame, career, input.GlobalVehicleAverages[vehicle.VehicleID])
 				if err != nil {
-					return nil, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
+					return cards, fmt.Errorf("failed to generate vehicle %d stats from preset: %w", vehicle.VehicleID, err)
 				}
 				vehicleBlocks = append(vehicleBlocks, block)
 			}
 
 			glossary := input.VehicleGlossary[vehicle.VehicleID]
 			glossary.ID = vehicle.VehicleID
-			cards = append(cards, dataprep.StatsCard[StatsBlock, string]{
+			cards.Unrated = append(cards.Unrated, Card{
 				Title:  fmt.Sprintf("%s %s", utils.IntToRoman(glossary.Tier), glossary.Name(options.Locale)),
 				Blocks: vehicleBlocks,
 				Type:   dataprep.CardTypeVehicle,

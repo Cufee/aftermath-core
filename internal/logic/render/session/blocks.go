@@ -14,7 +14,7 @@ type convertOptions struct {
 	highlightBlockIndex int
 }
 
-func newVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlock, string], sizes map[int]float64, opts convertOptions) (render.Block, error) {
+func newVehicleCard(style render.Style, card session.Card, sizes map[int]float64, opts convertOptions) (render.Block, error) {
 	if card.Type == dataprep.CardTypeRatingVehicle {
 		return slimVehicleCard(style, card, sizes, opts)
 	}
@@ -22,7 +22,7 @@ func newVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlo
 	return defaultVehicleCard(style, card, sizes, opts)
 }
 
-func defaultVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlock, string], sizes map[int]float64, opts convertOptions) (render.Block, error) {
+func defaultVehicleCard(style render.Style, card session.Card, sizes map[int]float64, opts convertOptions) (render.Block, error) {
 	blocks, err := statsBlocksToCardBlocks(card.Blocks, sizes, opts)
 	if err != nil {
 		return render.Block{}, err
@@ -37,7 +37,7 @@ func defaultVehicleCard(style render.Style, card dataprep.StatsCard[session.Stat
 	return render.NewBlocksContent(style, cardContentBlocks...), nil
 }
 
-func slimVehicleCard(style render.Style, card dataprep.StatsCard[session.StatsBlock, string], sizes map[int]float64, opts convertOptions) (render.Block, error) {
+func slimVehicleCard(style render.Style, card session.Card, sizes map[int]float64, opts convertOptions) (render.Block, error) {
 	opts.highlightBlockIndex = -1
 	opts.showCareerStats = false
 	opts.showLabels = false

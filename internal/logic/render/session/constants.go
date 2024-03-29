@@ -44,7 +44,7 @@ var (
 		render.Style{Font: &render.FontSmall, FontColor: render.TextAlt},
 	}
 
-	ratingVehicleTitleStyle = render.Style{Font: &render.FontLarge, FontColor: render.TextSecondary}
+	ratingVehicleTitleStyle = render.Style{Font: &render.FontMedium, FontColor: render.TextSecondary, PaddingX: 5}
 )
 
 func highlightCardColor() color.Color {
@@ -75,16 +75,6 @@ func titleCardStyle(width float64) render.Style {
 	style.PaddingX, style.PaddingY = 10, 10
 	return style
 }
-
-// func tierPercentageCardStyle(width float64) render.Style {
-// 	style := defaultCardStyle(width)
-// 	style.Direction = render.DirectionHorizontal
-// 	style.BackgroundColor = nil
-// 	style.BorderRadius = 0
-// 	style.PaddingX = 0
-// 	style.PaddingY = 5
-// 	return style
-// }
 
 func defaultStatsBlockStyle(width float64) render.Style {
 	style := render.Style{

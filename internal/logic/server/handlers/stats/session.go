@@ -152,14 +152,14 @@ func getSessionStats(accountId int, opts types.SessionRequestPayload) (*session.
 		log.Warn().Err(err).Msg("failed to get vehicles glossary")
 	}
 
-	sortOptions := stats.SortOptions{
-		By:    stats.SortByLastBattle,
-		Limit: 5,
-	}
+	unratedVehicles, ratingVehicles := stats.SortAndSplitVehicles(playerSession.Diff.Vehicles, averages, stats.SortOptions{By: stats.SortByLastBattle, Limit: 5}, stats.SortOptions{By: stats.SortByLastBattle, Limit: 3})
+
 	statsCards, err := session.SnapshotToSession(session.ExportInput{
-		SessionStats:          playerSession.Diff,
-		CareerStats:           playerSession.Selected,
-		SessionVehicles:       stats.SortVehicles(playerSession.Diff.Vehicles, averages, sortOptions),
+		SessionStats:           playerSession.Diff,
+		CareerStats:            playerSession.Selected,
+		SessionUnratedVehicles: unratedVehicles,
+		SessionRatingVehicles:  ratingVehicles,
+
 		VehicleGlossary:       vehiclesGlossary,
 		GlobalVehicleAverages: averages,
 	}, session.ExportOptions{

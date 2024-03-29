@@ -20,7 +20,7 @@ func TestFullPreviewRenderPipeline(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	image, err := preview.RenderBackgroundPreview("Your Awesome Nickname", "", data.Value)
+	image, err := preview.RenderBackgroundPreview("Your Awesome Nickname", "AFMTH", data.Value)
 	if err != nil {
 		t.Fatal(err)
 	}

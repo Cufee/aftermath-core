@@ -29,7 +29,7 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sessionData, err := sessions.GetCurrentPlayerSession(1013072123) // 1013072123 1032698345
+	sessionData, err := sessions.GetCurrentPlayerSession(1013072123) // 1013072123 1032698345 521493973
 	if err != nil && !errors.Is(err, sessions.ErrNoSessionCached) {
 		t.Fatal(err)
 	}
@@ -52,17 +52,16 @@ func TestFullSessionRenderPipeline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	opts := stats.SortOptions{
-		By:    stats.SortByLastBattle,
-		Limit: 5,
-	}
+	unratedVehicles, ratingVehicles := stats.SortAndSplitVehicles(sessionData.Diff.Vehicles, averages, stats.SortOptions{By: stats.SortByLastBattle, Limit: 5}, stats.SortOptions{By: stats.SortByLastBattle, Limit: 3})
 
 	statsCards, err := dataprep.SnapshotToSession(dataprep.ExportInput{
-		SessionStats:          sessionData.Diff,
-		CareerStats:           sessionData.Selected,
-		SessionVehicles:       stats.SortVehicles(sessionData.Diff.Vehicles, averages, opts),
-		GlobalVehicleAverages: averages,
+		SessionStats:           sessionData.Diff,
+		CareerStats:            sessionData.Selected,
+		SessionRatingVehicles:  ratingVehicles,
+		SessionUnratedVehicles: unratedVehicles,
+
 		VehicleGlossary:       vehiclesGlossary,
+		GlobalVehicleAverages: averages,
 	}, dataprep.ExportOptions{
 		Blocks:                dataprep.DefaultSessionBlocks,
 		Locale:                language.English,

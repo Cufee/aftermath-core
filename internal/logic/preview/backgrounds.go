@@ -13,7 +13,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/session"
 	"github.com/cufee/aftermath-core/types"
-	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 )
@@ -29,7 +28,7 @@ func CurrentBackgroundsPreview() (*types.RenderPreviewResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	image, err := RenderBackgroundPreview("Your Awesome Nickname", "", data.Value)
+	image, err := RenderBackgroundPreview("Your Awesome Nickname", "AFMTH", data.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +46,8 @@ func CurrentBackgroundsPreview() (*types.RenderPreviewResponse, error) {
 func RenderBackgroundPreview(nickname, clanTag string, options []string) (image.Image, error) {
 	var player session.PlayerData
 	player.Cards = mock.PreviewStatsCards
-	player.Account = wg.Account{
-		Nickname: nickname,
-	}
-	player.Clan = wg.Clan{
-		Tag: clanTag,
-	}
+	player.Account.Nickname = nickname
+	player.Clan.Tag = clanTag
 
 	statsImage, err := renderCardsPreview(player)
 	if err != nil {
