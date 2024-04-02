@@ -7,7 +7,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 	"github.com/rs/zerolog/log"
 )
 

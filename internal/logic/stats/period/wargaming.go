@@ -6,8 +6,8 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
-	"github.com/cufee/am-wg-proxy-next/remote"
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	"github.com/cufee/am-wg-proxy-next/v2/remote"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 	"github.com/rs/zerolog/log"
 )
 

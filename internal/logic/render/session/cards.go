@@ -13,7 +13,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/utils"
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 )
 
 type PlayerData struct {

@@ -3,7 +3,7 @@ package types
 import (
 	dataprep "github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/server"
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 )
 
 type Account wg.Account

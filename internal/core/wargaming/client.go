@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/cufee/aftermath-core/internal/core/utils"
-	"github.com/cufee/am-wg-proxy-next/remote"
+	"github.com/cufee/am-wg-proxy-next/v2/remote"
 )
 
 var Clients struct {

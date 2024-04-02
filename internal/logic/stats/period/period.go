@@ -11,7 +11,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/external/blitzstars"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/utils"
-	"github.com/cufee/am-wg-proxy-next/types"
+	"github.com/cufee/am-wg-proxy-next/v2/types"
 	"github.com/gorhill/cronexpr"
 )
 

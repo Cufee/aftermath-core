@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/cufee/aftermath-core/internal/core/stats"
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 )
 
 type SessionStats struct {

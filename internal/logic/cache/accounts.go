@@ -10,7 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 )
 
 func CacheAllNewClanMembers(realm string, clanId int) error {

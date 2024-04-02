@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	wg "github.com/cufee/am-wg-proxy-next/types"
+	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 )
 
 type TopPlayersResponse struct {
