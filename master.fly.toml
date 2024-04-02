@@ -15,6 +15,7 @@ BLITZ_STARS_API_URL = "https://www.blitzstars.com/api"
 FRONTEND_URL = 'https://amth.one'
 INDEX_SYNC_ENABLED = 'true'
 SCHEDULER_ENABLED = 'true'
+PRIMARY_WG_APP_RPS = '10'
 LOG_LEVEL = 'info'
 NETWORK = 'tcp'
 PORT = '9090'
