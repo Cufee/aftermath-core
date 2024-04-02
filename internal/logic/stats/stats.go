@@ -10,7 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/rs/zerolog/log"
 
-	client "github.com/cufee/am-wg-proxy-next/client"
+	"github.com/cufee/am-wg-proxy-next/remote"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 )
 
@@ -57,7 +57,7 @@ func GetLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error) {
 	return lastBattleTimes, nil
 }
 
-func GetCompleteStatsWithClient(client *client.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*CompleteStats], error) {
+func GetCompleteStatsWithClient(client *remote.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*CompleteStats], error) {
 	if len(accountIDs) > 100 {
 		return nil, ErrTooManyAccountIDs
 	}

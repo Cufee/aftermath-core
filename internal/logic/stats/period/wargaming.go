@@ -6,12 +6,12 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/utils"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
-	"github.com/cufee/am-wg-proxy-next/client"
+	"github.com/cufee/am-wg-proxy-next/remote"
 	wg "github.com/cufee/am-wg-proxy-next/types"
 	"github.com/rs/zerolog/log"
 )
 
-func GetAccountInfo(client *client.Client, realm string, accountID int) (*stats.AccountWithClan, error) {
+func GetAccountInfo(client *remote.Client, realm string, accountID int) (*stats.AccountWithClan, error) {
 	var waitGroup sync.WaitGroup
 
 	accountStr := fmt.Sprintf("%d", accountID)

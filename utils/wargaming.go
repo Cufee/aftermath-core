@@ -1,7 +1,7 @@
 package utils
 
-import "github.com/cufee/am-wg-proxy-next/client"
+import "github.com/cufee/am-wg-proxy-next/utils"
 
 func RealmFromAccountID(accountID int) string {
-	return client.RealmFromPlayerID(accountID)
+	return utils.RealmFromPlayerID(accountID)
 }
