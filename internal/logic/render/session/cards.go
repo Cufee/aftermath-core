@@ -12,8 +12,9 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
-	"github.com/cufee/aftermath-core/utils"
+
 	wg "github.com/cufee/am-wg-proxy-next/v2/types"
+	"github.com/cufee/am-wg-proxy-next/v2/utils"
 )
 
 type PlayerData struct {
@@ -150,7 +151,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	var footer []string
-	switch strings.ToLower(utils.RealmFromAccountID(player.Account.ID)) {
+	switch strings.ToLower(utils.RealmFromPlayerID(player.Account.ID)) {
 	case "na":
 		footer = append(footer, "North America")
 	case "eu":

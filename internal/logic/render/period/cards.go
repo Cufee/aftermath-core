@@ -10,9 +10,10 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
+	"github.com/cufee/am-wg-proxy-next/v2/utils"
 
 	helpers "github.com/cufee/aftermath-core/internal/core/utils"
-	"github.com/cufee/aftermath-core/utils"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -86,7 +87,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	var footerCard render.Block
 	{
 		var footer []string
-		switch strings.ToLower(utils.RealmFromAccountID(player.Stats.Account.ID)) {
+		switch strings.ToLower(utils.RealmFromPlayerID(player.Stats.Account.ID)) {
 		case "na":
 			footer = append(footer, "North America")
 		case "eu":

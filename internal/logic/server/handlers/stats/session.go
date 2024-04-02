@@ -10,6 +10,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/types"
+	"github.com/cufee/am-wg-proxy-next/v2/utils"
 	"golang.org/x/text/language"
 
 	"github.com/cufee/aftermath-core/dataprep"
@@ -17,7 +18,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
-	"github.com/cufee/aftermath-core/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -36,7 +36,7 @@ func RecordPlayerSession(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
-	accountErrs, err := cache.RefreshSessionsAndAccounts(opts.Type(), opts.ReferenceID, utils.RealmFromAccountID(accountId), accountId)
+	accountErrs, err := cache.RefreshSessionsAndAccounts(opts.Type(), opts.ReferenceID, utils.RealmFromPlayerID(accountId), accountId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "cache.RefreshSessionsAndAccounts"))
 	}
@@ -102,7 +102,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getSessionStats(accountId int, opts types.SessionRequestPayload) (*session.SessionStats, error) {
-	realm := utils.RealmFromAccountID(accountId)
+	realm := utils.RealmFromPlayerID(accountId)
 
 	blocks, err := dataprep.ParseTags(opts.Presets...)
 	if err != nil {

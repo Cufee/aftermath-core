@@ -10,8 +10,9 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/external/blitzstars"
 	"github.com/cufee/aftermath-core/internal/logic/stats"
-	"github.com/cufee/aftermath-core/utils"
+
 	"github.com/cufee/am-wg-proxy-next/v2/types"
+	"github.com/cufee/am-wg-proxy-next/v2/utils"
 	"github.com/gorhill/cronexpr"
 )
 
@@ -57,7 +58,7 @@ var sessionsCronEU = cronexpr.MustParse("0 1 * * *")
 var sessionsCronAsia = cronexpr.MustParse("0 18 * * *")
 
 func GetPlayerStats(accountId int, days int) (PeriodStats, error) {
-	realm := utils.RealmFromAccountID(accountId)
+	realm := utils.RealmFromPlayerID(accountId)
 	allStats, err := stats.GetCompleteStatsWithClient(wargaming.Clients.Live, realm, accountId)
 	if err != nil {
 		return PeriodStats{}, err

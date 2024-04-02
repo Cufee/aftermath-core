@@ -22,7 +22,8 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/types"
-	"github.com/cufee/aftermath-core/utils"
+	"github.com/cufee/am-wg-proxy-next/v2/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/text/language"
@@ -83,7 +84,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getEncodedSessionImage(accountId int, options types.SessionRequestPayload) (string, error) {
-	realm := utils.RealmFromAccountID(accountId)
+	realm := utils.RealmFromPlayerID(accountId)
 
 	blocks, err := dataprep.ParseTags(options.Presets...)
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	core "github.com/cufee/aftermath-core/internal/core/stats"
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
-	"github.com/cufee/aftermath-core/utils"
+	"github.com/cufee/am-wg-proxy-next/v2/utils"
 
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/rs/zerolog/log"
@@ -20,7 +20,7 @@ func GetCurrentPlayerSession(accountId int, options ...database.SessionGetOption
 
 	var snapshot Snapshot
 
-	liveSessions, err := stats.GetCompleteStatsWithClient(wargaming.Clients.Live, utils.RealmFromAccountID(accountId), accountId)
+	liveSessions, err := stats.GetCompleteStatsWithClient(wargaming.Clients.Live, utils.RealmFromPlayerID(accountId), accountId)
 	if err != nil {
 		log.Err(err).Msg("failed to get live sessions")
 		return snapshot, err
