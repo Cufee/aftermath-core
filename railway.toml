@@ -1,5 +1,5 @@
 [deploy]
 restartPolicyType = "ON_FAILURE"
-healthcheckPath = "/ping"
+healthcheckPath = "/healthy"
 healthcheckTimeout = 60
 numReplicas = 1
