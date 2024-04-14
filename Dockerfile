@@ -1,7 +1,6 @@
 # Download localization files
 FROM node:21-alpine as assets
 
-
 WORKDIR /app
 
 COPY accent.json aftermath-core.json ./

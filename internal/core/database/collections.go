@@ -187,7 +187,7 @@ func init() {
 		},
 		{
 			Keys:    bson.M{"createdAt": 1},
-			Options: options.Index().SetExpireAfterSeconds(2_592_864).SetName("createdAt"),
+			Options: options.Index().SetExpireAfterSeconds(172_800).SetName("createdAt"),
 		},
 	})
 	addCollectionIndexes(CollectionRatingSeasonSnapshots, []Index{
