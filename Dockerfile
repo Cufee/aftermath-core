@@ -1,13 +1,17 @@
 # Download localization files
 FROM node:21-alpine as assets
 
+
 WORKDIR /app
 
 COPY accent.json aftermath-core.json ./
 
+ARG ACCENT_API_KEY
+
 RUN mkdir -p ./internal/core/localization/resources
 RUN npm install -g accent-cli && accent export
 
+# Build the app binary
 FROM golang:1.22.1-alpine as builder
 
 WORKDIR /app 
@@ -17,6 +21,7 @@ COPY --from=assets /app/internal/core/localization/resources ./internal/core/loc
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o binary .
 
+# Make a scratch container with required files and binary
 FROM scratch
 
 WORKDIR /app
