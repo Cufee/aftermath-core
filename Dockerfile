@@ -3,7 +3,7 @@ FROM node:21-alpine as assets
 
 WORKDIR /app
 
-COPY .accent.json .aftermath-core.json ./
+COPY accent.json aftermath-core.json ./
 
 RUN mkdir -p ./internal/core/localization/resources
 RUN npm install -g accent-cli && accent export
