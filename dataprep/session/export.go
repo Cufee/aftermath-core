@@ -45,7 +45,7 @@ func SnapshotToSession(input ExportInput, options ExportOptions) (Cards, error) 
 	var allBattles = input.SessionStats.Rating.Battles + input.SessionStats.Global.Battles
 
 	// Rating battles
-	if allBattles == 0 || input.SessionStats.Rating.Battles > 0 {
+	if (allBattles == 0 && input.CareerStats.Rating.Battles > 0) || input.SessionStats.Rating.Battles > 0 {
 		var ratingBlocks []StatsBlock
 		for _, preset := range options.Blocks {
 			if preset == dataprep.TagWN8 {

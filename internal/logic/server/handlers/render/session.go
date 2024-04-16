@@ -192,15 +192,20 @@ func getEncodedSessionImage(accountId int, options types.SessionRequestPayload) 
 			// We can continue without subscriptions
 		}
 
-		sortOptions := stats.SortOptions{
-			Limit: options.TankLimit,
+		// Sort options for vehicles
+		unratedSortOptions := stats.SortOptions{
+			Limit: 5,
 			By:    stats.ParseSortOptions(options.SortBy),
 		}
-		if sortOptions.Limit == 0 {
-			sortOptions.Limit = 5
+		ratingSortOptions := stats.SortOptions{
+			Limit: 3,
+			By:    stats.ParseSortOptions(options.SortBy),
 		}
-
-		unratedVehicles, ratingVehicles := stats.SortAndSplitVehicles(sessionData.Diff.Vehicles, averages, stats.SortOptions{By: stats.SortByLastBattle, Limit: 5}, stats.SortOptions{By: stats.SortByLastBattle, Limit: 3})
+		if sessionData.Diff.Global.Battles == 0 {
+			// If there are no unrated battles, show more rating vehicles
+			ratingSortOptions.Limit = 7
+		}
+		unratedVehicles, ratingVehicles := stats.SortAndSplitVehicles(sessionData.Diff.Vehicles, averages, unratedSortOptions, ratingSortOptions)
 
 		statsCards, err := session.SnapshotToSession(session.ExportInput{
 			SessionStats:           sessionData.Diff,
