@@ -146,7 +146,7 @@ func GetCompleteStatsWithClient(client *remote.Client, realm string, accountIDs 
 		account, ok := accounts.Data[fmt.Sprintf("%d", vehicle.Data.accountID)]
 		if !ok || account.ID == 0 {
 			sessions[vehicle.Data.accountID] = utils.DataWithError[*CompleteStats]{
-				Err: fmt.Errorf("account %d not found", vehicle.Data.accountID),
+				Err: errors.New("account invalid or private"),
 			}
 			continue
 		}
