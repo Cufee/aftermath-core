@@ -3,6 +3,7 @@ package stats
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/cufee/aftermath-core/internal/core/stats"
@@ -10,7 +11,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cufee/am-wg-proxy-next/v2/remote"
+	"github.com/cufee/am-wg-proxy-next/v2/client"
 	wg "github.com/cufee/am-wg-proxy-next/v2/types"
 )
 
@@ -44,7 +45,7 @@ func GetLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error) {
 		ids[i] = fmt.Sprintf("%d", id)
 	}
 
-	players, err := wargaming.Clients.Live.BulkGetAccountsByID(ids, realm, "account_id", "last_battle_time")
+	players, err := wargaming.Clients.Live.BatchAccountByID(realm, ids, "account_id", "last_battle_time")
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func GetLastBattleTimes(realm string, accountIDs ...int) (map[int]int, error) {
 	return lastBattleTimes, nil
 }
 
-func GetCompleteStatsWithClient(client *remote.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*CompleteStats], error) {
+func GetCompleteStatsWithClient(client client.Client, realm string, accountIDs ...int) (map[int]utils.DataWithError[*CompleteStats], error) {
 	if len(accountIDs) > 100 {
 		return nil, ErrTooManyAccountIDs
 	}
@@ -78,7 +79,7 @@ func GetCompleteStatsWithClient(client *remote.Client, realm string, accountIDs 
 			accountIDsString[i] = fmt.Sprintf("%d", accountID)
 		}
 
-		accounts, err := client.BulkGetAccountsByID(accountIDsString, realm)
+		accounts, err := client.BatchAccountByID(realm, accountIDsString)
 		if err != nil {
 			log.Err(err).Msg("failed to get accounts")
 		}
@@ -95,7 +96,7 @@ func GetCompleteStatsWithClient(client *remote.Client, realm string, accountIDs 
 			accountIDsString[i] = fmt.Sprintf("%d", accountID)
 		}
 
-		clans, err := client.BulkGetAccountsClans(accountIDsString, realm)
+		clans, err := client.BatchAccountClan(realm, accountIDsString)
 		if err != nil {
 			// This is not a critical error, so we don't return it
 			log.Err(err).Msg("failed to get accounts clans")
@@ -110,7 +111,7 @@ func GetCompleteStatsWithClient(client *remote.Client, realm string, accountIDs 
 		go func(id int) {
 			defer waitGroup.Done()
 
-			accountVehicles, err := client.GetAccountVehicles(id)
+			accountVehicles, err := client.AccountVehicles(realm, strconv.Itoa(id))
 			if err != nil {
 				log.Err(err).Msg("failed to get account vehicles")
 				vehiclesChan <- utils.DataWithError[vehiclesWithAccount]{Err: err}

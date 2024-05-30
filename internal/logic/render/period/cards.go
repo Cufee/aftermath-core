@@ -2,15 +2,16 @@ package period
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/cufee/aftermath-core/dataprep"
 	"github.com/cufee/aftermath-core/dataprep/period"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
 
 	helpers "github.com/cufee/aftermath-core/internal/core/utils"
 
@@ -87,7 +88,7 @@ func generateCards(player PlayerData, options RenderOptions) ([]render.Block, er
 	var footerCard render.Block
 	{
 		var footer []string
-		switch strings.ToLower(utils.RealmFromPlayerID(player.Stats.Account.ID)) {
+		switch strings.ToLower(wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(player.Stats.Account.ID))) {
 		case "na":
 			footer = append(footer, "North America")
 		case "eu":

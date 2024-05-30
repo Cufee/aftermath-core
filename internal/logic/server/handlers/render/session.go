@@ -14,6 +14,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/localization"
 	"github.com/cufee/aftermath-core/internal/core/server"
 	core "github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/cache"
 	"github.com/cufee/aftermath-core/internal/logic/content"
 	renderCore "github.com/cufee/aftermath-core/internal/logic/render"
@@ -22,7 +23,6 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 	"github.com/cufee/aftermath-core/types"
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -84,7 +84,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getEncodedSessionImage(accountId int, options types.SessionRequestPayload) (string, error) {
-	realm := utils.RealmFromPlayerID(accountId)
+	realm := wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(accountId))
 
 	blocks, err := dataprep.ParseTags(options.Presets...)
 	if err != nil {

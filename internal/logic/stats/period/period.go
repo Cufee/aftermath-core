@@ -2,6 +2,7 @@ package period
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/cufee/aftermath-core/internal/logic/stats"
 
 	"github.com/cufee/am-wg-proxy-next/v2/types"
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
+
 	"github.com/gorhill/cronexpr"
 )
 
@@ -58,7 +59,7 @@ var sessionsCronEU = cronexpr.MustParse("0 1 * * *")
 var sessionsCronAsia = cronexpr.MustParse("0 18 * * *")
 
 func GetPlayerStats(accountId int, days int) (PeriodStats, error) {
-	realm := utils.RealmFromPlayerID(accountId)
+	realm := wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(accountId))
 	allStats, err := stats.GetCompleteStatsWithClient(wargaming.Clients.Live, realm, accountId)
 	if err != nil {
 		return PeriodStats{}, err

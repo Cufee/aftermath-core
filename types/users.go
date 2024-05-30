@@ -6,7 +6,7 @@ import (
 
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/server"
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 )
 
 type UsersResponse server.Response[User]
@@ -60,7 +60,7 @@ func (u User) WargamingConnection() (*wargamingConnection, bool) {
 	var wargamingConnection wargamingConnection
 	wargamingConnection.AccountID = id
 	wargamingConnection.Verified, _ = connection.Metadata["verified"].(bool)
-	wargamingConnection.Realm = utils.RealmFromPlayerID(id)
+	wargamingConnection.Realm = wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(id))
 	return &wargamingConnection, true
 }
 

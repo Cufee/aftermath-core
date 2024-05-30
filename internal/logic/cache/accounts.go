@@ -2,6 +2,7 @@ package cache
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,7 +15,7 @@ import (
 )
 
 func CacheAllNewClanMembers(realm string, clanId int) error {
-	clan, err := wargaming.Clients.Cache.GetClanByID(realm, clanId)
+	clan, err := wargaming.Clients.Cache.ClanByID(realm, strconv.Itoa(clanId))
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func UpdateAccountsCache(realm string, accountIDs []int) error {
 				accountIDsString[i] = fmt.Sprintf("%d", accountID)
 			}
 
-			accounts, err := wargaming.Clients.Cache.BulkGetAccountsByID(accountIDsString, realm)
+			accounts, err := wargaming.Clients.Cache.BatchAccountByID(realm, accountIDsString)
 			accountsChan <- utils.DataWithError[map[string]wg.ExtendedAccount]{Data: accounts, Err: err}
 		}(batch)
 	}

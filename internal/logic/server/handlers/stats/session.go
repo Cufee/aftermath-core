@@ -9,8 +9,9 @@ import (
 	"github.com/cufee/aftermath-core/internal/core/database"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	"github.com/cufee/aftermath-core/internal/core/localization"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/types"
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
+
 	"golang.org/x/text/language"
 
 	"github.com/cufee/aftermath-core/dataprep"
@@ -36,7 +37,7 @@ func RecordPlayerSession(c *fiber.Ctx) error {
 		return c.Status(400).JSON(server.NewErrorResponseFromError(err, "c.BodyParser"))
 	}
 
-	accountErrs, err := cache.RefreshSessionsAndAccounts(opts.Type(), opts.ReferenceID, utils.RealmFromPlayerID(accountId), accountId)
+	accountErrs, err := cache.RefreshSessionsAndAccounts(opts.Type(), opts.ReferenceID, wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(accountId)), accountId)
 	if err != nil {
 		return c.Status(500).JSON(server.NewErrorResponseFromError(err, "cache.RefreshSessionsAndAccounts"))
 	}
@@ -102,7 +103,7 @@ func SessionFromUserHandler(c *fiber.Ctx) error {
 }
 
 func getSessionStats(accountId int, opts types.SessionRequestPayload) (*session.SessionStats, error) {
-	realm := utils.RealmFromPlayerID(accountId)
+	realm := wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(accountId))
 
 	blocks, err := dataprep.ParseTags(opts.Presets...)
 	if err != nil {

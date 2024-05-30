@@ -57,7 +57,7 @@ func GetCompleteVehicleGlossary() (map[int]models.Vehicle, error) {
 	vehicles := make(map[int]models.Vehicle)
 	glossaryLocales := []language.Tag{language.English, language.Russian, language.Polish}
 	for _, locale := range glossaryLocales {
-		glossary, err := wargaming.Clients.Cache.GetVehiclesGlossary(locale.String())
+		glossary, err := wargaming.Clients.Cache.CompleteVehicleGlossary("EU", locale.String())
 		if err != nil {
 			return nil, err
 		}

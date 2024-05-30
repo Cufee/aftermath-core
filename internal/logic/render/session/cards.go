@@ -1,6 +1,7 @@
 package session
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -8,13 +9,13 @@ import (
 	"github.com/cufee/aftermath-core/dataprep/session"
 	"github.com/cufee/aftermath-core/internal/core/database/models"
 	helpers "github.com/cufee/aftermath-core/internal/core/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 	"github.com/cufee/aftermath-core/internal/logic/render"
 	"github.com/cufee/aftermath-core/internal/logic/render/badges"
 	"github.com/cufee/aftermath-core/internal/logic/render/shared"
 	"github.com/cufee/aftermath-core/internal/logic/stats/sessions"
 
 	wg "github.com/cufee/am-wg-proxy-next/v2/types"
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
 )
 
 type PlayerData struct {
@@ -151,7 +152,7 @@ func snapshotToCardsBlocks(player PlayerData, options RenderOptions) ([]render.B
 	}
 
 	var footer []string
-	switch strings.ToLower(utils.RealmFromPlayerID(player.Account.ID)) {
+	switch strings.ToLower(wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(player.Account.ID))) {
 	case "na":
 		footer = append(footer, "North America")
 	case "eu":

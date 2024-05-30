@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
-	"github.com/cufee/am-wg-proxy-next/v2/utils"
+	"github.com/cufee/aftermath-core/internal/core/wargaming"
 )
 
 type RatingSeason struct {
@@ -102,7 +103,7 @@ type PlayerPosition struct {
 }
 
 func GetPlayerRatingPosition(accountID int, neighbors int) (*PlayerLeaderboard, error) {
-	res, err := client.Get(apiUrl(utils.RealmFromPlayerID(accountID), fmt.Sprintf("/rating-leaderboards/user/%d/?neighbors=%d", accountID, neighbors)))
+	res, err := client.Get(apiUrl(wargaming.Clients.Live.RealmFromAccountID(strconv.Itoa(accountID)), fmt.Sprintf("/rating-leaderboards/user/%d/?neighbors=%d", accountID, neighbors)))
 	if err != nil {
 		return nil, err
 	}
